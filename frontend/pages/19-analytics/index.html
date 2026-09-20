@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script src="../../assets/js/theme.js"></script>  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head><body class="bg-slate-100 text-sm text-slate-900 antialiased" style="background-image: url('../../assets/images/lighthouse-wide.png'); background-size: cover; background-position: center; background-attachment: fixed;"><header class="sticky top-0 w-full z-40 glass-header px-4 sm:px-6 lg:px-8 py-3 transition-all"><div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4"><div class="flex items-center gap-4"><a href="../10-dashboard/index.html" class="flex items-center gap-2.5 cursor-pointer"><img alt="Stuđiô AI Logo" class="w-9 h-9 object-contain drop-shadow-sm" src="../../assets/images/logo.png"/><span class="text-xl text-brand-700 tracking-tight font-bold">Stuđiô AI</span><span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-50 text-cyan-800 text-[11px] uppercase tracking-wider">CALM WORKSPACE</span></a><nav class="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/60 shadow-inner" data-active-classes="bg-brand-100 text-brand-700 font-semibold"><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" data-path="tong-quan" href="../10-dashboard/index.html">Tổng quan</a><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" data-path="lap-ke-hoach" href="../13-planner/index.html">Lập kế hoạch</a><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" data-path="lich-trinh-ai" href="../14-schedule/index.html">Lịch trình AI</a><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition leading-tight text-center" data-path="nhiem-vu" href="../11-tasks/index.html">Nhiệm vụ &amp; Chia nhỏ</a><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" data-path="am-thanh-432hz-thu-gian" href="../18-sound-sanctuary/index.html">Âm thanh 432Hz &amp; Thư giãn</a><a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" data-path="co-van-ai" href="../17-ai-advisor/index.html">Cố vấn AI</a><a class="px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm transition" href="../19-analytics/index.html">Thống kê</a></nav></div><div class="flex items-center gap-4"><div class="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full bg-brand-50 text-cyan-800 hover:bg-brand-50 transition-colors cursor-pointer shadow-[0_1px_4px_rgba(15,23,42,0.02)]"><span class="material-symbols-outlined text-sm text-cyan-800">graphic_eq</span><span class="text-[11px] font-medium">Sóng biển 432Hz • Đang bật</span></div><div class="hidden sm:flex items-center bg-brand-50 rounded-lg p-0.5 text-slate-500"><button class="px-2 py-1 rounded-md bg-white text-brand-700 text-[11px] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">VN</button><button class="px-2 py-1 rounded-md hover:text-slate-900 text-[11px] transition-colors">EN</button></div><div class="flex items-center gap-2.5 pl-2 border-l border-slate-200/80 user-profile-container">
+  <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-semibold flex items-center justify-center text-xs shadow-sm ring-2 ring-white" data-user-initials>
+    MC
+  </div>
+  <div class="hidden sm:block text-left">
+    <p class="text-xs font-bold text-slate-800 leading-tight" data-user-name>Nguyễn Minh Châu</p>
+    <p class="text-[11px] text-slate-500 leading-tight" data-user-school>Sinh viên ĐHQG</p>
+  </div>
+</div></div></div></header><main class="w-full bg-slate-50/50"><div class="flex flex-col w-full">
+<!-- Calm Hero Backdrop with Watercolor Lighthouse Aesthetics -->
+<div class="relative w-full overflow-hidden">
+<!-- Atmospheric Ambient Underlay using provided lighthouse artwork -->
+<div class="absolute inset-0 -z-10 pointer-events-none opacity-25 mix-blend-multiply bg-cover bg-center" data-alt="Serene watercolor painting of a coastal lighthouse on a grassy sea cliff at warm sunrise with pastel pink, amber, and lavender clouds reflecting upon calm gentle turquoise ocean ripples, high key soft studio lighting, delicate watercolor wash style." style="background-image: url('../../assets/images/lighthouse-wide.png')">
+</div>
+<div class="absolute -top-32 -right-24 w-96 h-96 bg-brand-100/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-48 -left-20 w-80 h-80 bg-sky-100/50 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+<!-- Greeting & Header Banner -->
+<div class="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 pt-space-xs">
+<div class="flex flex-col gap-1 max-w-3xl">
+<div class="flex items-center gap-1 text-slate-500 text-xs text-xs">
+<span id="crumb-term">Học kỳ I / Năm 3</span>
+<span class="text-slate-200">•</span>
+<span id="crumb-uni">ĐHQG TP.HCM</span>
+<span class="text-slate-200">•</span>
+<span class="text-brand-700 font-semibold">Phân tích Hiệu suất &amp; Kỹ năng</span>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<h1 class="text-3xl text-slate-900 font-bold tracking-tight">
+              Báo Cáo Tăng Trưởng &amp; Kỹ Năng Đột Phá
+            </h1>
+<span id="analytics-week-badge" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-700 text-[11px]">
+<span class="material-symbols-outlined text-xs">auto_awesome</span>
+              Tuần 42
+            </span>
+</div>
+<p class="text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Tổng hợp tiến trình rèn luyện nhịp sinh học, đo lường độ sâu tập trung và chỉ số làm chủ kỹ năng học thuật của bạn.
+          </p>
+</div>
+<!-- Filter & Action Controls -->
+<div class="flex flex-wrap items-center gap-1">
+<!-- Time Scope Switcher -->
+<div class="flex items-center bg-white/80 backdrop-blur-md p-1 rounded-xl shadow-sm" role="tablist" aria-label="Phạm vi báo cáo">
+<button data-range="week" role="tab" aria-selected="true" class="px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs text-xs shadow-sm transition-all">Tuần này</button>
+<button data-range="month" role="tab" aria-selected="false" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 text-xs text-xs transition-colors">Tháng này</button>
+<button data-range="semester" role="tab" aria-selected="false" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 text-xs text-xs transition-colors">Học kỳ I</button>
+</div>
+<!-- Utility Action Buttons -->
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/90 backdrop-blur-md text-slate-900 hover:bg-brand-50 transition-all text-xs text-xs shadow-sm">
+<span class="material-symbols-outlined text-base text-cyan-800">download</span>
+<span>Xuất PDF</span>
+</button>
+<button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/90 backdrop-blur-md text-brand-700 hover:bg-brand-100 transition-all text-xs text-xs shadow-sm">
+<span class="material-symbols-outlined text-base">sync</span>
+<span>Đồng bộ LMS Canvas</span>
+</button>
+</div>
+</div>
+<!-- 4 Top KPI Stat Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+<!-- Stat 1 -->
+<div class="relative overflow-hidden rounded-2xl p-4 bg-white/85 backdrop-blur-md shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Tổng Giờ Tập Trung Sâu</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl text-brand-700 font-bold" id="kpi-focus-hours">38.5h</span>
+<span class="text-[11px] text-slate-500">/ 40h</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-700">
+<span class="material-symbols-outlined text-xl">timer</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="mt-4 flex flex-col gap-1.5">
+<div class="w-full bg-brand-50 rounded-full h-1.5 overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full transition-all duration-700" style="width: 96%"></div>
+</div>
+<div class="flex justify-between items-center text-slate-500 text-[11px]">
+<span class="flex items-center gap-0.5 text-brand-700 font-semibold">
+<span class="material-symbols-outlined text-xs">trending_up</span> +18% so với tuần trước
+              </span>
+<span>96% mục tiêu</span>
+</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="relative overflow-hidden rounded-2xl p-4 bg-white/85 backdrop-blur-md shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Hiệp Deep Work Hoàn Tất</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl text-slate-900 font-bold" id="kpi-sessions-count">46</span>
+<span class="text-xs text-xs text-slate-500 font-normal">hiệp</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center text-cyan-800">
+<span class="material-symbols-outlined text-xl">self_improvement</span>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-1.5">
+<div class="flex items-center gap-2 text-slate-500 text-xs text-xs">
+<span class="inline-block w-2 h-2 rounded-full bg-cyan-700"></span>
+<span>Trung bình: <strong>48 phút</strong> / hiệp</span>
+</div>
+<div class="flex justify-between items-center text-slate-500 text-[11px]">
+<span class="text-cyan-800 font-medium">0 xao nhãng trong sóng Alpha</span>
+<span class="font-semibold text-brand-700">Kỷ lục mới</span>
+</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="relative overflow-hidden rounded-2xl p-4 bg-white/85 backdrop-blur-md shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Điểm Nhịp Sinh Học Alpha</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl text-cyan-800 font-bold" id="kpi-circadian-score">96</span>
+<span class="text-xs text-xs text-slate-500 font-normal">/ 100</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-800">
+<span class="material-symbols-outlined text-xl">vital_signs</span>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-1.5">
+<div class="w-full bg-brand-50 rounded-full h-1.5 overflow-hidden">
+<div class="bg-cyan-700 h-full rounded-full transition-all duration-700" style="width: 96%"></div>
+</div>
+<div class="flex justify-between items-center text-slate-500 text-[11px]">
+<span>Đỉnh cao: <strong>14:30 - 16:30</strong></span>
+<span class="text-slate-500">Hồi phục: 93%</span>
+</div>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="relative overflow-hidden rounded-2xl p-4 bg-white/85 backdrop-blur-md shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Chuỗi Ngày Streak Bền Bỉ</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl text-slate-900 font-bold" id="kpi-streak-days">15</span>
+<span class="text-xs text-xs text-slate-500 font-normal">ngày</span>
+</div>
+</div>
+<div class="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-700">
+<span class="material-symbols-outlined text-xl">military_tech</span>
+</div>
+</div>
+<div class="mt-4 flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-slate-500 text-xs text-xs">
+<span class="material-symbols-outlined text-sm text-brand-700">verified</span>
+<span>+2 cấp độ tinh thông (14 ngày)</span>
+</div>
+<div class="flex justify-between items-center text-slate-500 text-[11px]">
+<span>IEEE &amp; PyTorch bứt phá</span>
+<span class="text-brand-700 font-semibold">+1,230 XP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Focus Growth Chart & Analytical Rhythm -->
+<div class="w-full rounded-2xl bg-white/90 backdrop-blur-xl p-6 shadow-sm flex flex-col gap-4">
+<!-- Chart Controls & Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-space-xs">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="text-2xl text-2xl text-slate-900 font-bold">
+                Biểu Đồ Nhịp Độ &amp; Giờ Học Sâu
+              </h2>
+<span class="px-2.5 py-0.5 rounded-full bg-brand-50 text-cyan-800 text-[11px]">
+                Đồng bộ tần số 432Hz
+              </span>
+</div>
+<p class="text-sm text-slate-500 mt-0.5">
+              So sánh độ sâu chú ý thực tế với chu kỳ tuần trước trên khung 7 ngày
+            </p>
+</div>
+<!-- Chart Interactive Toggles -->
+<div class="flex flex-wrap items-center gap-1">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-slate-900 text-[11px]">
+<span class="w-2.5 h-2.5 rounded-full bg-brand-600"></span>
+<span id="legend-week">Tuần này (38.5h)</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-slate-500 text-[11px]">
+<span class="w-2.5 h-1 border-b border-dashed border-slate-300"></span>
+<span>Tuần trước (32.6h)</span>
+</div>
+<div class="hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-100 text-cyan-900 text-[11px]">
+<span class="material-symbols-outlined text-xs">graphic_eq</span>
+<span>Sóng Alpha</span>
+</div>
+</div>
+</div>
+<!-- SVG Line Chart Canvas with Smooth Curves & Markers -->
+<div class="relative w-full h-72 sm:h-80 bg-slate-50/50 rounded-xl p-2 flex flex-col justify-end">
+<!-- Background Grid Lines -->
+<div class="absolute inset-x-space-sm inset-y-space-sm flex flex-col justify-between pointer-events-none opacity-40">
+<div class="w-full border-b border-brand-200 flex justify-end pr-2 text-slate-300 text-[11px]">8h</div>
+<div class="w-full border-b border-brand-200 flex justify-end pr-2 text-slate-300 text-[11px]">6h</div>
+<div class="w-full border-b border-brand-200 flex justify-end pr-2 text-slate-300 text-[11px]">4h</div>
+<div class="w-full border-b border-brand-200 flex justify-end pr-2 text-slate-300 text-[11px]">2h</div>
+<div class="w-full border-b border-brand-200 flex justify-end pr-2 text-slate-300 text-[11px]">0h</div>
+</div>
+<!-- Dynamic SVG Vector Chart -->
+<svg class="w-full h-full overflow-visible z-10" preserveAspectRatio="none" viewBox="0 0 700 240">
+<defs>
+<!-- Gradient fill for Tuần Này Area -->
+<lineargradient id="focusFill" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#004ac6" stop-opacity="0.28"></stop>
+<stop offset="60%" stop-color="#2563eb" stop-opacity="0.08"></stop>
+<stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient id="focusStroke" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#006398"></stop>
+<stop offset="45%" stop-color="#004ac6"></stop>
+<stop offset="100%" stop-color="#2563eb"></stop>
+</lineargradient>
+</defs>
+<!-- Previous Week Dashed Line: Points T2(45, 140), T3(145, 125), T4(245, 150), T5(345, 110), T6(445, 95), T7(545, 130), CN(645, 160) -->
+<path id="chart-prev-line" d="M 45 140 C 95 130, 105 125, 145 125 C 195 125, 205 150, 245 150 C 295 150, 305 110, 345 110 C 395 110, 405 95, 445 95 C 495 95, 505 130, 545 130 C 595 130, 605 160, 645 160" fill="none" opacity="0.65" stroke="#737686" stroke-dasharray="6 6" stroke-width="2"></path>
+<!-- Current Week Area Gradient -->
+<path id="chart-area" d="M 45 160 C 95 120, 105 85, 145 85 C 195 85, 205 35, 245 35 C 295 35, 305 60, 345 60 C 395 60, 405 45, 445 45 C 495 45, 505 75, 545 75 C 595 75, 605 105, 645 105 L 645 220 L 45 220 Z" fill="url(#focusFill)"></path>
+<!-- Current Week Solid Curved Stroke -->
+<path id="chart-line" d="M 45 160 C 95 120, 105 85, 145 85 C 195 85, 205 35, 245 35 C 295 35, 305 60, 345 60 C 395 60, 405 45, 445 45 C 495 45, 505 75, 545 75 C 595 75, 605 105, 645 105" fill="none" stroke="url(#focusStroke)" stroke-linecap="round" stroke-width="3.5"></path>
+<!-- Interactive Data Points -->
+<g id="chart-points" role="img" aria-label="Điểm dữ liệu giờ học 7 ngày">
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="45" cy="160" fill="#004ac6" r="4"></circle>
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="145" cy="85" fill="#004ac6" r="4"></circle>
+<!-- Highlight Point on Wednesday (Peak Session 6.5h at (245, 35)) -->
+<g class="cursor-pointer">
+<circle class="animate-ping" cx="245" cy="35" fill="#2563eb" fill-opacity="0.2" r="10"></circle>
+<circle cx="245" cy="35" fill="#004ac6" r="6" stroke="#ffffff" stroke-width="2"></circle>
+</g>
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="345" cy="60" fill="#004ac6" r="4"></circle>
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="445" cy="45" fill="#004ac6" r="4"></circle>
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="545" cy="75" fill="#004ac6" r="4"></circle>
+<circle class="transition-all cursor-pointer hover:opacity-80" cx="645" cy="105" fill="#004ac6" r="4"></circle>
+</g>
+</svg>
+<!-- Interactive Tooltip Overlay (điều khiển bằng JS theo điểm hover) -->
+<div id="chart-tooltip" class="absolute left-1/3 top-6 -translate-x-1/4 z-20 hidden md:flex flex-col p-2.5 rounded-xl bg-slate-900 text-slate-100 shadow-xl text-left pointer-events-none">
+<div class="flex items-center gap-1.5 text-[11px] font-semibold text-sky-100">
+<span class="material-symbols-outlined text-xs">bolt</span>
+<span>Thứ Tư (26/10) • Đỉnh Hiệu Suất</span>
+</div>
+<div class="text-sm text-white mt-0.5">
+<strong>6.5h Deep Work</strong> • Đạt đỉnh sóng não Alpha lúc 15:00
+            </div>
+<div class="text-[11px] text-brand-100 opacity-85 mt-0.5">
+              Module: Kỹ thuật Học sâu &amp; ResNet
+            </div>
+</div>
+<!-- X-Axis Days Labels -->
+<div id="chart-xlabels" class="w-full grid grid-cols-7 text-center pt-2 text-xs text-xs text-slate-500 z-10">
+<div>Thứ 2 <span class="block text-[11px] text-slate-300">3.2h</span></div>
+<div>Thứ 3 <span class="block text-[11px] text-slate-300">5.4h</span></div>
+<div class="text-brand-700 font-bold">Thứ 4 <span class="block text-[11px] font-semibold text-brand-700">6.5h ★</span></div>
+<div>Thứ 5 <span class="block text-[11px] text-slate-300">5.8h</span></div>
+<div>Thứ 6 <span class="block text-[11px] text-slate-300">6.2h</span></div>
+<div>Thứ 7 <span class="block text-[11px] text-slate-300">5.4h</span></div>
+<div>Chủ Nhật <span class="block text-[11px] text-slate-300">4.0h</span></div>
+</div>
+</div>
+<!-- AI Real-Time Insight Ribbon -->
+<div class="flex items-start sm:items-center gap-2 p-2 rounded-xl bg-brand-50 text-slate-900">
+<div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-base">psychology</span>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
+<p class="text-sm text-slate-900">
+<strong>Phát hiện từ Stuđiô AI:</strong> Khả năng duy trì Deep Flow liên tục của bạn <strong>tăng 34%</strong> khi kết hợp nghe tần số 432Hz vào đầu giờ chiều (14:00 - 16:00).
+            </p>
+<button class="shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white text-brand-700 hover:bg-brand-100 transition-colors text-[11px] shadow-sm">
+<span>Lên lịch tự động</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Skills Mastery Section (4 Cards) -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="text-2xl text-2xl text-slate-900 font-bold">
+              Thẻ Tóm Tắt Kỹ Năng Đã Cải Thiện
+            </h2>
+<p class="text-sm text-slate-500">
+              Định lượng sự tăng trưởng về tư duy học thuật và năng lực kỹ thuật qua các bài tập lớn
+            </p>
+</div>
+<a class="hidden sm:inline-flex items-center gap-1 text-brand-700 hover:underline text-xs text-xs" href="#">
+<span>Xem biểu đồ mạng nhện năng lực</span>
+<span class="material-symbols-outlined text-sm">open_in_new</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div id="skills-grid" class="contents"></div>
+<!-- Badges & Academic Milestones -->
+<div class="w-full rounded-2xl bg-white/90 backdrop-blur-xl p-6 shadow-sm flex flex-col gap-4">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="text-2xl text-2xl text-slate-900 font-bold">
+                Bảng Vinh Danh &amp; Huy Hiệu Học Thuật
+              </h2>
+<span id="badges-count-badge" class="px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-700 text-[11px] font-semibold">
+                Đã mở khóa 4/5 huy hiệu
+              </span>
+</div>
+<p class="text-sm text-slate-500">
+              Ghi nhận chuỗi kiên định, tính kỷ luật tự giác và thành quả đột phá của sinh viên
+            </p>
+</div>
+<div class="flex items-center gap-1">
+<button id="btn-share-qr" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-50 text-slate-900 text-xs text-xs transition-colors shadow-sm">
+<span class="material-symbols-outlined text-base text-brand-700">qr_code_2</span>
+<span>Chia sẻ QR Vinh Danh</span>
+</button>
+<button id="btn-certificate" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-600 text-white hover:bg-brand-600 text-xs text-xs transition-all shadow-sm">
+<span class="material-symbols-outlined text-base">badge</span>
+<span>Chứng nhận Deep Work</span>
+</button>
+</div>
+</div>
+<!-- Badges Mosaic Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-space-xs">
+<div id="badges-grid" class="contents"></div>
+<!-- Quick Reflection Note -->
+<div class="rounded-2xl p-4 bg-brand-50/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-brand-700 shadow-sm">
+<span class="material-symbols-outlined text-xl">favorite</span>
+</div>
+<div>
+<div class="text-sm font-bold text-slate-900">Cố vấn học tập AI luôn đồng hành cùng bạn</div>
+<div class="text-sm text-slate-500" id="reflection-line">Bạn đã hoàn thành 87% mục tiêu tuần trước hạn. Hãy thư giãn tối nay để duy trì nhịp tim ổn định.</div>
+</div>
+</div>
+<button class="px-4 py-2 rounded-xl bg-white hover:bg-brand-50 text-brand-700 text-xs text-xs shadow-sm transition-all whitespace-nowrap">
+          Ghi nhận cảm xúc hôm nay
+        </button>
+</div>
+</div>
+</div>
+</div></main><footer class="w-full bg-brand-50 mt-6 py-6"><div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4"><div class="flex items-center gap-2"><span class="text-xl text-brand-700 font-semibold">Stuđiô AI</span><span class="text-sm text-slate-500">Không gian học tập thông minh &amp; thư thái sinh viên Việt Nam</span></div><div class="flex items-center gap-6"><a class="text-sm text-slate-500 hover:text-brand-700 transition-colors" href="#">Chính sách riêng tư</a><a class="text-sm text-slate-500 hover:text-brand-700 transition-colors" href="#">Hỗ trợ sinh viên</a><a class="text-sm text-slate-500 hover:text-brand-700 transition-colors" href="#">Phím tắt &amp; Hướng dẫn</a></div><div class="text-[11px] text-slate-500">© 2025 Stuđiô AI. All rights reserved.</div></div></footer><!-- Studio AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/timer.js"></script>
+<script src="../../assets/js/app.js"></script>
+<script>
+  let analyticsCache = null;
+
+  // Vẽ lại đường chart từ mảng 7 số giờ (giữ nguyên static khi offline)
+  function renderChart(hours, days) {
+    const line = document.getElementById('chart-line');
+    const area = document.getElementById('chart-area');
+    const pts = document.getElementById('chart-points');
+    const xlabels = document.getElementById('chart-xlabels');
+    const tooltip = document.getElementById('chart-tooltip');
+    const legend = document.getElementById('legend-week');
+    if (!line || !area || !pts || !Array.isArray(hours) || hours.length !== 7) return;
+    const X = [45, 145, 245, 345, 445, 545, 645];
+    const maxH = Math.max(8, ...hours);
+    const yOf = (h) => 220 - (Math.min(h, maxH) / maxH) * 200;
+    const Y = hours.map(yOf);
+    // Đường cong mượt qua các điểm (Catmull-Rom -> bezier)
+    let d = `M ${X[0]} ${Y[0].toFixed(1)}`;
+    for (let i = 0; i < 6; i++) {
+      const p0 = { x: X[Math.max(0, i - 1)], y: Y[Math.max(0, i - 1)] };
+      const p1 = { x: X[i], y: Y[i] };
+      const p2 = { x: X[i + 1], y: Y[i + 1] };
+      const p3 = { x: X[Math.min(6, i + 2)], y: Y[Math.min(6, i + 2)] };
+      const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x} ${p2.y.toFixed(1)}`;
+    }
+    line.setAttribute('d', d);
+    area.setAttribute('d', `${d} L 645 220 L 45 220 Z`);
+    // Điểm peak
+    let peak = 0;
+    hours.forEach((h, i) => { if (h > hours[peak]) peak = i; });
+    pts.innerHTML = X.map((x, i) => {
+      const y = Y[i].toFixed(1);
+      if (i === peak) {
+        return `<g class="cursor-pointer" data-pt="${i}" tabindex="0" role="img" aria-label="${days[i]}: ${hours[i]} giờ"><circle class="animate-ping" cx="${x}" cy="${y}" fill="#2563eb" fill-opacity="0.2" r="10"></circle><circle cx="${x}" cy="${y}" fill="#004ac6" r="6" stroke="#ffffff" stroke-width="2"></circle></g>`;
+      }
+      return `<circle data-pt="${i}" tabindex="0" role="img" aria-label="${days[i]}: ${hours[i]} giờ" class="cursor-pointer" cx="${x}" cy="${y}" fill="#004ac6" r="4"><title>${days[i]}: ${hours[i]}h</title></circle>`;
+    }).join('');
+    const showTip = (i) => {
+      if (!tooltip) return;
+      tooltip.innerHTML = `<div class="flex items-center gap-1.5 text-[11px] font-semibold text-sky-100"><span>●</span><span>${days[i]} • ${i === peak ? 'Đỉnh Hiệu Suất' : 'Phiên học'}</span></div><div class="text-sm text-white mt-0.5"><strong>${hours[i]}h Deep Work</strong></div>`;
+      tooltip.style.left = `calc(${(X[i] / 700) * 100}% - 60px)`;
+      tooltip.classList.remove('hidden');
+    };
+    const hideTip = () => tooltip?.classList.add('hidden');
+    pts.querySelectorAll('[data-pt]').forEach(el => {
+      const i = parseInt(el.dataset.pt);
+      el.addEventListener('mouseenter', () => showTip(i));
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('focus', () => showTip(i));
+      el.addEventListener('blur', hideTip);
+    });
+    // Nhãn trục X khớp dữ liệu thật
+    if (xlabels) {
+      xlabels.innerHTML = days.map((d2, i) =>
+        `<div class="${i === peak ? 'text-brand-700 font-bold' : ''}">${d2} <span class="block text-[11px] ${i === peak ? 'font-semibold text-brand-700' : 'text-slate-300'}">${hours[i]}h${i === peak ? ' ★' : ''}</span></div>`
+      ).join('');
+    }
+    const total = hours.reduce((a, b) => a + b, 0);
+    if (legend) legend.textContent = `Tuần này (${Math.round(total * 10) / 10}h)`;
+  }
+
+  async function loadAnalytics() {
+    if (!window.api) return;
+    try {
+      const [data, profile] = await Promise.all([
+        api.get('/analytics/dashboard'),
+        api.get('/auth/profile').catch(() => null),
+      ]);
+      if (profile) {
+        const term = document.getElementById('crumb-term');
+        if (term) term.textContent = `Học kỳ I / Năm ${profile.academic_year || 3}`;
+        const uni = document.getElementById('crumb-uni');
+        if (uni) uni.textContent = profile.university || '';
+      }
+      analyticsCache = data;
+      const hours = Array.isArray(data.weekly_focus_hours) ? data.weekly_focus_hours : null;
+      const days = Array.isArray(data.week_days) ? data.week_days : ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ Nhật'];
+      if (hours) renderChart(hours, days);
+      const setTxt = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.textContent = v; };
+      setTxt('kpi-focus-hours', data.total_week_hours !== undefined ? `${data.total_week_hours}h` : undefined);
+      setTxt('kpi-sessions-count', data.task_completion_rate !== undefined ? `${data.task_completion_rate}%` : undefined);
+      setTxt('kpi-circadian-score', data.circadian_alignment_score);
+      setTxt('kpi-streak-days', data.current_streak_days);
+      // Tuần ISO thật
+      const nowD = new Date();
+      const isoWeek = Math.ceil((((nowD - new Date(nowD.getFullYear(), 0, 1)) / 864e5) + 1) / 7);
+      const wb = document.getElementById('analytics-week-badge');
+      if (wb) wb.innerHTML = `<span class="material-symbols-outlined text-xs">auto_awesome</span> Tuần ${isoWeek}`;
+      // Dòng reflection thật
+      const rl = document.getElementById('reflection-line');
+      if (rl) rl.textContent = `Bạn đã hoàn thành ${data.task_completion_rate}% nhiệm vụ, streak ${data.current_streak_days} ngày. Giữ nhịp thư giãn tối nay nhé!`;
+      renderSkills(data.subject_details || []);
+      renderBadges(data.badges || []);
+    } catch (err) {
+      console.log('Analytics load error:', err);
+      if (window.showCalmToast) showCalmToast('Không tải được báo cáo mới, đang hiển thị nội dung mẫu. ' + ((err && err.message) || ''), 'warning');
+    }
+  }
+
+  // Thẻ kỹ năng thật theo từng môn (sprints + XP từ DB)
+  function renderSkills(details) {
+    const grid = document.getElementById('skills-grid');
+    if (!grid) return;
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    if (!details.length) {
+      grid.innerHTML = '<div class="p-4 text-center text-xs text-slate-500 md:col-span-2">Chưa có môn nào. Thêm nhiệm vụ để AI theo dõi kỹ năng.</div>';
+      return;
+    }
+    grid.innerHTML = details.map(d => `
+      <div class="rounded-2xl p-4 bg-white/90 backdrop-blur-md shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4">
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between">
+            <span class="px-2.5 py-0.5 rounded-full bg-brand-100 text-brand-700 text-[11px] font-semibold">${esc(d.subject_name)}${d.subject_code ? ' (' + esc(d.subject_code) + ')' : ''}</span>
+            <span class="text-xs text-xs text-brand-700 font-bold">+${d.xp} XP</span>
+          </div>
+          <h3 class="text-xl text-slate-900 font-bold mt-1">${d.task_count} nhiệm vụ • ${d.completed_sprints}/${d.total_sprints} sprints</h3>
+          <p class="text-sm text-slate-500">Trình độ: ${esc(d.level)}. XP = 20 điểm mỗi micro-sprint hoàn thành.</p>
+        </div>
+        <div class="flex flex-col gap-2 pt-space-xs">
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-slate-900 font-medium">Tiến độ ${d.progress_percent}%</span>
+          </div>
+          <div class="w-full bg-brand-50 rounded-full h-2 overflow-hidden">
+            <div class="bg-brand-600 h-full rounded-full transition-all" style="width: ${d.progress_percent}%"></div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Huy hiệu thật theo luật backend (streak/phiên/sprints/hoàn thành/sinh học)
+  function renderBadges(badges) {
+    const grid = document.getElementById('badges-grid');
+    if (!grid) return;
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const unlocked = badges.filter(b => b.unlocked).length;
+    const badge = document.getElementById('badges-count-badge');
+    if (badge) badge.textContent = `Đã mở khóa ${unlocked}/${badges.length} huy hiệu`;
+    grid.innerHTML = badges.map(b => `
+      <div class="rounded-xl p-4 flex flex-col items-center text-center gap-1 transition-all hover:-translate-y-1 ${b.unlocked ? 'bg-brand-50/70 hover:bg-brand-50' : 'bg-brand-100/40 opacity-75 border border-dashed border-slate-200/60'}">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-md ${b.unlocked ? 'bg-gradient-to-tr from-amber-200 to-amber-100 text-amber-700' : 'bg-brand-50 text-slate-300 shadow-inner'}">
+          <span class="material-symbols-outlined text-3xl">${esc(b.icon || 'military_tech')}</span>
+        </div>
+        <h4 class="text-xl text-slate-900 font-bold leading-snug">${esc(b.title)}</h4>
+        <p class="text-sm text-slate-500">${esc(b.detail || b.rule || '')}</p>
+        ${b.unlocked
+          ? '<span class="text-[11px] font-bold text-emerald-700 uppercase">Đã mở khóa</span>'
+          : `<div class="w-full bg-brand-200 rounded-full h-1 mt-1"><div class="bg-brand-600 h-full rounded-full" style="width: ${b.progress || 0}%"></div></div>`}
+      </div>`).join('');
+  }
+
+  // Filter phạm vi thật: backend gộp bucket theo range (week/month/semester)
+  const RANGE_LABEL = { week: 'Tuần này', month: 'Tháng này', semester: 'Học kỳ I' };
+  document.querySelectorAll('[data-range]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('[data-range]').forEach(b => {
+        const on = b === btn;
+        b.setAttribute('aria-selected', String(on));
+        b.className = on
+          ? 'px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs text-xs shadow-sm transition-all'
+          : 'px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 text-xs text-xs transition-colors';
+      });
+      const r = btn.dataset.range;
+      try {
+        const data = await api.get(`/analytics/dashboard?range=${encodeURIComponent(r)}`);
+        if (data) {
+          analyticsCache = data;
+          const h = data.weekly_focus_hours, d = data.week_days;
+          if (h) renderChart(h, d);
+          const legend = document.getElementById('legend-week');
+          if (legend && data.total_week_hours !== undefined) {
+            legend.textContent = `${RANGE_LABEL[r] || 'Tuần này'} (${data.total_week_hours}h)`;
+          }
+          const hoursEl = document.getElementById('kpi-focus-hours');
+          if (hoursEl && data.total_week_hours !== undefined) hoursEl.textContent = `${data.total_week_hours}h`;
+        }
+      } catch (err) {
+        if (window.showCalmToast) showCalmToast((err && err.message) || 'Không tải được báo cáo.', 'red-600');
+      }
+    });
+  });
+
+  // "Lên lịch tự động" -> gọi API thật thay vì chết
+  document.querySelectorAll('button').forEach(btn => {
+    if (btn.textContent.includes('Lên lịch tự động')) {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          const res = await api.post('/schedule/auto-balance', {});
+          if (window.showCalmToast) showCalmToast(res.message || 'Đã tối ưu lịch vào khung giờ vàng.', 'success');
+        } catch (e) {
+          if (window.showCalmToast) showCalmToast((e && e.message) || 'Không tối ưu được.', 'red-600');
+        } finally { btn.disabled = false; }
+      });
+    }
+  });
+  // Link "mạng nhện" chết -> cuộn tới khối kỹ năng
+  document.querySelectorAll('a').forEach(a => {
+    if (a.textContent.includes('mạng nhện')) {
+      a.href = '#skills';
+      a.addEventListener('click', (e) => {
+        const t = document.querySelector('[data-purpose="skills"], section:nth-of-type(3)');
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', loadAnalytics);
+
+  // Chia sẻ: chép link trang kèm số liệu thật vào clipboard
+  document.getElementById('btn-share-qr')?.addEventListener('click', async () => {
+    const d = analyticsCache;
+    const text = d
+      ? `Stuđiô AI — Vinh danh học tập: ${d.total_week_hours}h deep work, streak ${d.current_streak_days} ngày, đồng bộ sinh học ${d.circadian_alignment_score}% ${window.location.href}`
+      : window.location.href;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (window.showCalmToast) showCalmToast('Đã sao chép liên kết vinh danh!', 'success');
+    } catch {
+      if (window.showCalmToast) showCalmToast('Không sao chép được.', 'red-600');
+    }
+  });
+
+  // Chứng nhận: tải file .txt với số liệu thật từ analytics
+  document.getElementById('btn-certificate')?.addEventListener('click', async () => {
+    let d = analyticsCache;
+    try {
+      if (!d) d = await api.get('/analytics/dashboard');
+    } catch {}
+    if (!d) {
+      if (window.showCalmToast) showCalmToast('Chưa tải được số liệu.', 'red-600');
+      return;
+    }
+    const user = window.auth?.getUser?.() || {};
+    const content = `CHUNG NHAN DEEP WORK - STUDIO AI
+================================
+Sinh vien: ${user.full_name || ''}
+Email: ${user.email || ''}
+Ngay cap: ${new Date().toLocaleDateString('vi-VN')}
+
+- Tong gio tap trung (tuan): ${d.total_week_hours}h
+- Chuoi ngay streak: ${d.current_streak_days} ngay
+- Dong bo sinh hoc: ${d.circadian_alignment_score}%
+- Ty le hoan thanh: ${d.task_completion_rate}%
+
+Ghi nhan no luc hoc tap sau cua ban!
+`;
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `chung-nhan-deep-work-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    if (window.showCalmToast) showCalmToast('Đã tải chứng nhận Deep Work!', 'success');
+  });
+</script>
+<style>
+@media print {
+  header, footer, nav, .no-print, #calm-toast-container, #studi-ambient-bar { display: none !important; }
+  body { background: #fff !important; }
+  main { padding: 0 !important; }
+}
+body.printing-report header, body.printing-report footer, body.printing-report nav { display: none !important; }
+</style>
+</body></html>

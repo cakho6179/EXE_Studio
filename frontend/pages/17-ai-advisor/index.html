@@ -1,0 +1,939 @@
+<!DOCTYPE html><html lang="vi" class="h-full"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stuđiô AI - Cố vấn Học thuật AI (Đồng bộ Nền Hải Đăng &amp; Logo Chuẩn)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <script src="../../assets/js/theme.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    }
+    .glass-card-subtle {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="min-h-screen text-slate-800 antialiased relative bg-fixed bg-cover bg-center" style="background-image: url('../../assets/images/lighthouse-wide.png');">
+
+  <!-- Lớp phủ mềm mượt dịu mắt (Calm Ambient Tint) -->
+  <div class="fixed inset-0 bg-gradient-to-b from-white/75 via-white/55 to-white/70 pointer-events-none z-0"></div>
+
+  <div class="relative z-10 flex flex-col min-h-screen">
+    <!-- TOP NAVIGATION (Đồng bộ chuẩn xác với Stuđiô AI) -->
+    <header class="sticky top-0 z-40 glass-header px-4 sm:px-6 lg:px-8 py-3 transition-all">
+      <div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+        
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-2.5">
+          <a href="../10-dashboard/index.html" class="flex items-center gap-2.5 group">
+            <img src="../../assets/images/logo.png" alt="Stuđiô AI Logo" class="w-9 h-9 object-contain drop-shadow-sm">
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xl font-bold tracking-tight text-slate-900">Stuđiô AI</span>
+                <span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-blue-50 text-blue-600 rounded border border-blue-200/60">Calm Workspace</span>
+              </div>
+              <p class="text-[11px] text-slate-500 hidden sm:block">Không gian học tập &amp; trợ lý sinh học AI</p>
+            </div>
+          </a>
+
+          <!-- Pill Trạng thái sóng não -->
+          <div class="hidden md:flex items-center space-x-2 pl-4 ml-3 border-l border-slate-200">
+            <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Chế độ tĩnh lặng • 432Hz</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/60 shadow-inner">
+          <a href="../10-dashboard/index.html" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition">Tổng quan</a>
+          <a href="../13-planner/index.html" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition">Lập kế hoạch</a>
+          <a href="../14-schedule/index.html" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition">Lịch trình AI</a>
+          <a href="../11-tasks/index.html" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition leading-tight text-center">Nhiệm vụ &amp; Chia nhỏ</a>
+          <a href="../18-sound-sanctuary/index.html" class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition leading-tight text-center">Âm thanh &amp; Thư giãn</a>
+          <a href="../17-ai-advisor/index.html" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm transition">Cố vấn AI</a>
+        </nav>
+
+        <!-- Right Side: Sound Player & User Profile -->
+        <div class="flex items-center space-x-3">
+          <!-- Mini Sound status pill -->
+          <div class="hidden sm:flex items-center space-x-2 bg-blue-50/90 border border-blue-200/70 px-3 py-1.5 rounded-full text-xs text-blue-700 font-medium">
+            <i class="fa-solid fa-music text-blue-500 animate-bounce text-[11px]"></i>
+            <span>Sóng biển 432Hz</span>
+          </div>
+
+          <!-- Notification Icon -->
+          <button class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-white/80 transition relative">
+            <i class="fa-regular fa-bell text-sm"></i>
+            <span class="w-2 h-2 bg-red-500 rounded-full absolute top-2 right-2 border-2 border-white"></span>
+          </button>
+
+          <!-- User avatar -->
+          <div class="flex items-center space-x-2.5 pl-2 border-l border-slate-200">
+            <div class="w-9 h-9 rounded-full bg-blue-600 text-white font-semibold flex items-center justify-center text-xs shadow-sm shadow-blue-500/30 ring-2 ring-white" data-user-initials>
+              MC
+            </div>
+            <div class="hidden xl:block text-left">
+              <div class="text-xs font-semibold text-slate-800 leading-tight" data-user-name>Nguyễn Minh Châu</div>
+              <div class="text-[10px] text-slate-500" data-user-school>Sinh viên ĐHQG</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- SUB-HEADER / BREADCRUMB & CONTEXT BANNER -->
+    <div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5 pb-3">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+        <div class="flex items-center space-x-2 text-slate-600 font-medium">
+          <span class="flex items-center gap-1"><i class="fa-solid fa-graduation-cap text-blue-600"></i> Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+          <span class="text-slate-300">/</span>
+          <span class="text-slate-900 font-semibold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+            Cố vấn Học thuật &amp; Trợ lý Nghiên cứu AI Copilot
+          </span>
+        </div>
+        <div class="flex items-center space-x-2 text-xs">
+          <div class="px-2.5 py-1 bg-white/80 border border-slate-200 rounded-lg text-slate-600 font-medium flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+            <span>Bảo mật Zero-Leak AI</span>
+          </div>
+          <div class="px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 font-semibold flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-bolt text-blue-600"></i>
+            <span>Gemini AI • Nhịp sinh học cá nhân</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT AREA -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- CỘT TRÁI (3 CỘT): DANH MỤC PHIÊN HỌC & TÀI LIỆU ĐÃ NẠP -->
+        <div class="lg:col-span-3 space-y-4">
+
+          <!-- Nút Phiên làm việc mới -->
+          <button id="new-advisor-session-btn" type="button" class="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/25 flex items-center justify-center space-x-2 transition transform active:scale-[0.99]">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Phiên tham vấn mới</span>
+            <span class="ml-auto text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">⌘N</span>
+          </button>
+
+          <!-- Thẻ Phiên thảo luận đang mở & Gần đây -->
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Phiên thảo luận đồ án</span>
+              <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            </div>
+
+            <!-- Danh sách phiên thật từ API -->
+            <div class="space-y-1 text-xs" id="advisor-sessions-list" aria-live="polite">
+              <div class="p-2.5 text-center text-slate-400">Đang tải phiên...</div>
+            </div>
+          </div>
+
+          <!-- Thẻ Tài liệu học thuật đã nạp (Knowledge Base) -->
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tài liệu đã nạp (Knowledge)</span>
+              <span class="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-600 font-semibold rounded-full" id="knowledge-count">0 Tệp</span>
+            </div>
+
+            <div class="space-y-2 text-xs" id="knowledge-list" aria-live="polite">
+              <div class="p-2.5 text-center text-slate-400">Đang tải tài liệu...</div>
+            </div>
+
+            <button class="w-full mt-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 rounded-xl transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-up text-[11px]"></i>
+              <span>Nạp thêm giáo trình / Rubric</span>
+            </button>
+          </div>
+
+          <!-- Thẻ Cam kết liêm chính & Bảo mật AI -->
+          <div class="glass-card-subtle rounded-2xl p-4 text-[11px] text-slate-600 space-y-1.5">
+            <div class="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+              <i class="fa-solid fa-lock text-blue-600"></i>
+              <span>Tiêu chuẩn Liêm chính Học thuật</span>
+            </div>
+            <p class="leading-relaxed">Stuđiô AI đối chiếu chuẩn trích dẫn APA 7th &amp; IEEE. Mọi nội dung nghiên cứu của sinh viên được bảo vệ riêng tư 100% (Zero-Data Retention).</p>
+          </div>
+
+        </div>
+
+        <!-- CỘT GIỮA (6 CỘT): KHÔNG GIAN THẢO LUẬN VỚI CỐ VẤN AI -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-5 shadow-lg flex flex-col h-[780px]">
+
+            <!-- Chat Session Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200/70">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-sm shadow-blue-500/20">
+                  <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-slate-900 text-sm">Cố vấn Học thuật AI Copilot</h3>
+                    <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-full border border-emerald-200">Online 432Hz</span>
+                  </div>
+                  <p class="text-xs text-slate-500">Phân tích chuyên sâu đồ án, code luận văn &amp; phương pháp nghiên cứu</p>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex items-center space-x-1">
+                <button class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition font-medium flex items-center gap-1" title="Xuất biên bản họp AI">
+                  <i class="fa-solid fa-download text-[11px]"></i>
+                  <span class="hidden sm:inline">Xuất biên bản</span>
+                </button>
+                <button class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Làm mới ngữ cảnh">
+                  <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat messages stream (Scrollable) -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar py-4 space-y-5 pr-1">
+
+              <!-- AI Welcome / System Insight Card -->
+              <div class="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-white border border-blue-100 text-xs text-slate-700 flex items-start space-x-3">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <i class="fa-solid fa-lightbulb text-xs"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-blue-900 mb-0.5" id="advisor-welcome-title">Mục tiêu phiên làm việc • Đỉnh năng lượng Alpha</div>
+                  <p class="leading-relaxed text-slate-600" id="advisor-welcome-text">Chào bạn! Tôi đã sẵn sàng hỗ trợ bạn phân tích toán học và cấu trúc bảng theo chuẩn IEEE Conference.</p>
+                </div>
+              </div>
+
+              <!-- Student Message Bubble -->
+              <div class="flex items-start justify-end space-x-2">
+                <div class="max-w-md bg-blue-600 text-white rounded-2xl rounded-tr-sm p-4 shadow-sm text-xs leading-relaxed">
+                  <p class="font-medium">Mình đang phân vân giữa việc sử dụng <span class="bg-blue-700/80 px-1.5 py-0.5 rounded font-mono">F1-macro</span> hay <span class="bg-blue-700/80 px-1.5 py-0.5 rounded font-mono">F1-micro</span> để đánh giá tập dữ liệu CIFAR-10 khi một số nhãn bị mất cân bằng nhẹ (imbalanced classes). Và làm sao viết phần này vào báo cáo chuẩn IEEE?</p>
+                  <div class="text-[10px] text-blue-200 text-right mt-1.5 flex items-center justify-end gap-1">
+                    <span>14:18</span>
+                    <i class="fa-solid fa-check-double text-[9px]"></i>
+                  </div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-blue-700 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  MC
+                </div>
+              </div>
+
+              <!-- AI Copilot Response Bubble -->
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/30 text-xs font-bold">
+                  S
+                </div>
+                <div class="flex-1 max-w-xl space-y-3">
+                  <div class="bg-white/95 border border-slate-200/80 rounded-2xl rounded-tl-sm p-4 shadow-sm text-xs text-slate-800 space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <span class="font-bold text-blue-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-blue-500"></i> Cố vấn Stuđiô AI
+                      </span>
+                      <span class="text-[10px] text-slate-400 font-mono">VERIFIED METHODOLOGY • 14:19</span>
+                    </div>
+
+                    <p class="leading-relaxed">
+                      Chào bạn, đây là câu hỏi cốt lõi trong đánh giá học máy phân loại đa lớp. Để chọn chính xác và đưa vào báo cáo chuẩn IEEE, bạn cần phân định rõ bản chất toán học:
+                    </p>
+
+                    <!-- So sánh 2 chỉ số -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-2">
+                      <div class="p-3 bg-blue-50/70 rounded-xl border border-blue-200/70">
+                        <div class="flex items-center justify-between mb-1">
+                          <span class="font-bold text-blue-900 text-xs">F1-Macro Average</span>
+                          <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-semibold">Khuyến nghị dùng</span>
+                        </div>
+                        <p class="text-[11px] text-slate-600 leading-snug">Tính toán F1 riêng lẻ cho từng class rồi lấy trung bình số học không trọng số. Xem mọi nhãn (dù mẫu ít hay nhiều) có tầm quan trọng bình đẳng.</p>
+                        <div class="mt-2 font-mono text-[10px] bg-white p-1 rounded border border-blue-100 text-blue-800">F1_macro = (1/K) * Σ F1_k</div>
+                      </div>
+
+                      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <div class="flex items-center justify-between mb-1">
+                          <span class="font-bold text-slate-800 text-xs">F1-Micro Average</span>
+                          <span class="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-semibold">Toàn cục</span>
+                        </div>
+                        <p class="text-[11px] text-slate-600 leading-snug">Tổng hợp tất cả True Positive, False Positive và False Negative trên toàn bộ tập dữ liệu trước khi tính. Dễ bị chi phối bởi các nhãn chiếm số đông.</p>
+                        <div class="mt-2 font-mono text-[10px] bg-white p-1 rounded border border-slate-200 text-slate-700">F1_micro = F1(ΣTP, ΣFP, ΣFN)</div>
+                      </div>
+                    </div>
+
+                    <!-- Lời khuyên học thuật -->
+                    <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-200/70 text-slate-700 text-xs flex items-start gap-2">
+                      <i class="fa-solid fa-circle-check text-amber-600 text-sm mt-0.5"></i>
+                      <p><strong class="text-amber-900">Kết luận học thuật:</strong> Do bộ dữ liệu của bạn mất cân bằng nhẹ, <strong class="text-blue-700">F1-Macro</strong> là chỉ số công bằng nhất giúp hội đồng thầy cô thấy mô hình không bị thiên vị (bias) về các lớp phổ biến.</p>
+                    </div>
+
+                    <!-- Đoạn mẫu LaTeX / Văn bản báo cáo IEEE -->
+                    <div>
+                      <div class="flex items-center justify-between mb-1 text-[11px]">
+                        <span class="font-bold text-slate-700 flex items-center gap-1"><i class="fa-solid fa-code text-blue-500"></i> Bản thảo mẫu báo cáo IEEE (Section III. Evaluation Metrics):</span>
+                        <button id="sample-copy-btn" type="button" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 text-[10px]">
+                          <i class="fa-regular fa-copy"></i> Sao chép
+                        </button>
+                      </div>
+                      <pre class="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-[11px] leading-relaxed overflow-x-auto">"Due to subtle class imbalances present within the sampled dataset, reliance solely on overall accuracy yields misleading empirical conclusions. Consequently, we adopted the unweighted macro-averaged F1-score (Eq. 2) to evaluate classifier generalization across all ten categories impartially, penalizing misclassifications equally regardless of label frequency."</pre>
+                    </div>
+
+                    <!-- Nút hành động nhanh của AI -->
+                    <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100" id="sample-bubble-actions">
+                      <button type="button" data-act="pomodoro" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-play text-[10px]"></i> Tạo phiên Pomodoro 25p viết phần này
+                      </button>
+                      <button type="button" data-act="canvas" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-share-nodes text-[11px]"></i> Gửi thảo luận vào LMS Canvas
+                      </button>
+                      <button type="button" data-act="obsidian" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-book-bookmark text-[11px]"></i> Lưu vào Obsidian
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Gợi ý câu hỏi tiếp theo (Smart Academic Prompts) -->
+            <div class="pt-2 pb-2" data-purpose="prompt-suggestions">
+              <div class="prompt-pills flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
+                <span class="text-slate-400 font-medium text-[11px] shrink-0">Gợi ý câu hỏi:</span>
+                <button class="px-3 py-1 bg-white/80 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200/80 rounded-full shrink-0 transition text-xs flex items-center gap-1">
+                  <i class="fa-solid fa-table text-blue-500 text-[10px]"></i> Tạo bảng đối chiếu thông số LaTeX
+                </button>
+                <button class="px-3 py-1 bg-white/80 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200/80 rounded-full shrink-0 transition text-xs flex items-center gap-1">
+                  <i class="fa-solid fa-quote-right text-indigo-500 text-[10px]"></i> Rà soát trích dẫn chuẩn IEEE
+                </button>
+                <button class="px-3 py-1 bg-white/80 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200/80 rounded-full shrink-0 transition text-xs flex items-center gap-1">
+                  <i class="fa-solid fa-diagram-project text-emerald-500 text-[10px]"></i> Chia nhỏ 3 bước làm tiếp
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat Input Box -->
+            <div class="pt-2 border-t border-slate-200/70">
+              <div class="bg-white/90 border border-slate-200 rounded-2xl p-2.5 shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition">
+                <textarea rows="2" placeholder="Đặt câu hỏi học thuật, paste mã nguồn cần gỡ lỗi hoặc yêu cầu cố vấn đồ án..." class="w-full bg-transparent border-0 resize-none text-xs text-slate-800 placeholder-slate-400 focus:outline-none p-1"></textarea>
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100 mt-1">
+                  <div class="flex items-center space-x-2 text-slate-500 text-xs">
+                    <button id="attach-btn" type="button" class="p-1.5 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition" title="Đính kèm file bài tập">
+                      <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    <button id="mic-btn" type="button" class="p-1.5 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition" title="Ghi âm giọng nói">
+                      <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <div class="h-3 w-px bg-slate-200"></div>
+                    <span class="text-[11px] text-slate-400 flex items-center gap-1">
+                      <i class="fa-solid fa-clock-rotate-left"></i> Model: Gemini AI
+                    </span>
+                  </div>
+                  <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm shadow-blue-500/30 flex items-center gap-1.5 transition">
+                    <span>Gửi cố vấn</span>
+                    <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI (3 CỘT): TIỆN ÍCH HỌC TẬP, TRÍCH DẪN & NHỊP SINH HỌC -->
+        <div class="lg:col-span-3 space-y-4">
+
+          <!-- Thẻ Âm thanh Sóng não 432Hz đang kích hoạt -->
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Âm thanh não bộ 432Hz</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+
+            <div class="p-3 bg-blue-50/80 rounded-xl border border-blue-200/70 flex items-center justify-between">
+              <div class="flex items-center space-x-3 truncate">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">
+                  <i class="fa-solid fa-water"></i>
+                </div>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-900 truncate">Sóng Biển &amp; Hải Đăng</div>
+                  <div class="text-[10px] text-blue-600 font-medium">Tần số Alpha kích thích tư duy sâu</div>
+                </div>
+              </div>
+              <button class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs hover:bg-blue-700 transition">
+                <i class="fa-solid fa-pause text-[10px]"></i>
+              </button>
+            </div>
+
+            <!-- Soundwave visualizer bars -->
+            <div class="flex items-center justify-center space-x-1.5 mt-3 py-1">
+              <span class="w-1 h-3 bg-blue-400 rounded-full animate-pulse"></span>
+              <span class="w-1 h-5 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.15s"></span>
+              <span class="w-1 h-7 bg-blue-500 rounded-full animate-pulse" style="animation-delay: 0.3s"></span>
+              <span class="w-1 h-4 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.45s"></span>
+              <span class="w-1 h-6 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+              <span class="w-1 h-3 bg-blue-300 rounded-full animate-pulse" style="animation-delay: 0.35s"></span>
+            </div>
+          </div>
+
+          <!-- Thẻ Thẩm định trích dẫn khoa học (Citation Auditor) -->
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Thẩm định trích dẫn</span>
+              <span class="px-2 py-0.5 text-[10px] bg-emerald-50 text-emerald-700 font-semibold rounded border border-emerald-200">IEEE Compliant</span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-800">
+                  <span>[1] He et al. (2016)</span>
+                  <span class="text-emerald-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-check text-[10px]"></i> Hợp lệ</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-0.5 truncate">Deep Residual Learning for Image Recognition (CVPR)</p>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-800">
+                  <span>[2] Krizhevsky (2009)</span>
+                  <span class="text-emerald-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-check text-[10px]"></i> Hợp lệ</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-0.5 truncate">Learning Multiple Layers of Features from Tiny Images</p>
+              </div>
+            </div>
+
+            <button class="w-full mt-3 py-2 text-xs font-semibold text-slate-700 hover:text-blue-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-file-export text-[11px]"></i>
+              <span>Xuất file trích dẫn .BibTeX</span>
+            </button>
+          </div>
+
+          <!-- Thẻ Tiến độ đồ án môn học & Đồng bộ LMS -->
+          <div class="glass-card rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tiến độ đồ án môn học</span>
+              <span class="text-xs font-bold text-blue-600">80%</span>
+            </div>
+
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden mb-3">
+              <div class="bg-blue-600 h-full rounded-full w-4/5"></div>
+            </div>
+
+            <div class="space-y-1.5 text-xs text-slate-600">
+              <div class="flex items-center gap-2">
+                <i class="fa-regular fa-square-check text-emerald-600 text-sm"></i>
+                <span class="line-through text-slate-400">Huấn luyện mạng ResNet18</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fa-regular fa-square-check text-emerald-600 text-sm"></i>
+                <span class="line-through text-slate-400">Trích xuất ma trận nhầm lẫn</span>
+              </div>
+              <div class="flex items-center gap-2 font-bold text-blue-700">
+                <i class="fa-regular fa-square text-blue-600 text-sm"></i>
+                <span>Viết chương III: Đánh giá F1-macro</span>
+              </div>
+              <div class="flex items-center gap-2 text-slate-500">
+                <i class="fa-regular fa-circle text-slate-300 text-sm"></i>
+                <span>Bảo vệ thử trước hội đồng AI</span>
+              </div>
+            </div>
+
+            <button class="w-full mt-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
+              <span>Đồng bộ kết quả vào Canvas LMS</span>
+            </button>
+          </div>
+
+          <!-- Thẻ Lời khuyên tĩnh lặng (Calm Study Tip) -->
+          <div class="glass-card-subtle rounded-2xl p-4 text-xs text-slate-700 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+              <i class="fa-solid fa-mug-hot text-xs"></i>
+            </div>
+            <div>
+              <div class="font-bold text-slate-900 text-xs mb-0.5">Lời khuyên Tĩnh Lặng</div>
+              <p class="text-[11px] text-slate-500 leading-relaxed">Sau phiên viết báo cáo 25 phút này, bạn nên uống một cốc nước ấm và nhìn xa 20 mét trong 2 phút để bảo vệ mắt.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- STICKY BOTTOM DOCK (Pomodoro & Fast Action Dock) -->
+    <div class="glass-nav border-t border-slate-200/80 py-2.5 px-4 sticky bottom-0 z-40">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+        
+        <!-- Left: Current Study Session -->
+        <div class="flex items-center space-x-3">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-hourglass-half text-[11px]"></i>
+          </div>
+          <div>
+            <span class="text-slate-500">Phiên học tiếp theo:</span>
+            <span class="font-bold text-slate-800 ml-1">Báo cáo đồ án AI (Viết nhận xét Confusion Matrix)</span>
+            <span class="ml-1.5 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">25 phút</span>
+          </div>
+        </div>
+
+        <!-- Center / Right: Pomodoro controls -->
+        <div class="flex items-center space-x-3">
+          <span class="text-slate-400 hidden md:inline">•</span>
+          <div class="flex items-center space-x-2 text-slate-600 text-xs font-medium">
+            <i class="fa-solid fa-sliders text-slate-400"></i>
+            <a href="../18-sound-sanctuary/index.html" class="hover:text-blue-600 hover:underline">Cài đặt âm thanh</a>
+          </div>
+          <button onclick="window.location.href='../16-deep-work-active/index.html'" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition">
+            <span>Bắt đầu Pomodoro</span>
+            <span>🍅</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white/60 backdrop-blur-md border-t border-slate-200/60 py-3 text-[11px] text-slate-500">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-slate-800">Stuđiô AI</span>
+          <span>•</span>
+          <span>Sanctuary of Deep Learning &amp; Academic Copilot</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span>Khung giờ Alpha: 14:30 - 16:30</span>
+          <span>•</span>
+          <span>Âm nền: Sóng biển 432Hz</span>
+          <span>•</span>
+          <span>Chính sách bảo mật zero-leak AI</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Stuđiô AI Shared Scripts -->
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/audio.js"></script>
+  <script src="../../assets/js/app.js"></script>
+
+  <script data-purpose="ai-advisor-chat">
+    document.addEventListener('DOMContentLoaded', () => {
+      const textarea = document.querySelector('textarea');
+      const sendBtn = document.querySelector('.fa-paper-plane')?.closest('button') || document.querySelector('button[title*="Gửi"]');
+      const chatContainer = document.querySelector('.custom-scrollbar') || document.querySelector('.flex-1.overflow-y-auto');
+      let sending = false;
+      let currentSessionId = null;
+      // Giữ lại welcome card gốc để không mất khi chuyển phiên
+      const welcomeHTML = chatContainer ? chatContainer.innerHTML : '';
+
+      function setMessages(html) {
+        if (!chatContainer) return;
+        chatContainer.innerHTML = (html || '') || '<div class="p-4 text-center text-slate-400 text-xs">Phiên mới — hãy đặt câu hỏi đầu tiên.</div>';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      // Escape HTML chống XSS, sau đó render markdown cơ bản (**bold**, `code`, list, xuống dòng)
+      function escapeHtml(s) {
+        return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+      function renderMarkdown(src) {
+        let h = escapeHtml(src);
+        // code inline `...`
+        h = h.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 text-blue-700 font-mono text-[11px]">$1</code>');
+        // bold **...**
+        h = h.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>');
+        // dòng "- item" -> list
+        const lines = h.split('\n');
+        let out = '', inList = false;
+        for (const ln of lines) {
+          const m = ln.match(/^\s*[-*]\s+(.*)/);
+          if (m) {
+            if (!inList) { out += '<ul class="list-disc pl-5 space-y-1">'; inList = true; }
+            out += `<li>${m[1]}</li>`;
+          } else {
+            if (inList) { out += '</ul>'; inList = false; }
+            out += ln.trim() ? `<p>${ln}</p>` : '<br>';
+          }
+        }
+        if (inList) out += '</ul>';
+        return out;
+      }
+
+      function appendMessage(text, sender = 'user') {
+        if (!chatContainer) return;
+        const safe = renderMarkdown(text);
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex items-start gap-3 ${sender === 'user' ? 'justify-end' : ''}`;
+
+        if (sender === 'user') {
+          msgDiv.innerHTML = `
+            <div class="max-w-[80%] bg-blue-600 text-white p-3.5 rounded-2xl rounded-tr-sm shadow-sm text-xs leading-relaxed">
+              <div>${safe}</div>
+              <div class="text-[10px] text-blue-200 text-right mt-1">Vừa xong</div>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              MC
+            </div>
+          `;
+        } else {
+          const msgId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1e4);
+          msgDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-200">
+              <i class="fa-solid fa-graduation-cap text-xs"></i>
+            </div>
+            <div class="max-w-[85%] space-y-2">
+              <div class="bg-white/95 border border-slate-200/80 p-4 rounded-2xl rounded-tl-sm shadow-xs text-xs text-slate-800 space-y-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-900">Cố vấn Học thuật AI</span>
+                  <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-semibold border border-blue-200">Calm Academic</span>
+                  <button type="button" data-copy="${msgId}" class="ml-auto text-[10px] text-slate-400 hover:text-blue-600 font-medium">Sao chép</button>
+                </div>
+                <div class="leading-relaxed space-y-1.5" id="${msgId}">${safe}</div>
+              </div>
+            </div>
+          `;
+          const copyBtn = msgDiv.querySelector('[data-copy]');
+          if (copyBtn) {
+            copyBtn.addEventListener('click', async () => {
+              try { await navigator.clipboard.writeText(text); if (window.showCalmToast) showCalmToast('Đã sao chép câu trả lời.', 'success'); }
+              catch { if (window.showCalmToast) showCalmToast('Không sao chép được.', 'error'); }
+            });
+          }
+        }
+
+        chatContainer.appendChild(msgDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const text = textarea ? textarea.value.trim() : '';
+        if (!text || sending) return;
+        if (text.length > 2000) { if (window.showCalmToast) showCalmToast('Tin nhắn tối đa 2000 ký tự.', 'warning'); return; }
+        sending = true;
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.classList.add('opacity-50'); }
+        textarea.value = '';
+        appendMessage(text, 'user');
+
+        // Typing indicator 3 chấm
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'flex items-center gap-2 text-xs text-slate-500 p-2 italic';
+        loadingDiv.innerHTML = '<span class="flex gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce"></span><span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.15s]"></span><span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce [animation-delay:0.3s]"></span></span> Cố vấn đang suy ngẫm...';
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        try {
+          const res = await api.post(`/advisor/chat${currentSessionId ? `?session_id=${encodeURIComponent(currentSessionId)}` : ''}`, { content: text });
+          loadingDiv.remove();
+          if (res.session_id) {
+            currentSessionId = res.session_id;
+            renderSessions();
+          }
+          appendMessage(res.reply || 'Mình chưa có câu trả lời phù hợp, bạn hỏi lại chi tiết hơn nhé.', 'advisor');
+        } catch (err) {
+          loadingDiv.remove();
+          appendMessage('Xin lỗi bạn, đã có gián đoạn kết nối. ' + ((err && err.message) || ''), 'advisor');
+        } finally {
+          sending = false;
+          if (sendBtn) { sendBtn.disabled = false; sendBtn.classList.remove('opacity-50'); }
+          textarea.focus();
+        }
+      }
+
+      if (sendBtn) {
+        sendBtn.addEventListener('click', sendMessage);
+      }
+
+      if (textarea) {
+        textarea.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+      }
+
+      // Quick prompt pills — chỉ trong vùng gợi ý, không bắt nút khác
+      document.querySelectorAll('[data-purpose="prompt-suggestions"] button').forEach(pill => {
+        pill.addEventListener('click', () => {
+          if (textarea && !sending) {
+            textarea.value = pill.textContent.trim();
+            sendMessage();
+          }
+        });
+      });
+
+      // Sidebar phiên thật + chuyển phiên + phiên mới (login thật, data thật)
+      const sessionsList = document.getElementById('advisor-sessions-list');
+      const newSessionBtn = document.getElementById('new-advisor-session-btn');
+
+      async function renderSessions() {
+        if (!sessionsList) return;
+        try {
+          const sessions = await api.get('/advisor/sessions');
+          if (!currentSessionId && sessions.length) currentSessionId = sessions[0].id;
+          if (!sessions.length) {
+            sessionsList.innerHTML = '<div class="p-2.5 text-center text-slate-400">Chưa có phiên nào.</div>';
+            return;
+          }
+          sessionsList.innerHTML = '';
+          sessions.forEach(s => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            const active = s.id === currentSessionId;
+            item.className = active
+              ? 'w-full p-2.5 rounded-xl bg-blue-50/90 border border-blue-200/80 text-left transition'
+              : 'w-full p-2.5 rounded-lg hover:bg-slate-100/80 text-left transition border border-transparent';
+            const dt = s.created_at ? new Date(s.created_at) : null;
+            const when = dt ? dt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '';
+            item.innerHTML = `
+              <div class="font-medium ${active ? 'text-blue-700' : 'text-slate-700'} truncate">${s.title || 'Phiên tham vấn'}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${when} • ${s.message_count || 0} tin nhắn</div>`;
+            item.addEventListener('click', () => switchSession(s.id));
+            sessionsList.appendChild(item);
+          });
+        } catch (err) {
+          sessionsList.innerHTML = `<div class="p-2.5 text-center text-rose-500">${(err && err.message) || 'Không tải được phiên.'}</div>`;
+        }
+      }
+
+      async function switchSession(id) {
+        if (sending || id === currentSessionId) return;
+        currentSessionId = id;
+        renderSessions();
+        try {
+          const msgs = await api.get(`/advisor/sessions/${encodeURIComponent(id)}/messages`);
+          setMessages('');
+          msgs.forEach(msg => {
+            const who = msg.sender || msg.role || 'advisor';
+            appendMessage(msg.content, who === 'user' ? 'user' : 'advisor');
+          });
+        } catch (err) {
+          if (window.showCalmToast) showCalmToast((err && err.message) || 'Không tải được tin nhắn.', 'error');
+        }
+      }
+
+      async function createSession() {
+        if (sending) return;
+        newSessionBtn.disabled = true;
+        try {
+          const s = await api.post('/advisor/new-session', {});
+          currentSessionId = s.id;
+          setMessages('');
+          renderSessions();
+          if (window.showCalmToast) showCalmToast(`Đã tạo ${s.title}.`, 'success');
+          textarea?.focus();
+        } catch (err) {
+          if (window.showCalmToast) showCalmToast((err && err.message) || 'Không tạo được phiên.', 'error');
+        } finally {
+          newSessionBtn.disabled = false;
+        }
+      }
+      if (newSessionBtn) newSessionBtn.addEventListener('click', createSession);
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          createSession();
+        }
+      });
+
+      // Nút hành động trong bubble mẫu (nội dung tĩnh chào mừng)
+      const sampleActions = document.getElementById('sample-bubble-actions');
+      if (sampleActions) {
+        sampleActions.addEventListener('click', (e) => {
+          const btn = e.target.closest('button[data-act]');
+          if (!btn) return;
+          const act = btn.dataset.act;
+          if (act === 'pomodoro') {
+            window.location.href = '../16-deep-work-active/index.html?duration=25&sound=ocean&title=' +
+              encodeURIComponent('Viết phần Evaluation Metrics chuẩn IEEE');
+          } else if (act === 'canvas') {
+            if (window.showCalmToast) showCalmToast('Bản demo: gửi Canvas LMS chưa kết nối.', 'warning');
+          } else if (act === 'obsidian') {
+            const pre = sampleActions.closest('.space-y-2')?.parentElement?.querySelector('pre')?.textContent || '';
+            const md = `# Ghi chú cố vấn AI\n\nNgày: ${new Date().toLocaleDateString('vi-VN')}\n\n## F1-macro vs F1-micro\n\n${pre}\n\n## Kết luận\n\nDữ liệu mất cân bằng nhẹ -> dùng F1-Macro.\n`;
+            const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `co-van-ai-${Date.now()}.md`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+            if (window.showCalmToast) showCalmToast('Đã tải ghi chú Markdown (.md)!', 'success');
+          }
+        });
+      }
+      const sampleCopy = document.getElementById('sample-copy-btn');
+      if (sampleCopy) {
+        sampleCopy.addEventListener('click', async () => {
+          const pre = sampleCopy.closest('div')?.parentElement?.querySelector('pre')?.textContent || '';
+          try {
+            await navigator.clipboard.writeText(pre);
+            if (window.showCalmToast) showCalmToast('Đã sao chép bản thảo mẫu.', 'success');
+          } catch {
+            if (window.showCalmToast) showCalmToast('Không sao chép được.', 'error');
+          }
+        });
+      }
+
+      // Đính kèm -> modal nạp tài liệu thật (app.js)
+      const attachBtn = document.getElementById('attach-btn');
+      if (attachBtn) {
+        attachBtn.addEventListener('click', () => {
+          if (typeof openUploadDocumentModal === 'function') openUploadDocumentModal();
+          else if (window.showCalmToast) showCalmToast('Chức năng đính kèm chưa sẵn sàng.', 'warning');
+        });
+      }
+
+      // Mic -> Web Speech API tiếng Việt, đổ transcript vào ô chat
+      const micBtn = document.getElementById('mic-btn');
+      if (micBtn) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          micBtn.addEventListener('click', () => {
+            if (window.showCalmToast) showCalmToast('Trình duyệt này không hỗ trợ ghi âm giọng nói.', 'warning');
+          });
+        } else {
+          let rec = null, listening = false;
+          micBtn.addEventListener('click', () => {
+            if (listening && rec) { rec.stop(); return; }
+            rec = new SR();
+            rec.lang = 'vi-VN';
+            rec.interimResults = false;
+            rec.maxAlternatives = 1;
+            listening = true;
+            micBtn.classList.add('text-rose-600', 'bg-rose-50');
+            if (window.showCalmToast) showCalmToast('Đang nghe... nói câu hỏi của bạn.', 'info');
+            rec.onresult = (ev) => {
+              const text = ev.results[0][0].transcript;
+              if (textarea) {
+                textarea.value = (textarea.value ? textarea.value + ' ' : '') + text;
+                textarea.focus();
+              }
+            };
+            rec.onerror = () => {
+              if (window.showCalmToast) showCalmToast('Không nhận diện được giọng nói.', 'error');
+            };
+            rec.onend = () => {
+              listening = false;
+              micBtn.classList.remove('text-rose-600', 'bg-rose-50');
+            };
+            try { rec.start(); } catch { listening = false; }
+          });
+        }
+      }
+
+      // Danh sách tài liệu thật từ /advisor/documents
+      async function loadKnowledge() {
+        const box = document.getElementById('knowledge-list');
+        const count = document.getElementById('knowledge-count');
+        if (!box) return;
+        try {
+          const data = await api.get('/advisor/documents');
+          const docs = (data && data.documents) || [];
+          if (count) count.textContent = `${docs.length} Tệp`;
+          if (!docs.length) {
+            box.innerHTML = '<div class="p-2.5 text-center text-slate-400">Chưa có tài liệu nào. Bấm “Nạp thêm” bên dưới.</div>';
+            return;
+          }
+          const iconFor = (name) => {
+            const n = (name || '').toLowerCase();
+            if (n.endsWith('.pdf')) return '<i class="fa-regular fa-file-pdf text-red-500 text-sm"></i>';
+            if (n.endsWith('.docx')) return '<i class="fa-regular fa-file-lines text-amber-500 text-sm"></i>';
+            if (n.endsWith('.tex')) return '<i class="fa-regular fa-file-code text-blue-500 text-sm"></i>';
+            return '<i class="fa-regular fa-file text-slate-500 text-sm"></i>';
+          };
+          const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+          box.innerHTML = docs.map(d => `
+            <div class="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between" title="${esc(d.filename)} (${d.size_kb}KB)">
+              <div class="flex items-center space-x-2 truncate">
+                ${iconFor(d.filename)}
+                <span class="font-medium text-slate-700 truncate">${esc(d.filename)}</span>
+              </div>
+              <i class="fa-solid fa-check text-[10px] text-emerald-600"></i>
+            </div>`).join('');
+        } catch (err) {
+          box.innerHTML = `<div class="p-2.5 text-center text-rose-500">${(err && err.message) || 'Không tải được tài liệu.'}</div>`;
+        }
+      }
+
+      // Welcome card cá nhân hóa: tên user + top task thật từ API
+      (async () => {
+        try {
+          const u = window.auth ? window.auth.getUser() : null;
+          const firstName = u && u.full_name ? u.full_name.trim().split(' ').slice(-2).join(' ') : 'bạn';
+          const wt = document.getElementById('advisor-welcome-text');
+          const tasks = await api.get('/tasks/');
+          const top = (Array.isArray(tasks) ? tasks.filter(t => t.status !== 'completed') : [])[0];
+          if (wt) {
+            wt.textContent = `Chào ${firstName}!` +
+              (top ? ` Ưu tiên hiện tại của bạn là "${top.title}" (${top.completed_sprints || 0}/${top.total_sprints || 0} sprints). Tôi sẵn sàng hỗ trợ phân tích và cấu trúc theo chuẩn IEEE.`
+                   : ' Tôi đã sẵn sàng hỗ trợ bạn phân tích toán học và cấu trúc bảng theo chuẩn IEEE Conference.');
+          }
+          const ttl = document.getElementById('advisor-welcome-title');
+          if (ttl && top) ttl.textContent = `Mục tiêu phiên làm việc • ${top.subject_name || 'Đồ án'}`;
+        } catch {}
+      })();
+
+      async function loadChatHistory() {
+        await renderSessions();
+        if (!window.api || !currentSessionId) return;
+        try {
+          const history = await api.get(`/advisor/sessions/${encodeURIComponent(currentSessionId)}/messages`);
+          if (Array.isArray(history) && history.length > 0) {
+            const divider = document.createElement('div');
+            divider.className = 'flex items-center gap-3 py-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider';
+            divider.innerHTML = '<span class="flex-1 h-px bg-slate-200"></span><span>Lịch sử trò chuyện</span><span class="flex-1 h-px bg-slate-200"></span>';
+            chatContainer.appendChild(divider);
+            history.forEach(msg => {
+              const who = msg.sender || msg.role || 'advisor';
+              appendMessage(msg.content, (who === 'user') ? 'user' : 'advisor');
+            });
+          }
+        } catch (err) {
+          console.log('Chat history load err:', err);
+        }
+      }
+
+      loadChatHistory();
+      loadKnowledge();
+      document.addEventListener('studiDocsChanged', loadKnowledge);
+    });
+  </script>
+</body></html>

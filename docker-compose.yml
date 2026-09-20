@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  studi-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: studi_ai_workspace
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist SQLite database on host
+      - ./backend/studi_ai.db:/app/backend/studi_ai.db
+    environment:
+      - ENVIRONMENT=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - SECRET_KEY=${SECRET_KEY:-calm_super_secret_jwt_key_study_ai_2025}
+    restart: unless-stopped

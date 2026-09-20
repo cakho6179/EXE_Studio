@@ -1,0 +1,672 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Thiết lập Mục tiêu Đầu tiên</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script src="../../assets/js/theme.js"></script>
+<!-- Custom Scoped Styles -->
+<style data-purpose="custom-scroll-and-effects">
+    /* Custom subtle glass effect and smooth transitions */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+    @keyframes pulseSound {
+      0%, 100% { height: 4px; }
+      50% { height: 14px; }
+    }
+    .sound-bar-1 { animation: pulseSound 0.8s ease-in-out infinite; }
+    .sound-bar-2 { animation: pulseSound 1.1s ease-in-out infinite 0.2s; }
+    .sound-bar-3 { animation: pulseSound 0.9s ease-in-out infinite 0.4s; }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="min-h-screen text-slate-800 antialiased relative font-sans select-none flex flex-col justify-between">
+<!-- BEGIN: BackgroundArt -->
+<!-- Artistic Watercolor Lighthouse Sunset Background Container -->
+<div class="fixed inset-0 -z-10 overflow-hidden" data-purpose="scenic-background">
+<img alt="Lighthouse watercolor sunset background" class="w-full h-full object-cover object-center transform scale-105 filter saturate-105 transition-all duration-700" src="../../assets/images/lighthouse-wide.png">
+<!-- Subtle gradient wash to reinforce text contrast and warm tone -->
+<div class="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-amber-50/20 pointer-events-none"></div>
+</div>
+<!-- END: BackgroundArt -->
+<!-- Toast Notification Floating Container -->
+<div class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none" id="toast-container"></div>
+<!-- BEGIN: TopNavigationBar -->
+<header class="w-full px-6 py-4 flex items-center justify-between z-20" data-purpose="top-navigation-bar">
+<!-- Calm Mode Tag -->
+<div class="flex items-center space-x-2 bg-white/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/60 shadow-sm text-xs font-medium text-slate-700">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Chế độ tập trung tĩnh lặng</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-500 uppercase tracking-wider text-[10px] font-semibold">CALM MODE 432Hz</span>
+</div>
+<!-- Right Controls: Audio Status, Language Switcher, Theme Icon -->
+<div class="flex items-center space-x-3">
+<!-- Ambience Sound Indicator & Toggle -->
+<button class="hidden sm:flex items-center space-x-2 bg-white/85 hover:bg-white backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/70 shadow-sm text-xs text-slate-700 font-medium transition cursor-pointer group" id="audio-toggle-btn" title="Nhấp để Tạm dừng / Phát âm thanh nền 432Hz" type="button">
+<div class="flex items-end space-x-0.5 h-3.5 w-3.5 justify-center py-0.5" id="audio-bars">
+<span class="w-0.5 bg-blue-600 rounded-full sound-bar-1"></span>
+<span class="w-0.5 bg-blue-600 rounded-full sound-bar-2"></span>
+<span class="w-0.5 bg-blue-600 rounded-full sound-bar-3"></span>
+</div>
+<span id="audio-text">Sóng biển &amp; Lofi 432Hz</span>
+<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition" id="audio-badge">Đang phát</span>
+</button>
+<!-- Language Switcher -->
+<div class="flex items-center bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/60 shadow-sm text-xs font-medium text-slate-700 space-x-1 cursor-pointer hover:bg-white transition-colors" id="lang-switcher">
+<span class="font-bold text-blue-600">VN</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-500 hover:text-slate-800">EN</span>
+<svg class="w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Quiet Night/Day Icon -->
+<button aria-label="Toggle Night Mode" class="p-1.5 rounded-full bg-white/80 backdrop-blur-md border border-white/60 text-slate-600 hover:text-slate-900 shadow-sm transition" id="theme-toggle-btn" title="Chuyển chế độ giao diện" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: TopNavigationBar -->
+<!-- BEGIN: MainContentModal -->
+<main class="flex-1 flex items-center justify-center p-4 sm:p-6" data-purpose="onboarding-modal-wrapper">
+<div class="glass-panel w-full max-w-2xl rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col my-auto transition-all" data-purpose="onboarding-card">
+<!-- Top Brand Mark & Title Badge -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 rounded-2xl bg-white/95 p-1.5 shadow-md border border-blue-50 flex items-center justify-center mb-3 group hover:scale-105 transition-transform duration-300">
+<img alt="Logo Stuđiô AI" class="w-full h-full object-contain rounded-xl" src="../../assets/images/logo.png">
+</div>
+<div class="inline-flex items-center space-x-1.5 bg-blue-50/90 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200/60 mb-2 tracking-wide uppercase">
+<span>Stuđiô AI</span>
+<span>•</span>
+<span>Thiết Lập Mục Tiêu Đầu Tiên</span>
+</div>
+<h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          Cá nhân hóa nhịp học thông minh
+        </h1>
+<p class="text-slate-600 text-sm sm:text-base mt-1.5 max-w-lg leading-relaxed">
+          AI cân bằng chu kỳ tập trung 90 phút (Ultradian Rhythm) và chuẩn bị không gian học tập tốt nhất cho bạn.
+        </p>
+</div>
+<!-- Stepper Navigation Indicator -->
+<div class="mt-6 mb-7" data-purpose="step-indicator">
+<div class="grid grid-cols-4 gap-2 text-center text-xs font-medium pb-2 text-slate-500">
+<button class="step-btn text-blue-600 font-semibold flex items-center justify-center space-x-1 hover:opacity-80 transition cursor-pointer" data-step="1">
+<span class="step-badge w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] inline-flex items-center justify-center">1</span>
+<span class="hidden sm:inline">Ngành học</span>
+</button>
+<button class="step-btn text-blue-600 font-semibold flex items-center justify-center space-x-1 hover:opacity-80 transition cursor-pointer" data-step="2">
+<span class="step-badge w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] inline-flex items-center justify-center">2</span>
+<span class="hidden sm:inline">Mục tiêu ngày</span>
+</button>
+<button class="step-btn text-blue-600 font-semibold flex items-center justify-center space-x-1 hover:opacity-80 transition cursor-pointer" data-step="3">
+<span class="step-badge w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] inline-flex items-center justify-center">3</span>
+<span class="hidden sm:inline">Khung giờ vàng</span>
+</button>
+<button class="step-btn text-blue-600 font-semibold flex items-center justify-center space-x-1 hover:opacity-80 transition cursor-pointer" data-step="4">
+<span class="step-badge w-4 h-4 rounded-full bg-blue-600 text-white text-[10px] inline-flex items-center justify-center">4</span>
+<span class="hidden sm:inline">Đồng bộ lịch</span>
+</button>
+</div>
+<!-- Progress Bar Track -->
+<div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden flex">
+<div class="bg-blue-600 h-1.5 rounded-full w-full transition-all duration-500 ease-out shadow-sm shadow-blue-500/50" id="progress-bar-fill"></div>
+</div>
+</div>
+<!-- Multi-step Form Content Sections -->
+<div class="space-y-6 overflow-y-auto max-h-[58vh] pr-1.5 custom-scroll" data-purpose="steps-content-area">
+<!-- SECTION 1: Major & Focus Field Selection -->
+<section data-purpose="step-1-major">
+<div class="flex items-center justify-between mb-2.5">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+<span>1. Lĩnh vực / Chuyên ngành học tập chính</span>
+</label>
+<span class="text-xs text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/50" id="major-count-badge">Đã chọn 1</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="major-options-grid">
+<!-- Major Option 1: Default Selected -->
+<div class="major-option flex items-center justify-between p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 shadow-sm cursor-pointer transition select-none hover:shadow-md" data-name="Công nghệ thông tin &amp; AI" data-selected="true">
+<div class="flex items-center space-x-3">
+<span class="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-base">💻</span>
+<div>
+<h4 class="text-xs font-bold text-slate-900">Công nghệ thông tin &amp; AI</h4>
+<p class="text-[11px] text-blue-600 font-medium">Coding, Data &amp; Software Dev</p>
+</div>
+</div>
+<span class="major-check w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs transition-transform transform scale-100">✓</span>
+</div>
+<!-- Major Option 2 -->
+<div class="major-option flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition select-none" data-name="Kinh tế &amp; Quản trị kinh doanh" data-selected="false">
+<div class="flex items-center space-x-3">
+<span class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 text-base">📈</span>
+<div>
+<h4 class="text-xs font-bold text-slate-900">Kinh tế &amp; Quản trị kinh doanh</h4>
+<p class="text-[11px] text-slate-500">Finance, Marketing &amp; Logistics</p>
+</div>
+</div>
+<span class="major-check w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-xs transition-transform"></span>
+</div>
+<!-- Major Option 3 -->
+<div class="major-option flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition select-none" data-name="Y Dược &amp; Khoa học Đời sống" data-selected="false">
+<div class="flex items-center space-x-3">
+<span class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-base">🩺</span>
+<div>
+<h4 class="text-xs font-bold text-slate-900">Y Dược &amp; Khoa học Đời sống</h4>
+<p class="text-[11px] text-slate-500">Medicine, Pharmacy &amp; BioTech</p>
+</div>
+</div>
+<span class="major-check w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-xs transition-transform"></span>
+</div>
+<!-- Major Option 4 -->
+<div class="major-option flex items-center justify-between p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition select-none" data-name="Thiết kế &amp; Đa phương tiện" data-selected="false">
+<div class="flex items-center space-x-3">
+<span class="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-base">🎨</span>
+<div>
+<h4 class="text-xs font-bold text-slate-900">Thiết kế &amp; Đa phương tiện</h4>
+<p class="text-[11px] text-slate-500">UI/UX, Animation &amp; Graphics</p>
+</div>
+</div>
+<span class="major-check w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-xs transition-transform"></span>
+</div>
+</div>
+</section>
+<!-- SECTION 2: Daily Focus Duration Target -->
+<section data-purpose="step-2-daily-goal">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center space-x-1.5 mb-2.5">
+<span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+<span>2. Mục tiêu thời gian mỗi ngày (Daily Study Target)</span>
+</label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="goal-options-grid">
+<!-- Goal Option A -->
+<div class="goal-option p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition text-left flex flex-col justify-between" data-goal="2h">
+<div>
+<span class="text-lg font-bold text-slate-800">2 giờ / ngày</span>
+<p class="text-xs font-semibold text-slate-500 mt-0.5">Khởi động nhẹ nhàng</p>
+</div>
+<p class="text-[11px] text-slate-400 mt-2">Duy trì thói quen ôn tập hàng ngày</p>
+</div>
+<!-- Goal Option B: Selected (Recommended) -->
+<div class="goal-option p-3.5 rounded-2xl border-2 border-blue-600 bg-blue-50/70 shadow-sm cursor-pointer transition text-left relative flex flex-col justify-between ring-1 ring-blue-500/20" data-goal="4.5h" data-selected="true">
+<span class="goal-badge absolute -top-2.5 right-3 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm transition">
+  Khuyến nghị AI
+</span>
+<div>
+<div class="flex items-baseline space-x-1">
+<span class="text-xl font-extrabold text-blue-700">4.5 giờ</span>
+<span class="text-xs font-semibold text-blue-600">/ ngày</span>
+</div>
+<p class="text-xs font-bold text-blue-800 mt-0.5">3 Chu kỳ 90 phút vàng</p>
+</div>
+<p class="text-[11px] text-blue-600/90 mt-2 font-medium">Tối ưu hóa khả năng ghi nhớ &amp; chống quá tải</p>
+</div>
+<!-- Goal Option C -->
+<div class="goal-option p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition text-left flex flex-col justify-between" data-goal="6h">
+<div>
+<span class="text-lg font-bold text-slate-800">6+ giờ / ngày</span>
+<p class="text-xs font-semibold text-slate-500 mt-0.5">Chuyên sâu Đồ án</p>
+</div>
+<p class="text-[11px] text-slate-400 mt-2">Giai đoạn nước rút thi cử hoặc khóa luận</p>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Circadian Rhythm / Preferred Study Slot -->
+<section data-purpose="step-3-circadian-peak">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center space-x-1.5 mb-2.5">
+<span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+<span>3. Khung giờ vàng sinh học bạn tập trung tốt nhất</span>
+</label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5" id="circadian-options-grid">
+<!-- Slot 1 -->
+<div class="slot-option p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition relative" data-slot="morning">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-base">🌅</span>
+<h4 class="text-xs font-bold text-slate-800 title-text">Sáng sớm</h4>
+</div>
+<span class="slot-check w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[10px] transition"></span>
+</div>
+<p class="text-xs text-blue-600 font-semibold mt-1">06:00 – 09:00</p>
+<p class="text-[11px] text-slate-400 mt-0.5 desc-text">Đón bình minh trong trẻo</p>
+</div>
+<!-- Slot 2: Selected -->
+<div class="slot-option p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 shadow-sm cursor-pointer transition relative" data-selected="true" data-slot="afternoon">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-base">🌊</span>
+<h4 class="text-xs font-bold text-blue-900 title-text">Chiều đỉnh cao</h4>
+</div>
+<span class="slot-check w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] transition">✓</span>
+</div>
+<p class="text-xs text-blue-700 font-bold mt-1">14:00 – 17:00</p>
+<p class="text-[11px] text-blue-600 font-medium mt-0.5 desc-text">Sóng não Alpha 10Hz lý tưởng</p>
+</div>
+<!-- Slot 3 -->
+<div class="slot-option p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition relative" data-slot="night">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-base">🌙</span>
+<h4 class="text-xs font-bold text-slate-800 title-text">Đêm tĩnh mịch</h4>
+</div>
+<span class="slot-check w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[10px] transition"></span>
+</div>
+<p class="text-xs text-blue-600 font-semibold mt-1">20:00 – 23:30</p>
+<p class="text-[11px] text-slate-400 mt-0.5 desc-text">Deep Flow không xao nhãng</p>
+</div>
+</div>
+</section>
+<!-- SECTION 4: University Calendar Sync Integration Preview -->
+<section class="bg-white/85 border border-slate-200/90 rounded-2xl p-4 shadow-sm" data-purpose="step-4-calendar-preview">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+<div>
+<h4 class="text-xs font-bold text-slate-900 flex items-center space-x-1.5">
+<span>🗓️</span>
+<span>Sẵn sàng đồng bộ Thời khóa biểu đại học</span>
+</h4>
+<p class="text-[11px] text-slate-500">Stuđiô AI tự động xếp lịch học trống theo tuần môn học của trường</p>
+</div>
+<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full inline-flex self-start sm:self-auto items-center space-x-1 transition-all" id="sync-status-badge">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+<span>1-Click Auto Sync</span>
+</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2" id="sync-buttons-group">
+<!-- Google Calendar / Classroom -->
+<button class="sync-service-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-400 transition-all text-slate-700 text-xs font-medium active:scale-95 shadow-xs" data-service="Google Cal" type="button">
+<svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+<path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm-6 13.5h-3v-3h3v3zm0-4.5h-3v-3h3v3zm4.5 4.5h-3v-3h3v3zm0-4.5h-3v-3h3v3z"></path>
+</svg>
+<span class="truncate service-label">Google Cal</span>
+<span class="service-state text-[10px] font-bold hidden"></span>
+</button>
+<!-- Canvas LMS -->
+<button class="sync-service-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-400 transition-all text-slate-700 text-xs font-medium active:scale-95 shadow-xs" data-service="Canvas LMS" type="button">
+<span class="text-red-600 font-black text-xs flex-shrink-0">C</span>
+<span class="truncate service-label">Canvas LMS</span>
+<span class="service-state text-[10px] font-bold hidden"></span>
+</button>
+<!-- Microsoft Outlook / Teams -->
+<button class="sync-service-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-400 transition-all text-slate-700 text-xs font-medium active:scale-95 shadow-xs" data-service="MS Outlook" type="button">
+<svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+<path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-8 14H7v-2h4v2zm0-4H7v-2h4v2zm0-4H7V7h4v2zm6 8h-4V7h4v10z"></path>
+</svg>
+<span class="truncate service-label">MS Outlook</span>
+<span class="service-state text-[10px] font-bold hidden"></span>
+</button>
+</div>
+</section>
+</div>
+<!-- Action Footer Buttons -->
+<div class="mt-6 pt-4 border-t border-slate-200/70 flex flex-col sm:flex-row items-center justify-between gap-3" data-purpose="modal-actions">
+<button class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition py-2 px-3 hover:underline cursor-pointer" id="btn-skip" type="button">
+          ← Bỏ qua &amp; Sử dụng mặc định
+</button>
+<div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+<button class="text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 px-4 py-2.5 rounded-xl transition shadow-sm cursor-pointer" id="btn-back" type="button">
+            Quay lại
+</button>
+<button class="flex-1 sm:flex-none flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 active:scale-[0.98] text-white font-semibold text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg shadow-blue-500/25 transition cursor-pointer" id="btn-submit-cta" type="button">
+<span id="cta-label">Tiếp tục tới Nhịp sinh học</span>
+<svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" id="cta-arrow" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" fill="none" id="cta-spinner" viewBox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- END: MainContentModal -->
+<!-- BEGIN: BottomGlobalFooter -->
+<footer class="w-full py-3 px-4 text-center z-20 text-[11px] text-slate-600/90 font-medium" data-purpose="privacy-footer">
+<div class="inline-flex items-center flex-wrap justify-center gap-x-3 gap-y-1 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/40 shadow-sm">
+<span class="flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 text-emerald-600 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Dữ liệu được bảo mật chuẩn FERPA &amp; Zero-Leak Student Privacy</span>
+</span>
+<span>•</span>
+<span>Không gian học tập tĩnh lặng cho sinh viên Việt Nam</span>
+<span>•</span>
+<span>Stuđiô AI © 2025</span>
+</div>
+</footer>
+<!-- END: BottomGlobalFooter -->
+<!-- Interactive Vanilla JavaScript Logic -->
+<script>
+  // Helper: Toast Notifications
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    const bgClass = isSuccess ? 'bg-slate-900/95 text-white border-blue-400/30' : 'bg-amber-800/95 text-white border-amber-400/30';
+    
+    toast.className = `flex items-center space-x-2 px-4 py-2.5 rounded-xl shadow-xl border text-xs font-medium backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${bgClass}`;
+    toast.innerHTML = `
+      <span class="${isSuccess ? 'text-emerald-400' : 'text-amber-300'} font-bold">${isSuccess ? '✓' : 'ℹ'}</span>
+      <span>${message}</span>
+    `;
+    container.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    });
+
+    // Auto remove
+    setTimeout(() => {
+      toast.classList.add('opacity-0', '-translate-y-2');
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
+
+  // 1. Interactive Major Selection (Multi-select / Single-select toggle)
+  const majorCards = document.querySelectorAll('.major-option');
+  const majorCountBadge = document.getElementById('major-count-badge');
+
+  function updateMajorCount() {
+    let count = 0;
+    majorCards.forEach(card => {
+      if (card.dataset.selected === 'true') count++;
+    });
+    majorCountBadge.textContent = count > 0 ? `Đã chọn ${count}` : 'Chưa chọn';
+  }
+
+  majorCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const isSelected = card.dataset.selected === 'true';
+      const checkSpan = card.querySelector('.major-check');
+      const subtitle = card.querySelector('p');
+
+      if (!isSelected) {
+        card.dataset.selected = 'true';
+        card.classList.remove('border-slate-200', 'bg-white', 'hover:border-blue-300', 'hover:bg-slate-50/80');
+        card.classList.add('border-2', 'border-blue-600', 'bg-blue-50/60', 'shadow-sm');
+        checkSpan.className = 'major-check w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs transition-transform transform scale-100';
+        checkSpan.textContent = '✓';
+        if (subtitle) {
+          subtitle.classList.remove('text-slate-500');
+          subtitle.classList.add('text-blue-600', 'font-medium');
+        }
+      } else {
+        // Allow unselecting if more than 1 or toggle freely
+        card.dataset.selected = 'false';
+        card.classList.remove('border-2', 'border-blue-600', 'bg-blue-50/60', 'shadow-sm');
+        card.classList.add('border', 'border-slate-200', 'bg-white', 'hover:border-blue-300', 'hover:bg-slate-50/80');
+        checkSpan.className = 'major-check w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-xs transition-transform';
+        checkSpan.textContent = '';
+        if (subtitle) {
+          subtitle.classList.remove('text-blue-600', 'font-medium');
+          subtitle.classList.add('text-slate-500');
+        }
+      }
+      updateMajorCount();
+    });
+  });
+
+  // 2. Interactive Daily Study Target (Single select)
+  const goalCards = document.querySelectorAll('.goal-option');
+  goalCards.forEach(card => {
+    card.addEventListener('click', () => {
+      goalCards.forEach(c => {
+        c.removeAttribute('data-selected');
+        c.className = 'goal-option p-3.5 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition text-left flex flex-col justify-between';
+        
+        // Normalize text colors for unselected
+        const mainTitle = c.querySelector('span.text-lg, span.text-xl');
+        if (mainTitle) {
+          mainTitle.className = 'text-lg font-bold text-slate-800';
+        }
+        const descSub = c.querySelectorAll('p');
+        if (descSub[0]) descSub[0].className = 'text-xs font-semibold text-slate-500 mt-0.5';
+        if (descSub[1]) descSub[1].className = 'text-[11px] text-slate-400 mt-2';
+        
+        // Remove badge if exists or style it inactive
+        const badge = c.querySelector('.goal-badge');
+        if (badge) badge.classList.add('opacity-40');
+      });
+
+      card.setAttribute('data-selected', 'true');
+      card.className = 'goal-option p-3.5 rounded-2xl border-2 border-blue-600 bg-blue-50/70 shadow-sm cursor-pointer transition text-left relative flex flex-col justify-between ring-1 ring-blue-500/20';
+
+      const activeBadge = card.querySelector('.goal-badge');
+      if (activeBadge) activeBadge.classList.remove('opacity-40');
+
+      const descSub = card.querySelectorAll('p');
+      if (descSub[0]) descSub[0].className = 'text-xs font-bold text-blue-800 mt-0.5';
+      if (descSub[1]) descSub[1].className = 'text-[11px] text-blue-600/90 mt-2 font-medium';
+    });
+  });
+
+  // 3. Interactive Circadian Peak Slot Selection (Single select radio style)
+  const slotCards = document.querySelectorAll('.slot-option');
+  slotCards.forEach(card => {
+    card.addEventListener('click', () => {
+      slotCards.forEach(c => {
+        c.removeAttribute('data-selected');
+        c.className = 'slot-option p-3 rounded-2xl border border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50/80 cursor-pointer transition relative';
+        const title = c.querySelector('.title-text');
+        if (title) title.className = 'title-text text-xs font-bold text-slate-800';
+        const check = c.querySelector('.slot-check');
+        if (check) {
+          check.className = 'slot-check w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[10px] transition';
+          check.textContent = '';
+        }
+        const time = c.querySelector('p.text-xs');
+        if (time) time.className = 'text-xs text-blue-600 font-semibold mt-1';
+        const desc = c.querySelector('.desc-text');
+        if (desc) desc.className = 'desc-text text-[11px] text-slate-400 mt-0.5';
+      });
+
+      card.setAttribute('data-selected', 'true');
+      card.className = 'slot-option p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 shadow-sm cursor-pointer transition relative';
+      const title = card.querySelector('.title-text');
+      if (title) title.className = 'title-text text-xs font-bold text-blue-900';
+      const check = card.querySelector('.slot-check');
+      if (check) {
+        check.className = 'slot-check w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] transition';
+        check.textContent = '✓';
+      }
+      const time = card.querySelector('p.text-xs');
+      if (time) time.className = 'text-xs text-blue-700 font-bold mt-1';
+      const desc = card.querySelector('.desc-text');
+      if (desc) desc.className = 'desc-text text-[11px] text-blue-600 font-medium mt-0.5';
+    });
+  });
+
+  // 4. Interactive University Calendar Sync Buttons
+  const syncButtons = document.querySelectorAll('.sync-service-btn');
+  const syncGlobalBadge = document.getElementById('sync-status-badge');
+  let syncedServices = new Set();
+
+  syncButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const serviceName = btn.dataset.service;
+      const label = btn.querySelector('.service-label');
+      const state = btn.querySelector('.service-state');
+
+      if (syncedServices.has(serviceName)) {
+        // Toggle off
+        syncedServices.delete(serviceName);
+        btn.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
+        btn.classList.add('bg-slate-50', 'border-slate-200', 'text-slate-700');
+        state.classList.add('hidden');
+        label.textContent = serviceName;
+        showToast(`Đã ngắt kết nối ${serviceName}`);
+      } else {
+        // Bản demo: chưa kết nối OAuth các dịch vụ ngoài — báo rõ, không giả vờ đồng bộ
+        state.classList.remove('hidden');
+        state.textContent = '...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          btn.disabled = false;
+          state.classList.add('hidden');
+          state.textContent = '';
+          showToast(`Bản demo: ${serviceName} chưa kết nối. Lịch học vẫn dùng thủ công trong Stuđiô.`);
+        }, 600);
+      }
+    });
+  });
+
+  // 5. Stepper Navigation Click & Progress Bar
+  const stepBtns = document.querySelectorAll('.step-btn');
+  const progressBarFill = document.getElementById('progress-bar-fill');
+  const stepSections = [
+    document.querySelector('[data-purpose="step-1-major"]'),
+    document.querySelector('[data-purpose="step-2-daily-goal"]'),
+    document.querySelector('[data-purpose="step-3-circadian-peak"]'),
+    document.querySelector('[data-purpose="step-4-calendar-preview"]')
+  ];
+
+  stepBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const stepIndex = parseInt(btn.dataset.step, 10);
+      const widthPercent = (stepIndex / 4) * 100;
+      progressBarFill.style.width = widthPercent + '%';
+
+      // Highlight corresponding section smoothly
+      const targetSection = stepSections[stepIndex - 1];
+      if (targetSection) {
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetSection.classList.add('ring-2', 'ring-blue-400', 'rounded-2xl', 'transition-all');
+        setTimeout(() => {
+          targetSection.classList.remove('ring-2', 'ring-blue-400');
+        }, 1200);
+      }
+    });
+  });
+
+  // 6. Audio Player Toggle in Header
+  const audioBtn = document.getElementById('audio-toggle-btn');
+  const audioBadge = document.getElementById('audio-badge');
+  const audioBars = document.getElementById('audio-bars');
+  let isAudioPlaying = true;
+
+  if (audioBtn) {
+    audioBtn.addEventListener('click', () => {
+      isAudioPlaying = !isAudioPlaying;
+      if (isAudioPlaying) {
+        audioBadge.textContent = 'Đang phát';
+        audioBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition';
+        audioBars.querySelectorAll('span').forEach((bar, idx) => {
+          bar.className = `w-0.5 bg-blue-600 rounded-full sound-bar-${idx + 1}`;
+        });
+        showToast('Âm thanh tĩnh lặng 432Hz đang phát');
+      } else {
+        audioBadge.textContent = 'Tạm dừng';
+        audioBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 transition';
+        audioBars.querySelectorAll('span').forEach(bar => {
+          bar.className = 'w-0.5 h-1 bg-slate-400 rounded-full';
+        });
+        showToast('Đã tạm dừng âm thanh');
+      }
+    });
+  }
+
+  // 7. CTA Buttons (Submit, Back, Skip)
+  const ctaBtn = document.getElementById('btn-submit-cta');
+  const ctaLabel = document.getElementById('cta-label');
+  const ctaArrow = document.getElementById('cta-arrow');
+  const ctaSpinner = document.getElementById('cta-spinner');
+
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', () => {
+      // Show loading spinner
+      ctaBtn.disabled = true;
+      ctaLabel.textContent = 'Đang hoàn tất thiết lập...';
+      ctaArrow.classList.add('hidden');
+      ctaSpinner.classList.remove('hidden');
+
+      const selGoal = document.querySelector('.goal-option[data-selected="true"]');
+      let hours = 4.5;
+      if (selGoal && selGoal.dataset.goal) {
+        hours = parseFloat(selGoal.dataset.goal);
+      }
+
+      // Update local user session
+      try {
+        if (window.auth && typeof window.auth.getUser === 'function') {
+          const u = window.auth.getUser();
+          u.target_daily_focus_hours = hours;
+          u.target_gpa = 3.8;
+          if (typeof window.auth.setUser === 'function') window.auth.setUser(u);
+        }
+      } catch(e) {}
+
+      // Send PUT request to API
+      try {
+        if (window.api && typeof window.api.put === 'function') {
+          window.api.put('/auth/profile', {
+            target_daily_focus_hours: hours,
+            target_gpa: 3.8
+          }).catch(() => {});
+        }
+      } catch(e) {}
+
+      setTimeout(() => {
+        ctaSpinner.classList.add('hidden');
+        ctaArrow.classList.remove('hidden');
+        ctaLabel.textContent = 'Đã hoàn tất! Chuyển tới Bước 3...';
+        ctaBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        ctaBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+        if (window.showCalmToast) {
+          window.showCalmToast('Mục tiêu học tập đã được lưu. Tiếp theo: Nhịp sinh học!', 'success');
+        } else if (typeof showToast === 'function') {
+          showToast('Mục tiêu học tập đã được lưu. Tiếp theo: Nhịp sinh học!');
+        }
+        
+        setTimeout(() => {
+          window.location.href = '../09-onboarding-circadian/index.html';
+        }, 600);
+      }, 500);
+    });
+  }
+
+  const btnSkip = document.getElementById('btn-skip');
+  if (btnSkip) {
+    btnSkip.addEventListener('click', () => {
+      window.location.href = '../09-onboarding-circadian/index.html';
+    });
+  }
+
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      window.location.href = '../07-onboarding-major/index.html';
+    });
+  }
+</script>
+<!-- Stuđiô AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/app.js"></script>
+</body></html>

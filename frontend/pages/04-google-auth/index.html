@@ -1,0 +1,327 @@
+<!DOCTYPE html><html lang="vi"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stuđiô AI - Chọn tài khoản Google</title>
+  <!-- Google Fonts: Be Vietnam Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../../assets/js/theme.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 25px 60px -15px rgba(37, 99, 235, 0.12), 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+    }
+    .account-item:hover {
+      background: rgba(239, 246, 255, 0.7);
+      border-color: rgba(147, 197, 253, 0.6);
+      transform: translateY(-1px);
+    }
+    .account-item {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="relative min-h-screen w-full flex flex-col justify-between select-none bg-slate-900">
+
+  <!-- Background Image: Peaceful Lighthouse Watercolor Landscape -->
+  <div class="fixed inset-0 z-0">
+    <img src="../../assets/images/lighthouse-wide.png" alt="Lighthouse Watercolor Sunset Background" class="w-full h-full object-cover object-center filter brightness-[0.98]">
+    <!-- Backdrop overlay for modal focus -->
+    <div class="absolute inset-0 bg-slate-900/25 backdrop-blur-[4px] transition-all duration-300"></div>
+  </div>
+
+  <!-- Top Floating Header Strip -->
+  <header class="relative z-10 w-full px-8 py-5 flex items-center justify-between">
+    <!-- Left: Calm Mode Pill -->
+    <div class="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm text-xs font-medium text-slate-700">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span>Chế độ tập trung tĩnh lặng</span>
+      <span class="text-slate-300 font-light">|</span>
+      <span class="text-slate-500 font-normal tracking-wide text-[11px] uppercase">CALM MODE ON</span>
+    </div>
+
+    <!-- Right: Quick Settings & Audio status -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm text-xs font-medium text-slate-700">
+        <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+        </svg>
+        <span>Sóng biển &amp; Lofi 432Hz</span>
+      </div>
+
+      <div class="flex items-center gap-1 px-3 py-2 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm text-xs font-medium text-slate-700 cursor-pointer hover:bg-white/90 transition-colors">
+        <span class="font-semibold text-brand-600">VN</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-500">EN</span>
+        <svg class="w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      <button class="w-9 h-9 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Center: Modal Dialog (Google Account Chooser) -->
+  <main class="relative z-10 w-full flex items-center justify-center py-4 px-4 my-auto">
+    
+    <!-- Modal Card Container -->
+    <div class="glass-card w-full max-w-[440px] rounded-3xl p-7 relative">
+      
+      <!-- Close / Dismiss Button -->
+      <button aria-label="Đóng" onclick="window.location.href='../02-login/index.html'" class="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition-all cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <!-- Brand & Google Identity Header -->
+      <div class="flex flex-col items-center text-center">
+        <!-- Stuđiô AI Logo & Google Icon Combo -->
+        <div class="relative mb-3 flex items-center justify-center">
+          <div class="w-14 h-14 rounded-2xl p-1.5 bg-white/90 border border-blue-100 shadow-md shadow-blue-500/10 flex items-center justify-center">
+            <img src="../../assets/images/logo.png" alt="Stuđiô AI Logo" class="w-full h-full object-contain">
+          </div>
+          <!-- Tiny Google badge indicator -->
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center p-1">
+            <svg viewBox="0 0 24 24" class="w-4 h-4">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"></path>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide uppercase bg-blue-50/80 text-brand-600 border border-blue-100/80 mb-2">
+          <svg class="w-3 h-3 text-brand-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          Đăng nhập an toàn với Google
+        </span>
+
+        <h2 class="text-xl font-bold text-slate-800 tracking-tight">Chọn một tài khoản</h2>
+        <p class="text-xs text-slate-500 mt-1 mb-5">
+          để tiếp tục vào <span class="font-semibold text-slate-700">Stuđiô AI • Calm Workspace</span>
+        </p>
+      </div>
+
+      <!-- Account List Section -->
+      <div class="space-y-2.5 mb-5">
+        
+        <!-- Account 1: Active Student (.edu.vn) Account -->
+        <div class="account-item group flex items-center justify-between p-3 rounded-2xl border border-slate-100 bg-white/70 shadow-sm cursor-pointer">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Avatar with soft gradient & initials -->
+            <div class="relative flex-shrink-0">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-400 text-white font-semibold flex items-center justify-center text-sm shadow-sm ring-2 ring-white">
+                MC
+              </div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Đang đăng nhập"></span>
+            </div>
+            <!-- Name & Email Info -->
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <p class="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-600 transition-colors">Nguyễn Minh Châu</p>
+                <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded tracking-wide">SSO .EDU.VN</span>
+              </div>
+              <p class="text-xs text-slate-500 truncate">chau.nguyen@vnuhcm.edu.vn</p>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-slate-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+
+        <!-- Account 2: Personal Google Account -->
+        <div class="account-item group flex items-center justify-between p-3 rounded-2xl border border-slate-100 bg-white/70 shadow-sm cursor-pointer">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Avatar with soft peach gradient -->
+            <div class="relative flex-shrink-0">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-rose-400 text-white font-semibold flex items-center justify-center text-sm shadow-sm ring-2 ring-white">
+                C
+              </div>
+            </div>
+            <!-- Name & Email Info -->
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-600 transition-colors">Minh Châu (Cá nhân)</p>
+              <p class="text-xs text-slate-500 truncate">minhchau.designer@gmail.com</p>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-slate-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+
+        <!-- Account 3: Research / Lab Project Account -->
+        <div class="account-item group flex items-center justify-between p-3 rounded-2xl border border-slate-100 bg-white/70 shadow-sm cursor-pointer">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Avatar with soft teal gradient -->
+            <div class="relative flex-shrink-0">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-teal-500 to-cyan-500 text-white font-semibold flex items-center justify-center text-sm shadow-sm ring-2 ring-white">
+                AI
+              </div>
+            </div>
+            <!-- Name & Email Info -->
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <p class="text-sm font-semibold text-slate-800 truncate group-hover:text-brand-600 transition-colors">AI &amp; HCI Lab Research</p>
+                <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded tracking-wide">LAB TEAM</span>
+              </div>
+              <p class="text-xs text-slate-500 truncate">lab.hciresearch@gmail.com</p>
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-slate-400 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-all flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+
+        <!-- Action: "Thêm tài khoản khác" Button -->
+        <button class="w-full account-item group flex items-center gap-3 p-3 rounded-2xl border border-dashed border-slate-200 bg-white/50 hover:bg-white text-left transition-all">
+          <div class="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-blue-50 text-slate-500 group-hover:text-brand-600 flex items-center justify-center transition-colors flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-slate-700 group-hover:text-brand-600 transition-colors">Thêm tài khoản khác</p>
+            <p class="text-[11px] text-slate-400">Sử dụng tài khoản Google hoặc Google Workspace mới</p>
+          </div>
+        </button>
+
+      </div>
+
+      <!-- Quick Session Indicator -->
+      <div class="mb-4 px-3.5 py-2.5 rounded-xl bg-blue-50/60 border border-blue-100/70 flex items-start gap-2.5">
+        <svg class="w-4 h-4 text-brand-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-[11px] text-slate-600 leading-relaxed">
+          Tài khoản sinh viên <span class="font-semibold text-brand-700">.edu.vn</span> sẽ tự động được kích hoạt đặc quyền <span class="font-medium text-slate-800">Stuđiô Pro 30 ngày</span> và đồng bộ thời khóa biểu tự động.
+        </p>
+      </div>
+
+      <!-- Data Privacy & Google Policy Footer -->
+      <div class="pt-3 border-t border-slate-100/90 text-center">
+        <p class="text-[11px] text-slate-400 leading-normal">
+          Để tiếp tục, Google sẽ chia sẻ tên, địa chỉ email và ảnh hồ sơ của bạn với <span class="text-slate-600 font-medium">Stuđiô AI</span>. Trước khi sử dụng ứng dụng này, hãy xem lại 
+          <a href="#" class="text-brand-600 hover:underline">Chính sách quyền riêng tư</a> và 
+          <a href="#" class="text-brand-600 hover:underline">Điều khoản dịch vụ</a>.
+        </p>
+      </div>
+
+      <!-- Back to Login Button -->
+      <div class="mt-4 pt-2 border-t border-slate-100 text-center">
+        <a href="../02-login/index.html" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+          Quay lại màn hình đăng nhập
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Bottom Global Workspace Footer -->
+  <footer class="relative z-10 w-full px-8 py-3.5 flex flex-wrap items-center justify-between text-xs text-slate-600/90 border-t border-white/20 bg-white/40 backdrop-blur-md">
+    <div class="flex items-center gap-2">
+      <div class="flex items-center text-amber-500">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+      </div>
+      <span class="font-semibold text-slate-700"></span>
+      <span class="text-slate-400">•</span>
+      <span>Không gian học tập tĩnh lặng cho sinh viên Việt Nam</span>
+    </div>
+
+    <div class="flex items-center gap-4 text-[11px] text-slate-500">
+      <span>© 2025 CalmSpace Inc. • Stuđiô AI</span>
+      <span>•</span>
+      <a href="#" class="hover:text-slate-800 transition-colors">Điều khoản dịch vụ</a>
+      <span>•</span>
+      <a href="#" class="hover:text-slate-800 transition-colors">Chính sách quyền riêng tư</a>
+      <span>•</span>
+      <a href="#" class="hover:text-slate-800 transition-colors">Quy chuẩn dữ liệu AI</a>
+      <span>•</span>
+      <a href="#" class="hover:text-slate-800 transition-colors">Hỗ trợ 24/7</a>
+    </div>
+  </footer>
+
+  <!-- Stuđiô AI Shared Scripts -->
+  <script src="../../assets/js/api.js"></script>
+  <script src="../../assets/js/auth.js"></script>
+  <script src="../../assets/js/audio.js"></script>
+  <script src="../../assets/js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let busy = false;
+      // Email gắn với từng tài khoản mẫu (phải tồn tại trong DB mới đăng nhập được)
+      const accountEmails = [
+        'chau.nguyen@vnuhcm.edu.vn',
+        'minhchau.designer@gmail.com',
+        'lab.hciresearch@gmail.com',
+      ];
+      // A11y: biến 3 div tài khoản thành nút keyboard
+      document.querySelectorAll('div.account-item').forEach((item, idx) => {
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+        const name = item.querySelector('p')?.textContent?.trim() || `Tài khoản ${idx + 1}`;
+        item.setAttribute('aria-label', `Đăng nhập với ${name}`);
+        const activate = async () => {
+          if (busy) return;
+          busy = true;
+          item.classList.add('opacity-60', 'pointer-events-none');
+          item.setAttribute('aria-busy', 'true');
+          try {
+            const res = await api.post('/auth/google', { email: accountEmails[idx] || '' });
+            if (res.access_token) {
+              api.setToken(res.access_token);
+              if (res.user) auth.setUser(res.user);
+              showCalmToast(`Đăng nhập thành công! Chào bạn ${res.user?.full_name || ''}.`, 'success');
+              setTimeout(() => window.location.href = '../10-dashboard/index.html', 500);
+            }
+          } catch (err) {
+            showCalmToast((err && err.message) || 'Không đăng nhập được.', 'error');
+          } finally {
+            busy = false;
+            item.classList.remove('opacity-60', 'pointer-events-none');
+            item.removeAttribute('aria-busy');
+          }
+        };
+        item.addEventListener('click', activate);
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+        });
+      });
+      // "Thêm tài khoản khác" là demo — báo rõ, không fake login
+      const addBtn = document.querySelector('button.account-item');
+      if (addBtn) {
+        addBtn.addEventListener('click', () => {
+          if (window.showCalmToast) showCalmToast('Bản demo: OAuth Google thật chưa kết nối. Chọn 1 trong 3 tài khoản mẫu.', 'warning');
+        });
+      }
+      // ESC về login
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') window.location.href = '../02-login/index.html';
+      });
+    });
+  </script>
+
+</body></html>

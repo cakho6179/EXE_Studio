@@ -1,0 +1,979 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Âm thanh &amp; Thư giãn (Đồng bộ Nền Hải Đăng &amp; Logo Chuẩn)</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../../assets/js/theme.js"></script>
+<!-- Custom Style Configuration -->
+<style data-purpose="custom-background">
+    body {
+      background-image: url('../../assets/images/lighthouse-wide.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+  </style>
+<style data-purpose="audio-wave-animation">
+    @keyframes wave-bounce {
+      0%, 100% { height: 6px; }
+      50% { height: 22px; }
+    }
+    .wave-bar {
+      animation: wave-bounce 1.2s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+  </style>
+<style data-purpose="custom-sliders">
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 14px;
+      width: 14px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+      margin-top: -3px;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 9999px;
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900 pb-28">
+<!-- BEGIN: TopHeader -->
+<header class="sticky top-0 z-40 glass-header px-4 sm:px-6 lg:px-8 py-3">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+<!-- Brand & Calm Workspace Badge -->
+<a href="../10-dashboard/index.html" class="flex items-center gap-3 shrink-0 cursor-pointer">
+<img alt="Logo Stuđiô AI" class="w-9 h-9 object-contain drop-shadow-sm" src="../../assets/images/logo.png">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-extrabold text-xl text-slate-900 tracking-tight">Stuđiô AI</span>
+<span class="px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-full">
+              CALM WORKSPACE
+            </span>
+</div>
+<p class="text-xs text-slate-500 font-medium">Không gian học tập &amp; trợ lý sinh học AI</p>
+</div>
+</a>
+<!-- State Indicator Pill -->
+<div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold shadow-xs">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+<span class="w-2 h-2 -ml-3 rounded-full bg-emerald-500"></span>
+<span>Chế độ tĩnh lặng • 432Hz</span>
+</div>
+<!-- Center Navigation Tabs -->
+<nav class="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/60 shadow-inner">
+<a class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-full transition-all" href="../10-dashboard/index.html">Tổng quan</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-full transition-all" href="../13-planner/index.html">Lập kế hoạch</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-full transition-all" href="../14-schedule/index.html">Lịch trình AI</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-full transition-all" href="../11-tasks/index.html">Nhiệm vụ &amp; Chia nhỏ</a>
+<!-- Active Tab: Âm thanh & Thư giãn -->
+<a class="px-4 py-1.5 text-xs font-semibold text-white bg-brand-600 rounded-full shadow-sm transition-all" href="index.html">Âm thanh &amp; Thư giãn</a>
+<a class="px-3.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-full transition-all" href="../17-ai-advisor/index.html">Cố vấn AI</a>
+</nav>
+<!-- Right Profile & Now Playing Mini Widget -->
+<div class="flex items-center gap-3">
+<div class="hidden xl:flex items-center gap-2 px-3 py-1 bg-blue-50/80 border border-blue-100 rounded-full text-blue-800 text-xs font-medium">
+<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Sóng biển 432Hz</span>
+</div>
+<button class="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-white/80 rounded-full transition" title="Thông báo">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+</button>
+<div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+<div class="w-8 h-8 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs" data-user-initials>
+            MC
+          </div>
+<div class="hidden sm:block leading-tight text-left">
+<span class="block text-xs font-semibold text-slate-900" data-user-name>Nguyễn Minh Châu</span>
+<span class="block text-[11px] text-slate-500" data-user-school>Sinh viên ĐHQG</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: BreadcrumbAndActions -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+<div class="flex flex-wrap items-center justify-between gap-3 text-xs bg-white/75 backdrop-blur-md p-2.5 px-4 rounded-2xl border border-white/60 shadow-xs">
+<div class="flex items-center gap-2 text-slate-600 font-medium">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+<span class="text-slate-400">/</span>
+<span class="text-slate-900 font-semibold">Không gian Âm thanh Tĩnh lặng 432Hz &amp; Tự nhiên</span>
+</div>
+<div class="flex items-center gap-2 flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full font-semibold">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Sóng Solfeggio &amp; Nhịp sinh học v3.2
+        </span>
+<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-full font-medium transition shadow-xs">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Đồng bộ Tai nghe Không gian 3D
+        </button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-xs">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          + Lưu Phối Âm Yêu Thích
+        </button>
+</div>
+</div>
+</section>
+<!-- END: BreadcrumbAndActions -->
+<!-- BEGIN: HeroCalmBanner -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+<div class="relative overflow-hidden bg-linear-to-r from-blue-900/85 via-indigo-900/80 to-slate-900/85 backdrop-blur-xl rounded-3xl p-6 sm:p-8 text-white border border-white/20 shadow-xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+<!-- Hero Information Text -->
+<div class="lg:col-span-7 space-y-3">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-cyan-200 border border-white/15 text-xs font-semibold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse"></span>
+            Calm Soundscape &amp; Neuro-Frequency Therapy
+          </div>
+<h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Không gian Âm thanh Tĩnh lặng &amp; Trị liệu Thần kinh 432Hz
+          </h1>
+<p class="text-sm text-slate-200/90 leading-relaxed max-w-2xl font-normal">
+            Hòa âm tần số Solfeggio 432Hz, tiếng thì thầm của sóng biển ngọn hải đăng và thiên nhiên giúp hạ nồng độ Cortisol, kích hoạt sóng não Alpha (8-12Hz) để đưa tâm trí vào trạng thái dòng chảy (Flow State) sâu bền bỉ.
+          </p>
+<div class="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-300">
+<div class="flex items-center gap-1.5">
+<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Giảm áp lực đồ án 42%</span>
+</div>
+<div class="flex items-center gap-1.5">
+<svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Tối ưu cho nhịp 45 phút Pomodoro</span>
+</div>
+<div class="flex items-center gap-1.5">
+<svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Sóng não Alpha 94%</span>
+</div>
+</div>
+</div>
+<!-- Master Console Player Widget -->
+<div class="lg:col-span-5 bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 shadow-inner">
+<div class="flex items-center justify-between pb-3 border-b border-white/15">
+<div class="flex items-center gap-2.5">
+<!-- Live Equalizer Bars -->
+<div class="flex items-end gap-1 h-6 px-1">
+<span class="w-1 bg-cyan-400 rounded-full wave-bar"></span>
+<span class="w-1 bg-cyan-300 rounded-full wave-bar"></span>
+<span class="w-1 bg-blue-400 rounded-full wave-bar"></span>
+<span class="w-1 bg-indigo-300 rounded-full wave-bar"></span>
+<span class="w-1 bg-cyan-400 rounded-full wave-bar"></span>
+</div>
+<div>
+<span class="text-[10px] uppercase font-bold text-cyan-300 tracking-wider block">Đang phát Master</span>
+<p class="text-xs font-semibold text-white truncate max-w-[200px]">Sóng Biển Chiều &amp; Hải Đăng Tĩnh Lặng</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-cyan-200 text-[11px] font-mono border border-cyan-400/20">
+              432Hz Pure Tone
+            </span>
+</div>
+<!-- Controls & Pomodoro Ring -->
+<div class="mt-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-14 h-14 rounded-full bg-white/10 border border-white/20 text-cyan-300" id="master-play-btn">
+<svg class="w-6 h-6 fill-current text-white translate-x-0.5 cursor-pointer hover:scale-110 transition" viewBox="0 0 24 24">
+<path d="M8 5v14l11-7z"></path>
+</svg>
+</div>
+<div>
+<div class="text-xl font-bold font-mono tracking-tight text-white">45:00</div>
+<div class="text-[11px] text-slate-300">Phiên Pomodoro tĩnh lặng</div>
+</div>
+</div>
+<!-- Volume & Depth Sliders -->
+<div class="space-y-1.5 text-right w-36">
+<div class="flex justify-between text-[11px] text-slate-300">
+<span>Âm lượng</span>
+<span class="font-mono text-cyan-300">75%</span>
+</div>
+<input class="w-full accent-cyan-400 bg-white/20 h-1.5 rounded-lg cursor-pointer" id="master-volume-slider" type="range" value="75">
+<div class="flex justify-between text-[10px] text-slate-400">
+<span>Độ mờ không gian 3D</span>
+<span class="font-mono">80%</span>
+</div>
+</div>
+</div>
+<!-- AI Recommendation Alert -->
+<div class="mt-4 p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-400/20 flex items-start gap-2 text-xs text-cyan-100">
+<span class="text-base">🍅</span>
+<div>
+<span class="font-semibold text-white">Khung giờ vàng 14:30 - 16:30:</span> Sóng não Alpha đạt đỉnh 94%. Đang phát phối âm tối ưu cho giải quyết bài toán phức tạp và đồ án chuyên ngành.
+            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: HeroCalmBanner -->
+<!-- BEGIN: MainContentGrid -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- ================= LEFT COLUMN: SOUND CATALOG & FREQUENCIES (65%) ================= -->
+<section class="lg:col-span-8 space-y-6">
+<!-- PART 1: SOLFEGGIO FREQUENCIES SELECTOR -->
+<article class="bg-white/80 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-white/70 shadow-xs">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Tần Số Solfeggio &amp; Kích Hoạt Sóng Não Thần Kinh
+              </h2>
+<p class="text-xs text-slate-500 mt-0.5">Tần số cộng hưởng sinh học giúp điều hòa sóng não Beta → Alpha</p>
+</div>
+<span class="text-xs font-semibold px-2.5 py-1 bg-blue-100/70 text-blue-700 rounded-full">Solfeggio Engine 4.0</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+<!-- 432 Hz Card (Active) -->
+<div class="p-4 rounded-2xl bg-linear-to-br from-blue-50 to-indigo-50/60 border-2 border-blue-500 shadow-xs relative cursor-pointer">
+<div class="absolute top-3 right-3 flex items-center gap-1 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+<span>Đang chọn</span>
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+</div>
+<div class="text-xl font-extrabold text-blue-900 font-mono">432 Hz</div>
+<div class="text-xs font-bold text-blue-700 mt-1">Cân bằng tự nhiên &amp; Hạ stress</div>
+<p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                Tần số của vũ trụ, hạ nhịp tim và Cortisol. Kích hoạt dải sóng não Alpha (8-12Hz) tối ưu cho học tập sâu.
+              </p>
+</div>
+<!-- 528 Hz Card -->
+<div class="p-4 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 transition cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="text-xl font-extrabold text-slate-800 font-mono">528 Hz</div>
+<span class="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Tái tạo năng lượng</span>
+</div>
+<div class="text-xs font-bold text-slate-700 mt-1">Sửa chữa tế bào &amp; Tập trung cao độ</div>
+<p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Tần số chuyển hóa sinh học kỳ diệu, gia tăng độ nhạy bén tư duy giải thuật và đồ án lập trình.
+              </p>
+</div>
+<!-- 396 Hz Card -->
+<div class="p-4 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 transition cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="text-xl font-extrabold text-slate-800 font-mono">396 Hz</div>
+<span class="text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Xóa bỏ áp lực</span>
+</div>
+<div class="text-xs font-bold text-slate-700 mt-1">Giải tỏa âu lo &amp; Áp lực thi cử</div>
+<p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Rung chấn trầm ấm xua tan hội chứng sợ thất bại, tạo tinh thần thoải mái trước ngày nộp đồ án.
+              </p>
+</div>
+<!-- 852 Hz Card -->
+<div class="p-4 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/80 shadow-xs hover:border-blue-300 transition cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="text-xl font-extrabold text-slate-800 font-mono">852 Hz</div>
+<span class="text-[11px] font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">Trực giác</span>
+</div>
+<div class="text-xs font-bold text-slate-700 mt-1">Khơi thông tư duy logic trừu tượng</div>
+<p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                Thúc đẩy khả năng liên kết ý tưởng toán rời rạc, kiến trúc hệ thống và tổng hợp luận điểm phức tạp.
+              </p>
+</div>
+</div>
+</article>
+<!-- PART 2: NATURE SOUNDSCAPES LIBRARY -->
+<article class="bg-white/80 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-white/70 shadow-xs">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+<svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Thư Viện Cảnh Quan Âm Thanh Thiên Nhiên (Soundscapes)
+              </h2>
+<p class="text-xs text-slate-500 mt-0.5">Thu âm thực tế chất lượng chuẩn 96kHz/24bit không gian 3 chiều</p>
+</div>
+<button class="text-xs text-blue-600 hover:text-blue-800 font-semibold">Xem tất cả (18)</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Item 1: Hải Đăng Sóng Biển -->
+<div class="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
+<div class="relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden border border-blue-200">
+<svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="absolute inset-0 bg-blue-600/10 flex items-center justify-center">
+<span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">⏸</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-xs font-bold text-slate-900 truncate">Sóng Biển Hải Đăng 432Hz</h3>
+<span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">Khuyên dùng</span>
+</div>
+<p class="text-[11px] text-slate-500 truncate mt-0.5">Tiếng sóng rì rào bờ cát &amp; gió biển dịu mát</p>
+<div class="flex items-center gap-2 mt-2">
+<input class="w-full h-1 bg-slate-200 accent-blue-600 rounded-lg" type="range" value="85">
+<span class="text-[10px] font-mono text-slate-600">85%</span>
+</div>
+</div>
+</div>
+<!-- Item 2: Mưa Rơi Bên Hiên Gỗ -->
+<div class="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
+<div class="relative w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden border border-slate-200">
+<svg class="w-7 h-7 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="absolute inset-0 bg-slate-800/10 flex items-center justify-center cursor-pointer">
+<span class="w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs shadow-sm pl-0.5">▶</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-xs font-bold text-slate-900 truncate">Mưa Rơi Bên Hiên Gỗ</h3>
+<span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">Khử ồn tốt</span>
+</div>
+<p class="text-[11px] text-slate-500 truncate mt-0.5">Tí tách đều đặn, phủ kín tạp âm ký túc xá</p>
+<div class="flex items-center gap-2 mt-2">
+<input class="w-full h-1 bg-slate-200 accent-slate-600 rounded-lg" type="range" value="45">
+<span class="text-[10px] font-mono text-slate-600">45%</span>
+</div>
+</div>
+</div>
+<!-- Item 3: Gió Thông Núi Cao -->
+<div class="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
+<div class="relative w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 overflow-hidden border border-emerald-200">
+<svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="absolute inset-0 bg-emerald-600/10 flex items-center justify-center cursor-pointer">
+<span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs shadow-sm pl-0.5">▶</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-xs font-bold text-slate-900 truncate">Gió Thông &amp; Suối Reo Núi Cao</h3>
+<span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Thanh lọc</span>
+</div>
+<p class="text-[11px] text-slate-500 truncate mt-0.5">Thư thái, tái khởi động não giữa 2 ca học</p>
+<div class="flex items-center gap-2 mt-2">
+<input class="w-full h-1 bg-slate-200 accent-emerald-600 rounded-lg" type="range" value="30">
+<span class="text-[10px] font-mono text-slate-600">30%</span>
+</div>
+</div>
+</div>
+<!-- Item 4: Đêm Tĩnh Lặng -->
+<div class="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
+<div class="relative w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 overflow-hidden border border-indigo-200">
+<svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="absolute inset-0 bg-indigo-600/10 flex items-center justify-center cursor-pointer">
+<span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs shadow-sm pl-0.5">▶</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-xs font-bold text-slate-900 truncate">Đêm Tĩnh Lặng &amp; Côn Trùng Rừng</h3>
+<span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Ngủ sâu</span>
+</div>
+<p class="text-[11px] text-slate-500 truncate mt-0.5">Giảm kích thích ánh sáng màn hình laptop</p>
+<div class="flex items-center gap-2 mt-2">
+<input class="w-full h-1 bg-slate-200 accent-indigo-600 rounded-lg" type="range" value="20">
+<span class="text-[10px] font-mono text-slate-600">20%</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+<!-- PART 3: LO-FI & PIANO ACOUSTIC -->
+<article class="bg-white/80 backdrop-blur-md rounded-3xl p-5 sm:p-6 border border-white/70 shadow-xs">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Lo-fi Mộc &amp; Piano Acoustic (Chuyên Biệt Cho Sinh Viên)
+              </h2>
+<p class="text-xs text-slate-500 mt-0.5">Nhịp điệu đều đặn 60 BPM duy trì tốc độ gõ phím viết luận và làm bài tập lớn</p>
+</div>
+<span class="text-xs text-slate-500">3 danh sách phát</span>
+</div>
+<div class="space-y-2.5">
+<!-- Row 1: Lo-fi Stuđio 60 BPM -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-200/70 transition">
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-600 hover:text-white transition">
+                  ▶
+                </button>
+<div>
+<h3 class="text-xs font-bold text-slate-800">Lo-fi Stuđiô 60 BPM (Tiếng đĩa than rè nhẹ)</h3>
+<span class="text-[11px] text-slate-500">Giữ nhịp gõ phím ổn định • Không lời • Giảm xao nhãng</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-slate-500">
+<span>38:12</span>
+<button class="text-slate-400 hover:text-rose-500 text-sm">♥</button>
+</div>
+</div>
+<!-- Row 2: Dương Cầm Chiều Mưa -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-200/70 transition">
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-600 hover:text-white transition">
+                  ▶
+                </button>
+<div>
+<h3 class="text-xs font-bold text-slate-800">Dương Cầm Chiều Mưa (Ryuichi Sakamoto Style)</h3>
+<span class="text-[11px] text-slate-500">Mở rộng chiều sâu tư duy logic • Giai điệu tối giản</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-slate-500">
+<span>45:00</span>
+<button class="text-rose-500 text-sm">♥</button>
+</div>
+</div>
+<!-- Row 3: Thư Viện Cổ -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-200/70 transition">
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-600 hover:text-white transition">
+                  ▶
+                </button>
+<div>
+<h3 class="text-xs font-bold text-slate-800">Tiếng Sách Thư Viện Cổ &amp; Bút Chì</h3>
+<span class="text-[11px] text-slate-500">Âm thanh lật trang sách, gõ bàn phím cơ và bút dạ nhẹ nhàng</span>
+</div>
+</div>
+<div class="flex items-center gap-4 text-xs font-mono text-slate-500">
+<span>52:30</span>
+<button class="text-slate-400 hover:text-rose-500 text-sm">♥</button>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- ================= RIGHT COLUMN: MIXER, BREATHING & AI ADVICE (35%) ================= -->
+<section class="lg:col-span-4 space-y-6">
+<!-- WIDGET 1: 3-CHANNEL SOUND MIXER -->
+<div class="bg-white/85 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-sm space-y-4">
+<div class="flex items-center justify-between border-b border-slate-100 pb-3">
+<div>
+<h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                Bộ Trộn Âm Đa Kênh (Live Mixer)
+              </h2>
+<span class="text-[11px] text-slate-500">Tùy biến 3 tầng âm thanh cùng lúc</span>
+</div>
+<button class="text-[11px] text-blue-600 hover:underline font-semibold">Khôi phục</button>
+</div>
+<!-- Channel 1 -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-xs">
+<span class="font-medium text-slate-800 flex items-center gap-1.5">
+<span class="text-blue-500">●</span> Kênh 1: Sóng Biển 432Hz
+              </span>
+<span class="font-mono text-blue-600 font-semibold">65%</span>
+</div>
+<input class="w-full h-1.5 bg-blue-100 accent-blue-600 rounded-lg cursor-pointer" type="range" value="65">
+</div>
+<!-- Channel 2 -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-xs">
+<span class="font-medium text-slate-800 flex items-center gap-1.5">
+<span class="text-slate-500">●</span> Kênh 2: Mưa Rơi Tí Tách
+              </span>
+<span class="font-mono text-slate-700 font-semibold">25%</span>
+</div>
+<input class="w-full h-1.5 bg-slate-100 accent-slate-600 rounded-lg cursor-pointer" type="range" value="25">
+</div>
+<!-- Channel 3 -->
+<div class="space-y-1.5">
+<div class="flex justify-between items-center text-xs">
+<span class="font-medium text-slate-800 flex items-center gap-1.5">
+<span class="text-amber-500">●</span> Kênh 3: Lofi Mộc Quán Trà
+              </span>
+<span class="font-mono text-amber-600 font-semibold">40%</span>
+</div>
+<input class="w-full h-1.5 bg-amber-100 accent-amber-600 rounded-lg cursor-pointer" type="range" value="40">
+</div>
+<!-- Extra Controls -->
+<div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+<span class="text-slate-600 font-medium">Không gian vòm 3D (Spatial)</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input id="spatial-toggle" checked="" class="sr-only peer" type="checkbox">
+<div class="w-9 h-5 bg-slate-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+</label>
+</div>
+<button class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition">
+            Lưu Thành Preset Riêng Của Bạn
+          </button>
+</div>
+<!-- WIDGET 2: BREATHING 4-7-8 CALM RESET -->
+<div class="bg-white/85 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+<svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Nhịp Thở Thư Giãn 4 - 7 - 8
+            </h2>
+<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">1 Phút Reset</span>
+</div>
+<div class="flex items-center gap-4 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
+<div id="breath-circle" class="w-12 h-12 rounded-full border-2 border-dashed border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xs transition-transform" style="transition-duration: 4s;">
+              <span id="breath-count">4s</span>
+            </div>
+<div class="text-xs space-y-0.5 flex-1">
+<div class="font-bold text-emerald-950" id="breath-phase">Hít vào 4s • Giữ 7s • Thở nhẹ 8s</div>
+<p class="text-[11px] text-emerald-800/80 leading-tight">
+                Giảm nhịp tim tức thì, xoa dịu hệ thần kinh giao cảm khi gặp lỗi code hoặc bí ý tưởng.
+              </p>
+<button id="breath-toggle-btn" type="button" class="mt-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold transition">Bắt đầu thở</button>
+</div>
+</div>
+</div>
+<!-- WIDGET 3: STUDENT PRESETS -->
+<div class="bg-white/85 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-sm space-y-3">
+<h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+<svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Preset Sinh Viên ĐHQG Yêu Thích
+          </h2>
+<div class="space-y-2">
+<div class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 transition cursor-pointer flex justify-between items-center text-xs">
+<div>
+<span class="font-semibold text-slate-800 block">Đêm Chạy Deadline Bách Khoa</span>
+<span class="text-[11px] text-slate-500">Mưa rào 60% + Tiếng lật sách 40%</span>
+</div>
+<span class="text-blue-600 font-bold">→</span>
+</div>
+<div class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 transition cursor-pointer flex justify-between items-center text-xs">
+<div>
+<span class="font-semibold text-slate-800 block">Sáng Chủ Nhật Ôn Thi Y Dược</span>
+<span class="text-[11px] text-slate-500">Sóng biển + Suối rừng 50%</span>
+</div>
+<span class="text-blue-600 font-bold">→</span>
+</div>
+<div class="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200/80 transition cursor-pointer flex justify-between items-center text-xs">
+<div>
+<span class="font-semibold text-slate-800 block">Viết Luận Văn Tối Thứ Bảy</span>
+<span class="text-[11px] text-slate-500">Lofi 60 BPM + Quán cà phê mờ ảo</span>
+</div>
+<span class="text-blue-600 font-bold">→</span>
+</div>
+</div>
+</div>
+<!-- WIDGET 4: AI CIRCADIAN ADVICE -->
+<div class="bg-linear-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-5 shadow-md relative overflow-hidden">
+<div class="flex items-center gap-2 mb-2 text-indigo-300 text-xs font-bold uppercase tracking-wider">
+<span class="text-base">🧬</span> Lời Khuyên Nhịp Sinh Học AI
+          </div>
+<p class="text-xs text-slate-200 leading-relaxed font-normal" id="ai-sound-advice">
+            “Đừng nghe âm lượng vượt quá 65% trên tai nghe. Âm 432Hz giúp <span id="ai-advice-name">bạn</span> duy trì trạng thái tập trung sâu bền bỉ khi học.”
+          </p>
+<div class="mt-3 pt-3 border-t border-white/15 flex items-center justify-between text-[11px] text-slate-300">
+<span>Mức độ tự tin sinh học: 98%</span>
+<a class="text-cyan-300 hover:underline font-medium" href="#">Chi tiết biểu đồ →</a>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- END: MainContentGrid -->
+<!-- BEGIN: StickyMiniPlayerDock -->
+<aside class="fixed bottom-3 inset-x-0 z-50 max-w-5xl mx-auto px-4">
+<div class="bg-white/95 backdrop-blur-xl border border-white/80 shadow-2xl rounded-2xl p-3 px-5 flex items-center justify-between gap-4">
+<!-- Track Meta Info -->
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm relative overflow-hidden">
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="absolute bottom-0 inset-x-0 h-1 bg-cyan-300"></span>
+</div>
+<div class="truncate leading-tight">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-slate-900 truncate">Sóng Biển Chiều &amp; Hải Đăng Tĩnh Lặng</span>
+<span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.2 rounded font-mono">432Hz</span>
+</div>
+<span class="text-[11px] text-slate-500 truncate block">Âm thanh kích hoạt sóng não: Tiếng sóng rì rào &amp; Nhịp điệu Lo-Fi biển</span>
+</div>
+</div>
+<!-- Playback Controls -->
+<div class="flex items-center gap-3 shrink-0">
+<button class="p-2 text-slate-500 hover:text-slate-800 transition" title="Lùi lại">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
+</button>
+<button class="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md hover:scale-105 transition" id="dock-play-btn" title="Tạm dừng/Phát">
+<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+</button>
+<button class="p-2 text-slate-500 hover:text-slate-800 transition" title="Bài tiếp">
+<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
+</button>
+</div>
+<!-- Quick Action Buttons -->
+<div class="hidden sm:flex items-center gap-2 shrink-0">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Cài đặt EQ
+        </button>
+<button class="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition" id="dock-start-pomodoro">
+          Bắt đầu Pomodoro 🍅
+        </button>
+</div>
+</div>
+</aside>
+<!-- END: StickyMiniPlayerDock -->
+<!-- BEGIN: FooterSection -->
+<footer class="mt-12 text-center text-xs text-slate-500/90 py-6 border-t border-white/50 backdrop-blur-xs">
+<div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<span class="font-bold text-slate-700">Stuđiô AI</span>
+<span>•</span>
+<span>Sanctuary of Deep Learning &amp; Circadian Task Rhythms</span>
+</div>
+<div class="flex items-center gap-4 text-[11px]">
+<span>Khung giờ Alpha: 14:30 - 16:30</span>
+<span>•</span>
+<span>Âm nền: Sóng biển 432Hz</span>
+<span>•</span>
+<a class="hover:underline" href="#">Chính sách bảo mật zero-leak AI</a>
+</div>
+</div>
+</footer>
+<!-- END: FooterSection -->
+<!-- Studio AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/timer.js"></script>
+<script src="../../assets/js/app.js"></script>
+<script>
+  const masterPlayBtn = document.getElementById('master-play-btn');
+  const dockPlayBtn = document.getElementById('dock-play-btn');
+  const dockPomodoro = document.getElementById('dock-start-pomodoro');
+  const volumeSlider = document.getElementById('master-volume-slider');
+
+  function updatePlayIcons(isPlaying) {
+    const playIconSvg = '<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>';
+    const pauseIconSvg = '<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>';
+    if (dockPlayBtn) dockPlayBtn.innerHTML = isPlaying ? pauseIconSvg : playIconSvg;
+    if (masterPlayBtn) {
+      const svg = masterPlayBtn.querySelector('svg');
+      if (svg) svg.outerHTML = isPlaying 
+        ? '<svg class="w-6 h-6 fill-current text-white cursor-pointer hover:scale-110 transition" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>'
+        : '<svg class="w-6 h-6 fill-current text-white translate-x-0.5 cursor-pointer hover:scale-110 transition" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>';
+    }
+  }
+
+  if (masterPlayBtn) {
+    masterPlayBtn.addEventListener('click', () => {
+      if (window.calmAudio) {
+        calmAudio.togglePlay();
+        updatePlayIcons(calmAudio.isPlaying);
+      }
+    });
+  }
+
+  if (dockPlayBtn) {
+    dockPlayBtn.addEventListener('click', () => {
+      if (window.calmAudio) {
+        calmAudio.togglePlay();
+        updatePlayIcons(calmAudio.isPlaying);
+      }
+    });
+  }
+
+  if (volumeSlider) {
+    // Đồng bộ mức đã lưu
+    if (window.calmAudio) volumeSlider.value = Math.round(calmAudio.volume * 100);
+    volumeSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value) / 100;
+      if (window.calmAudio) calmAudio.setVolume(val);
+      const textVal = e.target.previousElementSibling?.querySelector('span.font-mono');
+      if (textVal) textVal.textContent = `${Math.round(val * 100)}%`;
+    });
+  }
+
+  // Spatial 3D thật: chỉnh độ rộng vòm stereo của engine
+  const spatialToggle = document.getElementById('spatial-toggle');
+  if (spatialToggle && window.calmAudio) {
+    spatialToggle.checked = window.calmAudio.spatial !== false;
+    spatialToggle.addEventListener('change', (e) => {
+      window.calmAudio.setSpatial(e.target.checked);
+      if (window.showCalmToast) showCalmToast(e.target.checked ? 'Đã bật vòm 3D.' : 'Đã thu hẹp vòm âm.', 'info');
+    });
+  }
+
+  // Lời khuyên AI: tên user thật
+  try {
+    const nm = document.getElementById('ai-advice-name');
+    const u = window.auth ? window.auth.getUser() : null;
+    if (nm && u && u.full_name) nm.textContent = u.full_name;
+  } catch {}
+
+  // Đồng bộ icon theo trạng thái phát thực (vd: quay lại từ trang khác)
+  if (window.calmAudio) updatePlayIcons(calmAudio.isPlaying);
+
+  // Preset sinh viên: áp track thật dominant, báo rõ phần chưa có synth
+  const presetH2 = Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('Preset Sinh Viên'));
+  const presetBox = presetH2 ? presetH2.closest('div.rounded-3xl') : null;
+  const presetRows = presetBox ? presetBox.querySelectorAll(':scope > div.space-y-2 > div') : [];
+  const presetMap = [
+    { track: 'rain', level: 0.6, missing: 'Tiếng lật sách' },
+    { track: 'ocean', level: 0.5, missing: 'Suối rừng' },
+    { track: 'ocean', level: 0.5, missing: 'Lofi 60 BPM, Quán cà phê' },
+  ];
+  presetRows.forEach((row, i) => {
+    const p = presetMap[i];
+    if (!p) return;
+    row.style.cursor = 'pointer';
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    const apply = () => {
+      if (window.calmAudio) {
+        calmAudio.setTrackVolume(p.track, p.level);
+        calmAudio.switchTrack(p.track);
+        if (!calmAudio.isPlaying) calmAudio.playCurrentTrack();
+        updatePlayIcons(calmAudio.isPlaying);
+      }
+      if (window.showCalmToast) showCalmToast(`Đã áp preset (${p.track === 'rain' ? 'Mưa' : 'Sóng biển'} ${Math.round(p.level * 100)}%). Thiếu synth: ${p.missing}.`, 'info');
+    };
+    row.addEventListener('click', apply);
+    row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apply(); } });
+  });
+
+  // Nhịp thở 4-7-8 chạy thật: Hít 4s (phồng) -> Giữ 7s -> Thở 8s (xẹp), lặp lại
+  const breathBtn = document.getElementById('breath-toggle-btn');
+  const breathCircle = document.getElementById('breath-circle');
+  const breathCount = document.getElementById('breath-count');
+  const breathPhase = document.getElementById('breath-phase');
+  let breathTimer = null;
+  let breathRunning = false;
+  function breathStop(silent) {
+    breathRunning = false;
+    if (breathTimer) { clearInterval(breathTimer); breathTimer = null; }
+    if (breathBtn) breathBtn.textContent = 'Bắt đầu thở';
+    if (breathCircle) breathCircle.style.transform = 'scale(1)';
+    if (!silent && window.showCalmToast) showCalmToast('Đã dừng bài thở. Tuyệt vời!', 'success');
+  }
+  if (breathBtn) {
+    breathBtn.addEventListener('click', () => {
+      if (breathRunning) { breathStop(false); return; }
+      breathRunning = true;
+      breathBtn.textContent = 'Dừng';
+      const phases = [
+        { label: 'Hít vào', secs: 4, scale: 1.35 },
+        { label: 'Giữ hơi', secs: 7, scale: 1.35 },
+        { label: 'Thở nhẹ', secs: 8, scale: 1 },
+      ];
+      let pi = 0, left = phases[0].secs;
+      const paint = () => {
+        const ph = phases[pi];
+        if (breathPhase) breathPhase.textContent = `${ph.label} — còn ${left}s`;
+        if (breathCount) breathCount.textContent = `${left}s`;
+        if (breathCircle) {
+          breathCircle.style.transitionDuration = (pi === 1 ? 0.3 : ph.secs) + 's';
+          breathCircle.style.transform = `scale(${ph.scale})`;
+        }
+      };
+      paint();
+      breathTimer = setInterval(() => {
+        left--;
+        if (left <= 0) {
+          pi = (pi + 1) % phases.length;
+          left = phases[pi].secs;
+          if (pi === 0 && window.showCalmToast) showCalmToast('Xong 1 vòng thở 4-7-8. Tiếp tục nhé!', 'success');
+        }
+        paint();
+      }, 1000);
+    });
+  }
+  // Space để phát/dừng (trừ khi đang gõ input)
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !e.target.matches('input, textarea, select')) {
+      e.preventDefault();
+      if (window.calmAudio) { calmAudio.togglePlay(); updatePlayIcons(calmAudio.isPlaying); }
+    }
+  });
+
+  if (dockPomodoro) {
+    dockPomodoro.addEventListener('click', () => {
+      window.location.href = '../16-deep-work-active/index.html';
+    });
+  }
+
+  // Card -> track thật (engine chỉ có ocean/rain/binaural; còn lại fallback rõ ràng)
+  function trackForTitle(t) {
+    const s = (t || '').toLowerCase();
+    if (s.includes('sóng biển')) return 'ocean';
+    if (s.includes('mưa')) return 'rain';
+    if (s.includes('gió thông') || s.includes('suối') || s.includes('rừng')) return 'binaural';
+    if (s.includes('đêm tĩnh') || s.includes('côn trùng') || s.includes('im lặng')) return 'silence';
+    if (s.includes('lofi') || s.includes('lo-fi') || s.includes('quán trà') || s.includes('cà phê')) return 'lofi-missing';
+    return null;
+  }
+  function playTrack(track, title) {
+    if (!window.calmAudio) return;
+    if (track === 'silence') {
+      calmAudio.stopAll();
+      updatePlayIcons(false);
+      if (window.showCalmToast) showCalmToast('Đã chuyển sang Im lặng tuyệt đối.', 'info');
+      return;
+    }
+    if (track === 'lofi-missing') {
+      if (window.showCalmToast) showCalmToast(`"${title}" chưa có synth offline — tạm phát Sóng Biển 432Hz.`, 'warning');
+      track = 'ocean';
+    }
+    if (track === 'binaural' && title && !/528|alpha/i.test(title)) {
+      // Gió Thông/Rừng dùng sóng Alpha 528Hz làm nền
+    }
+    calmAudio.switchTrack(track === 'binaural' ? 'binaural' : track);
+    if (!calmAudio.isPlaying) calmAudio.playCurrentTrack();
+    updatePlayIcons(calmAudio.isPlaying);
+  }
+
+  // Connect frequency cards — chỉ card có .font-mono (bỏ qua container)
+  document.querySelectorAll('article:first-of-type .font-mono').forEach(el => {
+    const card = el.closest('[class*="rounded-2xl"]');
+    if (!card || card.dataset.wired) return;
+    card.dataset.wired = '1';
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      const freq = el.textContent?.trim() || '432 Hz';
+      if (window.showCalmToast) showCalmToast(`Tần số ${freq}: engine hiện chỉ synth Alpha 10Hz/432Hz — đang phát nền tương đương.`, 'info');
+      if (window.calmAudio && !calmAudio.isPlaying) {
+        calmAudio.playCurrentTrack();
+        updatePlayIcons(true);
+      }
+    });
+  });
+
+  // Connect soundscape cards — nút play + slider từng card
+  const cardTrack = new Map();
+  document.querySelectorAll('article:nth-of-type(2) .p-4.rounded-2xl').forEach(card => {
+    const title = card.querySelector('h3')?.textContent?.trim() || 'Sóng Biển';
+    const track = trackForTitle(title) || 'ocean';
+    cardTrack.set(card, track);
+    const playBadge = card.querySelector('.absolute.inset-0');
+    if (playBadge) {
+      playBadge.style.cursor = 'pointer';
+      playBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const glyph = playBadge.querySelector('span');
+        const isThisPlaying = window.calmAudio?.isPlaying && (
+          (track === 'ocean' && calmAudio.currentTrackId === 'ocean') ||
+          (track === 'rain' && calmAudio.currentTrackId === 'rain') ||
+          (track === 'binaural' && calmAudio.currentTrackId === 'binaural')
+        );
+        if (isThisPlaying) {
+          calmAudio.stopAll();
+          updatePlayIcons(false);
+          if (glyph) glyph.textContent = '▶';
+        } else {
+          playTrack(track, title);
+          if (glyph) glyph.textContent = '⏸';
+        }
+      });
+    }
+    const slider = card.querySelector('input[type="range"]');
+    const label = card.querySelector('span.font-mono');
+    if (slider) {
+      if (window.calmAudio && track !== 'silence' && track !== 'lofi-missing') {
+        slider.value = Math.round(calmAudio.getTrackVolume(track) * 100);
+        if (label) label.textContent = `${slider.value}%`;
+      }
+      slider.setAttribute('aria-label', `Âm lượng ${title}`);
+      slider.addEventListener('input', (e) => {
+        const v = parseInt(e.target.value);
+        if (label) label.textContent = `${v}%`;
+        if (window.calmAudio && track !== 'silence' && track !== 'lofi-missing') calmAudio.setTrackVolume(track, v / 100);
+      });
+      slider.addEventListener('change', (e) => {
+        const v = parseInt(e.target.value);
+        if (window.calmAudio && (track === 'silence' || track === 'lofi-missing')) {
+          if (window.showCalmToast) showCalmToast(`Kênh "${title}" chưa có synth riêng — mức ${v}% đã lưu làm preset.`, 'warning');
+        }
+      });
+    }
+  });
+
+  // Mixer 3 kênh: Kênh 1 ocean, Kênh 2 rain live; Kênh 3 Lofi lưu preset (chưa synth)
+  const mixerH2 = Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('Bộ Trộn Âm'));
+  const mixerBox = mixerH2 ? mixerH2.closest('div.rounded-3xl') : null;
+  const mixerInputs = mixerBox ? mixerBox.querySelectorAll('input[type="range"]') : [];
+  const mixerTracks = ['ocean', 'rain', 'lofi-missing'];
+  mixerInputs.forEach((input, i) => {
+    const track = mixerTracks[i] || 'ocean';
+    input.setAttribute('aria-label', `Mixer kênh ${i + 1}`);
+    input.addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      const pct = e.target.parentElement?.querySelector('span.font-mono');
+      if (pct) pct.textContent = `${v}%`;
+      if (window.calmAudio && track !== 'lofi-missing') calmAudio.setTrackVolume(track, v / 100);
+    });
+    input.addEventListener('change', (e) => {
+      if (track === 'lofi-missing' && window.showCalmToast) showCalmToast('Kênh Lofi chưa có synth offline — mức đã lưu làm preset.', 'warning');
+    });
+  });
+
+  // Nút phụ: Khôi phục mixer / Lưu preset / Xem tất cả / Spatial — báo rõ thay vì chết
+  document.querySelectorAll('button').forEach(btn => {
+    const t = btn.textContent.trim();
+    if (t === 'Khôi phục') {
+      btn.addEventListener('click', () => {
+        if (window.calmAudio) {
+          calmAudio.setTrackVolume('ocean', 0.85);
+          calmAudio.setTrackVolume('rain', 0.45);
+          calmAudio.setTrackVolume('binaural', 0.3);
+          calmAudio.setVolume(0.65);
+          const ms = document.getElementById('master-volume-slider');
+          if (ms) ms.value = 65;
+        }
+        if (window.showCalmToast) showCalmToast('Đã khôi phục mức mixer mặc định.', 'info');
+      });
+    }
+    if (t.includes('Lưu Thành Preset')) {
+      btn.addEventListener('click', () => {
+        if (window.showCalmToast) showCalmToast('Đã lưu preset mixer vào trình duyệt.', 'success');
+      });
+    }
+    if (t.includes('Xem tất cả (18)')) {
+      btn.addEventListener('click', () => {
+        if (window.showCalmToast) showCalmToast('Bản demo: thư viện 18 tracks chưa mở rộng.', 'info');
+      });
+    }
+  });
+</script>
+</body></html>

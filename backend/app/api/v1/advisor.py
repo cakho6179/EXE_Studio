@@ -1,0 +1,206 @@
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from datetime import datetime
+from pathlib import Path
+from pydantic import BaseModel
+from app.core.database import get_db
+from app.models.entities import User, UserProfile, Task, ChatSession, ChatMessage
+from app.api.v1.auth import get_current_user
+from app.services.ai_service import AIService
+from app.schemas.all_schemas import ChatMessageCreate, ChatMessageOut
+
+router = APIRouter()
+
+class ChatSessionOut(BaseModel):
+    id: str
+    title: str
+    created_at: datetime
+    message_count: int = 0
+
+
+@router.post("/chat")
+async def chat_with_advisor(
+    msg_in: ChatMessageCreate,
+    session_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Dùng session được chọn, fallback phiên mới nhất
+    session = None
+    if session_id:
+        session = db.query(ChatSession).filter(
+            ChatSession.id == session_id, ChatSession.user_id == current_user.id
+        ).first()
+    if not session:
+        session = db.query(ChatSession).filter(
+            ChatSession.user_id == current_user.id
+        ).order_by(ChatSession.created_at.desc()).first()
+    if not session:
+        session = ChatSession(user_id=current_user.id, title="Cố vấn Học thuật AI")
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+
+    # Save user message
+    user_msg = ChatMessage(session_id=session.id, sender="user", content=msg_in.content)
+    db.add(user_msg)
+    db.commit()
+
+    # Query student profile and active tasks to enrich user_context
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
+    active_tasks = db.query(Task).filter(Task.user_id == current_user.id, Task.status != "completed").limit(5).all()
+    tasks_summary = [f"- {t.title} ({t.subject_name or t.subject_code}, hạn chót: {t.deadline or 'Trong tuần'})" for t in active_tasks]
+
+    user_context = {
+        "full_name": current_user.full_name,
+        "major": current_user.major,
+        "university": current_user.university,
+        "chronotype": profile.chronotype if profile else "bear",
+        "wake_time": profile.wake_up_time if profile else "06:30",
+        "sleep_time": profile.bed_time if profile else "23:00",
+        "active_tasks": tasks_summary
+    }
+    advisor_reply = await AIService.chat_with_advisor(msg_in.content, user_context)
+
+    # Save advisor message
+    adv_msg = ChatMessage(session_id=session.id, sender="advisor", content=advisor_reply)
+    db.add(adv_msg)
+    db.commit()
+    db.refresh(adv_msg)
+
+    return {
+        "reply": advisor_reply,
+        "message_id": adv_msg.id,
+        "session_id": session.id,
+        "created_at": adv_msg.created_at
+    }
+
+
+@router.get("/sessions", response_model=List[ChatSessionOut])
+def list_sessions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    sessions = db.query(ChatSession).filter(
+        ChatSession.user_id == current_user.id
+    ).order_by(ChatSession.created_at.desc()).all()
+    out = []
+    for s in sessions:
+        count = db.query(ChatMessage).filter(ChatMessage.session_id == s.id).count()
+        out.append({"id": s.id, "title": s.title, "created_at": s.created_at, "message_count": count})
+    return out
+
+
+@router.post("/new-session", response_model=ChatSessionOut)
+def new_session(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    count = db.query(ChatSession).filter(ChatSession.user_id == current_user.id).count()
+    session = ChatSession(user_id=current_user.id, title=f"Phiên tham vấn {count + 1}")
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    return {"id": session.id, "title": session.title, "created_at": session.created_at, "message_count": 0}
+
+
+@router.get("/sessions/{session_id}/messages", response_model=List[ChatMessageOut])
+def get_session_messages(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id, ChatSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phiên.")
+    return db.query(ChatMessage).filter(
+        ChatMessage.session_id == session.id
+    ).order_by(ChatMessage.created_at.asc()).all()
+
+@router.get("/history", response_model=List[ChatMessageOut])
+def get_chat_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    session = db.query(ChatSession).filter(ChatSession.user_id == current_user.id).first()
+    if not session:
+        return []
+    return db.query(ChatMessage).filter(ChatMessage.session_id == session.id).order_by(ChatMessage.created_at.asc()).all()
+
+
+ALLOWED_DOC_EXTS = {".pdf", ".docx", ".tex", ".txt", ".md"}
+MAX_DOC_BYTES = 25 * 1024 * 1024
+
+
+@router.post("/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Nhận giáo trình thật từ sinh viên, lưu vào server và trả metadata thật."""
+    suffix = Path(file.filename or "").suffix.lower()
+    if suffix not in ALLOWED_DOC_EXTS:
+        raise HTTPException(status_code=400, detail="Chỉ hỗ trợ PDF, DOCX, TEX, TXT, MD.")
+    content = await file.read()
+    if len(content) > MAX_DOC_BYTES:
+        raise HTTPException(status_code=400, detail="File vượt quá 25MB.")
+    if not content:
+        raise HTTPException(status_code=400, detail="File rỗng.")
+    upload_dir = Path(__file__).resolve().parent.parent.parent.parent / "uploads"
+    upload_dir.mkdir(exist_ok=True)
+    safe_name = f"{current_user.id}_{int(datetime.utcnow().timestamp())}_{Path(file.filename).name}"
+    (upload_dir / safe_name).write_bytes(content)
+    # Đọc thử text để AI có ngữ cảnh thật (txt/md; pdf/docx chỉ đếm dung lượng ở bản này)
+    text_preview = ""
+    if suffix in {".txt", ".md", ".tex"}:
+        try:
+            text_preview = content.decode("utf-8", errors="ignore")[:2000]
+        except Exception:
+            text_preview = ""
+    # Lưu metadata vào DB để trang Knowledge liệt kê thật
+    from app.models.entities import Document
+    doc = Document(
+        user_id=current_user.id,
+        filename=file.filename or "tai-lieu",
+        stored_name=safe_name,
+        size_bytes=len(content),
+        text_chars=len(text_preview),
+    )
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+    return {
+        "status": "success",
+        "message": f"Đã nạp {file.filename} ({len(content) // 1024}KB) vào bộ nhớ AI.",
+        "id": doc.id,
+        "filename": file.filename,
+        "size_kb": len(content) // 1024,
+        "text_chars": len(text_preview),
+        "text_preview": text_preview[:500],
+    }
+
+
+@router.get("/documents")
+def list_documents(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.entities import Document
+    docs = db.query(Document).filter(
+        Document.user_id == current_user.id
+    ).order_by(Document.created_at.desc()).all()
+    return {
+        "documents": [
+            {
+                "id": d.id,
+                "filename": d.filename,
+                "size_kb": (d.size_bytes or 0) // 1024,
+                "created_at": d.created_at,
+            }
+            for d in docs
+        ]
+    }

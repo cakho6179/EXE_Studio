@@ -1,0 +1,215 @@
+from datetime import datetime
+from typing import List, Optional
+from pydantic import BaseModel
+
+# Auth Schemas
+class UserRegister(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    university: Optional[str] = "ĐHQG TP.HCM"
+    major: Optional[str] = "Công nghệ Thông tin"
+    academic_year: Optional[int] = 3
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: dict
+
+class UserProfileOut(BaseModel):
+    chronotype: str
+    wake_up_time: str
+    bed_time: str
+    peak_start_time: str
+    peak_end_time: str
+    target_daily_focus_hours: float
+    target_gpa: float
+    preferred_study_style: str
+
+    class Config:
+        from_attributes = True
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    university: Optional[str] = None
+    major: Optional[str] = None
+    academic_year: Optional[int] = None
+    chronotype: Optional[str] = None
+    wake_up_time: Optional[str] = None
+    bed_time: Optional[str] = None
+    peak_start_time: Optional[str] = None
+    peak_end_time: Optional[str] = None
+    target_daily_focus_hours: Optional[float] = None
+    target_gpa: Optional[float] = None
+    preferred_study_style: Optional[str] = None
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    student_id: Optional[str] = None
+    university: str
+    major: str
+    academic_year: int
+    is_email_verified: bool
+    avatar_url: Optional[str] = None
+    profile: Optional[UserProfileOut] = None
+
+    class Config:
+        from_attributes = True
+
+
+# Task & AI Deconstructor Schemas
+class MicroSubtaskOut(BaseModel):
+    id: str
+    task_id: str
+    title: str
+    estimated_minutes: int
+    pomodoro_count: int
+    order_index: int
+    is_completed: bool
+    recommended_circadian_window: str
+
+    class Config:
+        from_attributes = True
+
+class MicroSubtaskCreate(BaseModel):
+    title: str
+    estimated_minutes: int = 25
+    pomodoro_count: int = 1
+    recommended_circadian_window: Optional[str] = "Khung giờ vàng chiều"
+
+class TaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    subject_name: Optional[str] = "Trí tuệ nhân tạo"
+    subject_code: Optional[str] = "CS301"
+    deadline: Optional[datetime] = None
+    priority: Optional[str] = "high"
+    complexity: Optional[str] = "medium"
+    subtasks: Optional[List[MicroSubtaskCreate]] = []
+
+class TaskOut(BaseModel):
+    id: str
+    title: str
+    description: Optional[str]
+    subject_name: str
+    subject_code: str
+    deadline: Optional[datetime]
+    priority: str
+    complexity: str
+    status: str
+    total_sprints: int
+    completed_sprints: int
+    created_at: datetime
+    subtasks: List[MicroSubtaskOut] = []
+
+    class Config:
+        from_attributes = True
+
+class AIDeconstructRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    subject: Optional[str] = None
+    deadline: Optional[str] = None
+    complexity: Optional[str] = "Đồ án lớn / Bài báo (5 - 8 Sprints)"
+
+class AISubtaskItem(BaseModel):
+    title: str
+    estimated_minutes: int
+    pomodoro_count: int
+    recommended_circadian_window: str
+    cognitive_load: str # high, medium, light
+
+class AIDeconstructResponse(BaseModel):
+    task_title: str
+    summary_advice: str
+    circadian_tip: str
+    total_estimated_minutes: int
+    subtasks: List[AISubtaskItem]
+
+
+# Focus Schemas
+class FocusSessionCreate(BaseModel):
+    task_id: Optional[str] = None
+    planned_minutes: int = 25
+    actual_minutes: int = 25
+    distractions_count: int = 0
+    ambient_sound_used: Optional[str] = "Sóng Biển 432Hz"
+    notes: Optional[str] = None
+
+class FocusSessionOut(BaseModel):
+    id: str
+    task_id: Optional[str]
+    planned_minutes: int
+    actual_minutes: int
+    distractions_count: int
+    ambient_sound_used: str
+    notes: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Schedule Schemas
+class ScheduleEventCreate(BaseModel):
+    task_id: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    event_date: Optional[str] = None # YYYY-MM-DD
+    start_time: str # "14:00"
+    end_time: str   # "15:30"
+    event_type: str = "deep_work"
+    is_circadian_optimized: bool = True
+
+class ScheduleEventOut(BaseModel):
+    id: str
+    task_id: Optional[str]
+    title: str
+    description: Optional[str]
+    event_date: Optional[str] = None
+    start_time: str
+    end_time: str
+    event_type: str
+    is_completed: bool
+    is_circadian_optimized: bool
+
+    class Config:
+        from_attributes = True
+
+
+# Circadian Pulse Schemas
+class CircadianPulseOut(BaseModel):
+    pulse_percent: int
+    status_text: str
+    is_golden_hour: bool
+    current_brainwave_state: str
+    golden_hour_range: str
+    recommendation: str
+
+class CircadianInsightItem(BaseModel):
+    title: str
+    detail: str
+    confidence: str
+    action_label: str
+    suggested_time: str
+
+
+# AI Advisor Schemas
+class ChatMessageCreate(BaseModel):
+    content: str
+
+class ChatMessageOut(BaseModel):
+    id: str
+    session_id: str
+    sender: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -1,0 +1,527 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Thiết lập Mục tiêu &amp; Nhịp độ Học tập</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../../assets/js/theme.js"></script>
+<!-- Google Font: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<style data-purpose="background-and-glass">
+    /* Subtle watercolor simulation overlay matching the solitary lighthouse theme */
+    body {
+      background-color: #e9f0f8;
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(254, 243, 199, 0.55) 0px, transparent 50%),
+        radial-gradient(at 85% 20%, rgba(224, 231, 255, 0.7) 0px, transparent 50%),
+        radial-gradient(at 50% 80%, rgba(199, 210, 254, 0.5) 0px, transparent 60%),
+        radial-gradient(at 10% 75%, rgba(253, 230, 138, 0.4) 0px, transparent 45%),
+        linear-gradient(180deg, #f8fafc 0%, #e0e7ff 45%, #dbeafe 75%, #bfdbfe 100%);
+      background-attachment: fixed;
+      background-size: cover;
+      min-height: 100vh;
+    }
+
+    /* Ambient watercolor haze backdrop texture */
+    .lighthouse-ambient-art {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.45;
+      background: 
+        radial-gradient(ellipse 400px 300px at 18% 45%, rgba(251, 191, 36, 0.25), transparent 70%),
+        radial-gradient(ellipse 600px 400px at 80% 60%, rgba(96, 165, 250, 0.3), transparent 75%);
+      filter: blur(40px);
+      z-index: 0;
+    }
+
+    .glass-surface {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+    }
+
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+  </style>
+<style data-purpose="custom-range-slider">
+    /* Custom styling for the daily target hours slider */
+    input[type=range].calm-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range].calm-slider:focus {
+      outline: none;
+    }
+    input[type=range].calm-slider::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 10px;
+      cursor: pointer;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      border: none;
+    }
+    input[type=range].calm-slider::-webkit-slider-thumb {
+      height: 26px;
+      width: 26px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: grab;
+      -webkit-appearance: none;
+      margin-top: -8px;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.95), 0 4px 10px rgba(37, 99, 235, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    input[type=range].calm-slider::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.15);
+      box-shadow: 0 0 0 6px rgba(191, 219, 254, 0.6), 0 6px 14px rgba(37, 99, 235, 0.5);
+    }
+    input[type=range].calm-slider::-moz-range-track {
+      width: 100%;
+      height: 10px;
+      cursor: pointer;
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    input[type=range].calm-slider::-moz-range-thumb {
+      height: 26px;
+      width: 26px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 4px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="font-sans text-slate-700 antialiased selection:bg-blue-100 selection:text-blue-900 relative min-h-screen flex flex-col justify-between p-4 sm:p-6 md:p-8">
+<!-- Ambient canvas wash representing the calming coast & lighthouse mist -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" data-purpose="background-scenery"><img alt="Khung cảnh màu nước ngọn hải đăng bình yên hoàng hôn" class="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[0.98] scale-[1.01]" src="../../assets/images/lighthouse-wide.png"><div class="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-slate-900/25"></div><div class="absolute inset-0 backdrop-blur-[1.5px]"></div></div>
+<!-- BEGIN: TopHeaderNavigation -->
+<header class="relative z-20 w-full max-w-7xl mx-auto flex items-center justify-between gap-4 py-1" data-purpose="top-nav-bar">
+<!-- Left: Calm Status Indicator Capsule -->
+<div class="glass-pill shadow-pill rounded-full px-4 py-2 flex items-center gap-2.5 text-xs md:text-sm font-medium text-slate-700 border border-white/80">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</span>
+<span>Chế độ tập trung tĩnh lặng</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-400 font-semibold uppercase tracking-wider text-[11px]">CALM MODE 432Hz</span>
+</div>
+<!-- Right Controls: Audio Status, Language, Theme Toggle -->
+<div class="flex items-center gap-3 text-xs md:text-sm">
+<!-- Ambient Audio Badge -->
+<div class="glass-pill shadow-pill rounded-full px-4 py-2 flex items-center gap-2 text-slate-600 border border-white/80">
+<!-- Musical note / audio wave icon -->
+<svg class="w-4 h-4 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-slate-700">Sóng biển &amp; Lofi 432Hz</span>
+</div>
+<!-- Language selector dropdown -->
+<button aria-label="Đổi ngôn ngữ" class="glass-pill shadow-pill rounded-full px-3.5 py-2 font-medium text-slate-600 flex items-center gap-1.5 hover:text-blue-600 transition" type="button">
+<span class="text-blue-600 font-semibold">VN</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-400">EN</span>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Theme Mode (Moon icon) -->
+<button aria-label="Chế độ ban đêm" class="glass-pill shadow-pill rounded-full w-9 h-9 flex items-center justify-center text-slate-600 hover:text-blue-600 transition" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: TopHeaderNavigation -->
+<!-- BEGIN: MainWorkspaceCard -->
+<main class="relative z-10 my-6 md:my-8 flex justify-center items-center w-full">
+<div class="glass-surface shadow-calm rounded-[32px] w-full max-w-4xl p-6 sm:p-9 md:p-11 relative overflow-hidden" data-purpose="onboarding-rhythm-settings">
+<!-- Top Decorative Glow Orb inside Card -->
+<div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-100/70 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Header Section: Logo, Badge & Title -->
+<div class="text-center max-w-2xl mx-auto mb-8">
+<!-- Logo Stamp -->
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white shadow-md border border-blue-50 p-2 mb-3">
+<img alt="Stuđiô AI Logo" class="w-full h-full object-contain" src="../../assets/images/logo.png">
+</div>
+<!-- Category Badge -->
+<div class="block">
+<span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wider text-blue-700 bg-blue-50 border border-blue-200/60 uppercase">
+<span>Stuđiô AI</span>
+<span class="text-blue-400">•</span>
+<span>Cân Bằng Nhịp Sinh Học &amp; Mục Tiêu</span>
+</span>
+</div>
+<!-- Main Title -->
+<h1 class="text-2xl sm:text-3xl md:text-3xl font-bold text-slate-900 mt-3 tracking-tight">
+          Thiết lập Giờ học &amp; Mức độ Tập trung Hằng ngày
+        </h1>
+<!-- Explanatory Text -->
+<p class="text-sm text-slate-500 mt-2.5 leading-relaxed font-normal">
+          Stuđiô AI sẽ tự động phân bổ phiên học Pomodoro và tần số âm thanh sóng não Alpha theo nhịp độ sinh học bạn chọn để duy trì trạng thái dòng chảy và chống quá tải (<span class="italic text-slate-600">burnout</span>).
+        </p>
+</div>
+<!-- Section: Visual Rhythm Gauge & Interactive Controls -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-2 pb-6 border-b border-slate-100">
+<!-- Left: Circular Biometric Dial (5 cols) -->
+<div class="lg:col-span-5 flex flex-col items-center justify-center p-4 bg-gradient-to-b from-blue-50/70 to-indigo-50/30 rounded-3xl border border-blue-100/70 relative">
+<div class="relative w-48 h-48 flex items-center justify-center">
+<!-- Dial SVG Ring -->
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 160 160">
+<!-- Background Circle Track -->
+<circle cx="80" cy="80" fill="none" r="66" stroke="#e2e8f0" stroke-width="12"></circle>
+<!-- Highlighted Gradient Progress Arc (4.5 hours out of 6 optimal baseline ~ 75%) -->
+<defs>
+<linearGradient id="dialGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#60a5fa"></stop>
+<stop offset="60%" stop-color="#2563eb"></stop>
+<stop offset="100%" stop-color="#1d4ed8"></stop>
+</linearGradient>
+</defs>
+<circle class="transition-all duration-300 ease-out" cx="80" cy="80" fill="none" id="dial-circle" r="66" stroke="url(#dialGradient)" stroke-dasharray="414.69" stroke-dashoffset="103.67" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<!-- Inner Dial Content -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
+<span class="text-3xl font-extrabold text-slate-900 tracking-tight" id="display-hours-gauge">4.5<span class="text-lg font-semibold text-blue-600 ml-0.5">h</span></span>
+<span class="text-xs font-semibold text-blue-600 uppercase tracking-wide mt-0.5">mỗi ngày</span>
+<span class="inline-flex items-center text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 border border-emerald-200">
+                ● Tối ưu sinh học
+              </span>
+</div>
+</div>
+<!-- Dial Summary Stats -->
+<div class="text-center mt-3 w-full">
+<p class="text-xs font-semibold text-slate-800">Nhịp độ cân bằng lý tưởng</p>
+<p class="text-[11px] text-slate-500 mt-1 leading-snug">
+              3 hiệp Pomodoro sâu (90p) + 2 hiệp ôn tập nhẹ (45p)
+            </p>
+</div>
+</div>
+<!-- Right: Daily Duration Interactive Slider & Breakdown (7 cols) -->
+<div class="lg:col-span-7 space-y-6">
+<!-- Slider Container -->
+<div class="space-y-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+<div class="flex items-center justify-between">
+<label class="text-sm font-semibold text-slate-900 flex items-center gap-2" for="hours-range">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Thời lượng học mục tiêu hằng ngày
+              </label>
+<span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-100 text-blue-700 font-mono" id="slider-pill-val">
+                4.5 giờ / ngày
+              </span>
+</div>
+<!-- Custom Input Range -->
+<div class="relative pt-2 pb-1">
+<input aria-label="Điều chỉnh số giờ học" class="calm-slider" id="hours-range" max="8" min="1" step="0.5" type="range" value="4.5">
+</div>
+<!-- Milestone Labels along Slider -->
+<div class="grid grid-cols-4 text-[11px] text-slate-400 font-medium text-center pt-1">
+<div class="text-left">
+<span class="block text-slate-600 font-semibold">1 - 2 giờ</span>
+<span class="text-[10px]">Nhẹ nhàng</span>
+</div>
+<div class="text-center">
+<span class="block text-blue-600 font-bold">4 - 5 giờ</span>
+<span class="text-[10px] text-blue-500">Khuyến nghị AI</span>
+</div>
+<div class="text-center">
+<span class="block text-slate-600 font-semibold">6 giờ</span>
+<span class="text-[10px]">Chuyên sâu</span>
+</div>
+<div class="text-right">
+<span class="block text-amber-600 font-semibold">7 - 8+ giờ</span>
+<span class="text-[10px]">Chạy nước rút</span>
+</div>
+</div>
+</div>
+<!-- Micro feature: Session structure recommendation -->
+<div class="flex items-center justify-between text-xs px-2 text-slate-500">
+<span class="flex items-center gap-1.5">
+<svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+              Tự động chèn 10 phút nghỉ thư giãn mắt giữa các chặng
+            </span>
+<span class="text-slate-400">Đạt chuẩn 90m Ultradian</span>
+</div>
+</div>
+</div>
+<!-- Section: Chronotype Selection -->
+<div class="mt-7" data-purpose="chronotype-selection">
+<h2 class="text-sm font-bold text-slate-900 tracking-tight mb-3.5">
+<span>Bạn thuộc tuýp sinh học nào?</span>
+<span class="text-xs font-normal text-slate-400">(AI dùng để tính khung giờ vàng riêng cho bạn)</span>
+</h2>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-label="Tuýp nhịp sinh học">
+<label class="relative flex items-center gap-3 p-4 rounded-2xl border-2 border-blue-600 bg-blue-50/50 shadow-sm transition-all cursor-pointer">
+<input checked class="sr-only" name="chronotype-mode" type="radio" value="lark">
+<span class="text-2xl">🌅</span>
+<span><span class="font-bold text-blue-900 text-sm block">Chim Sơn Ca</span>
+<span class="text-[11px] text-blue-700">Tỉnh táo buổi sáng (06:00 – 23:00)</span></span>
+</label>
+<label class="relative flex items-center gap-3 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group">
+<input class="sr-only" name="chronotype-mode" type="radio" value="owl">
+<span class="text-2xl">🦉</span>
+<span><span class="font-bold text-slate-800 text-sm block">Cú Đêm</span>
+<span class="text-[11px] text-slate-500">Đỉnh cao buổi tối (09:00 – 01:00)</span></span>
+</label>
+<label class="relative flex items-center gap-3 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group">
+<input class="sr-only" name="chronotype-mode" type="radio" value="hummingbird">
+<span class="text-2xl">🐦</span>
+<span><span class="font-bold text-slate-800 text-sm block">Chim Ruồi</span>
+<span class="text-[11px] text-slate-500">Linh hoạt cả ngày (07:30 – 23:30)</span></span>
+</label>
+</div>
+</div>
+<!-- Section: Intensity Mode Selection -->
+<div class="mt-7" data-purpose="intensity-selection">
+<div class="flex items-center justify-between mb-3.5">
+<h2 class="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+<span>Mức độ Cường độ &amp; Tần số Sóng não</span>
+<span class="text-xs font-normal text-slate-400">(Chọn nhịp học phù hợp với giai đoạn của bạn)</span>
+</h2>
+<button type="button" onclick="window.location.href='../18-sound-sanctuary/index.html'" class="text-[11px] text-blue-600 font-medium cursor-pointer hover:underline">Tìm hiểu tần số 432Hz</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<!-- Option 1: Dưỡng khí -->
+<label class="relative flex flex-col p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group">
+<input class="sr-only" name="intensity-mode" type="radio" value="relaxed">
+<div class="flex items-center justify-between">
+<span class="text-xl">🌱</span>
+<span class="w-4 h-4 rounded-full border border-slate-300 group-hover:border-blue-400 flex items-center justify-center"></span>
+</div>
+<span class="font-bold text-slate-800 text-sm mt-2">Dưỡng Khí &amp; Bền Bỉ</span>
+<p class="text-[11px] text-slate-500 mt-1 leading-snug">25m học • 10m nghỉ</p>
+<div class="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              Sóng Alpha 10Hz thư thái
+            </div>
+</label>
+<!-- Option 2: Cân Bằng (Active Selected) -->
+<label class="relative flex flex-col p-4 rounded-2xl border-2 border-blue-600 bg-blue-50/50 shadow-sm transition-all cursor-pointer">
+<input checked="" class="sr-only" name="intensity-mode" type="radio" value="balanced">
+<div class="flex items-center justify-between">
+<span class="text-xl">🌊</span>
+<span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+</div>
+<span class="font-bold text-blue-900 text-sm mt-2 flex items-center gap-1.5">
+              Nhịp Độ Cân Bằng
+              <span class="text-[9px] font-bold bg-blue-200 text-blue-800 px-1.5 py-0.2 rounded uppercase">Đề xuất</span>
+</span>
+<p class="text-[11px] text-blue-700 mt-1 leading-snug">50m học • 10m nghỉ</p>
+<div class="mt-2.5 pt-2 border-t border-blue-100 text-[10px] text-blue-800 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              Sóng biển &amp; Mưa nhẹ 432Hz
+            </div>
+</label>
+<!-- Option 3: Tập trung sâu -->
+<label class="relative flex flex-col p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group">
+<input class="sr-only" name="intensity-mode" type="radio" value="deep">
+<div class="flex items-center justify-between">
+<span class="text-xl">⚡</span>
+<span class="w-4 h-4 rounded-full border border-slate-300 group-hover:border-blue-400 flex items-center justify-center"></span>
+</div>
+<span class="font-bold text-slate-800 text-sm mt-2">Tập Trung Cao Độ</span>
+<p class="text-[11px] text-slate-500 mt-1 leading-snug">90m học • 15m nghỉ</p>
+<div class="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-slate-500 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+              Tiếng ồn Nâu &amp; Lofi 60 BPM
+            </div>
+</label>
+<!-- Option 4: Sprint Deadline -->
+<label class="relative flex flex-col p-4 rounded-2xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/20 transition-all cursor-pointer group">
+<input class="sr-only" name="intensity-mode" type="radio" value="sprint">
+<div class="flex items-center justify-between">
+<span class="text-xl">🎯</span>
+<span class="w-4 h-4 rounded-full border border-slate-300 group-hover:border-amber-400 flex items-center justify-center"></span>
+</div>
+<span class="font-bold text-slate-800 text-sm mt-2">Chạy Nước Rút</span>
+<p class="text-[11px] text-slate-500 mt-1 leading-snug">Tối đa tập trung ngắn hạn</p>
+<div class="mt-2.5 pt-2 border-t border-slate-100 text-[10px] text-amber-700 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Cảnh báo mắt 20-20-20
+            </div>
+</label>
+</div>
+</div>
+<!-- Section: Smart Circadian Prediction Card -->
+<div class="mt-6 p-4 rounded-2xl bg-amber-50/70 border border-amber-200/70 flex flex-col md:flex-row items-start md:items-center justify-between gap-4" data-purpose="circadian-prediction">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+<!-- Lightbulb / Sun AI icon -->
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<h3 class="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
+<span>Dự báo Khung Giờ Học Vàng (Circadian Peak)</span>
+<span class="text-[10px] font-medium bg-amber-200/80 text-amber-800 px-1.5 py-0.5 rounded">AI Sinh Học</span>
+</h3>
+<p class="text-xs text-amber-800/90 mt-0.5">
+              Độ minh mẫn của bạn cao nhất vào <strong class="font-semibold text-amber-950">08:30 – 11:30</strong> và <strong class="font-semibold text-amber-950">14:30 – 16:30</strong>. Stuđiô AI sẽ ưu tiên các môn cần tư duy logic vào 2 khung này.
+            </p>
+</div>
+</div>
+<!-- Mini Energy Wave Indicator -->
+<div class="flex items-center gap-1.5 self-end md:self-center px-3 py-1.5 bg-white/80 rounded-xl border border-amber-200 text-[11px] font-semibold text-amber-800 whitespace-nowrap">
+<span>Năng lượng:</span>
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>94% Tối ưu</span>
+</div>
+</div>
+<!-- Action Buttons Footer inside card -->
+<div class="mt-8 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+<!-- Left Actions: Back & Reset -->
+<div class="flex items-center gap-2 w-full sm:w-auto">
+  <button id="btn-back-circadian" onclick="window.location.href='../08-onboarding-goals/index.html'" class="text-xs font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2.5 rounded-xl transition shadow-xs cursor-pointer" type="button">
+    ← Quay lại
+  </button>
+  <button id="btn-reset-circadian" class="text-xs font-semibold text-slate-500 hover:text-slate-800 px-3 py-2.5 rounded-xl transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer" type="button">
+    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+    </svg>
+    Khôi phục mặc định
+  </button>
+</div>
+<!-- Primary CTA Button -->
+<button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium text-sm shadow-md hover:shadow-glow transition-all duration-200 cursor-pointer" type="button">
+<span>Áp dụng vào Lịch trình Stuđiô</span>
+<svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</main>
+<!-- END: MainWorkspaceCard -->
+<!-- BEGIN: PageFooter -->
+<footer class="relative z-10 w-full max-w-5xl mx-auto text-center py-2" data-purpose="site-footer">
+<div class="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-1">
+<span class="text-amber-500">★★★★★</span>
+<span class="font-bold text-slate-700"></span>
+<span class="text-slate-300">•</span>
+<span>Không gian học tập tĩnh lặng cho sinh viên Việt Nam</span>
+</div>
+<p class="text-[11px] text-slate-400">
+      © 2025 CalmSpace Inc. • Stuđiô AI - Không gian học tập tĩnh lặng. • Điều khoản dịch vụ • Chính sách quyền riêng tư • Hỗ trợ 24/7
+    </p>
+</footer>
+<!-- END: PageFooter -->
+<!-- Simple interaction script to demonstrate reactive slider and gauge -->
+<!-- Stuđiô AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/app.js"></script>
+
+<script data-purpose="slider-interaction">
+    const hoursInput = document.getElementById('hours-range');
+    const displayGauge = document.getElementById('display-hours-gauge');
+    const sliderPill = document.getElementById('slider-pill-val');
+    const dialCircle = document.getElementById('dial-circle');
+
+    // Total circumference for r=66 is ~414.69
+    const circumference = 2 * Math.PI * 66;
+
+    if (hoursInput && displayGauge && sliderPill && dialCircle) {
+      hoursInput.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value);
+        displayGauge.innerHTML = `${value}<span class="text-lg font-semibold text-blue-600 ml-0.5">h</span>`;
+        sliderPill.textContent = `${value} giờ / ngày`;
+
+        // Map 1h - 8h range to progress offset (8h represents 100%)
+        const percentage = Math.min(Math.max(value / 8, 0.1), 1);
+        const offset = circumference - (percentage * circumference);
+        dialCircle.style.strokeDashoffset = offset;
+      });
+
+      const resetBtn = document.getElementById('btn-reset-circadian');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          hoursInput.value = 4.5;
+          displayGauge.innerHTML = '4.5<span class="text-lg font-semibold text-blue-600 ml-0.5">h</span>';
+          sliderPill.textContent = '4.5 giờ / ngày';
+          const percentage = 4.5 / 8;
+          dialCircle.style.strokeDashoffset = circumference - (percentage * circumference);
+          // Reset cả intensity về balanced
+          const balanced = document.querySelector('input[name="intensity-mode"][value="balanced"]');
+          if (balanced) {
+            balanced.checked = true;
+            document.querySelectorAll('input[name="intensity-mode"]').forEach(r => {
+              const card = r.closest('label');
+              if (card) {
+                const on = r.checked;
+                card.className = on
+                  ? 'relative flex flex-col p-4 rounded-2xl border-2 border-blue-600 bg-blue-50/50 shadow-sm transition-all cursor-pointer'
+                  : 'relative flex flex-col p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group';
+              }
+            });
+          }
+          if (window.showCalmToast) showCalmToast('Đã khôi phục mức khuyến nghị sinh học (4.5h/ngày)', 'info');
+        });
+      }
+    }
+
+    // Connect Primary CTA (lưu slider + intensity thật)
+    document.querySelectorAll('button').forEach(btn => {
+      if (btn.textContent.includes('Áp dụng vào Lịch trình')) {
+        btn.addEventListener('click', async () => {
+          const hours = parseFloat(document.getElementById('hours-range')?.value || '4.5');
+          const intensity = (document.querySelector('input[name="intensity-mode"]:checked')?.value) || 'balanced';
+          const chronotype = (document.querySelector('input[name="chronotype-mode"]:checked')?.value) || 'lark';
+          const styleMap = { relaxed: 'pomodoro', balanced: 'pomodoro', deep: 'deep_work', sprint: 'sprint' };
+          btn.disabled = true;
+          btn.classList.add('opacity-70','cursor-not-allowed');
+          // Update local user session
+          try {
+            if (window.auth && typeof window.auth.getUser === 'function') {
+              const u = window.auth.getUser();
+              if (u) {
+                u.chronotype = chronotype;
+                if (typeof window.auth.setUser === 'function') window.auth.setUser(u);
+              }
+            }
+          } catch(e) {}
+
+          // Send PUT request to API (giờ thật + intensity thật + chronotype thật)
+          try {
+            if (window.api && typeof window.api.put === 'function') {
+              await window.api.put('/auth/profile', {
+                chronotype: chronotype,
+                wake_up_time: chronotype === 'owl' ? '09:00' : (chronotype === 'hummingbird' ? '07:30' : '06:30'),
+                bed_time: chronotype === 'owl' ? '01:00' : (chronotype === 'hummingbird' ? '23:30' : '23:00'),
+                target_daily_focus_hours: hours,
+                preferred_study_style: styleMap[intensity] || 'pomodoro'
+              });
+            }
+          } catch(e) {
+            if (window.showCalmToast) showCalmToast('Không lưu online được, đã lưu tạm offline.', 'warning');
+          } finally {
+            btn.disabled = false;
+            btn.classList.remove('opacity-70','cursor-not-allowed');
+          }
+
+          if (window.showCalmToast) showCalmToast(`Đã lưu nhịp sinh học (${hours}h/ngày, ${intensity})! Chào mừng vào Không gian học tập.`, 'success');
+          setTimeout(() => {
+            window.location.href = '../10-dashboard/index.html';
+          }, 600);
+        });
+      }
+    });
+</script>
+</body></html>

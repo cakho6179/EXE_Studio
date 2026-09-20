@@ -1,0 +1,892 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Quản lý Nhiệm vụ &amp; Phân rã AI (Tasks &amp; Micro-Breakdown)</title>
+<!-- Tailwind CSS CDN with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<script src="../../assets/js/theme.js"></script>
+<style data-purpose="custom-glassmorphism">
+    /* Glassmorphism backgrounds & subtle border highlights */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(241, 245, 249, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.8);
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased relative min-h-screen selection:bg-blue-100 selection:text-blue-700">
+<!-- BEGIN: BackgroundLighthouse -->
+<!-- Hình nền ngọn hải đăng nghệ thuật màu nước fixed toàn màn hình với lớp phủ mờ tinh tế -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+<img alt="Lighthouse Watercolor Calm Wallpaper" class="w-full h-full object-cover object-center transform scale-105 opacity-80" src="../../assets/images/lighthouse-wide.png">
+<div class="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-white/80 backdrop-blur-[2px]"></div>
+</div>
+<!-- END: BackgroundLighthouse -->
+<div class="relative z-10 flex flex-col min-h-screen">
+<!-- BEGIN: HeaderNavigation -->
+<header class="sticky top-0 z-40 glass-header px-4 sm:px-6 lg:px-8 py-3 transition-all">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+<!-- Left: Logo & Brand Workspace Status -->
+<div class="flex items-center space-x-4">
+<div class="flex items-center space-x-3 cursor-pointer">
+<img alt="Stuđiô AI Logo" class="w-9 h-9 object-contain drop-shadow-sm" src="../../assets/images/logo.png">
+<div>
+<div class="flex items-center space-x-2">
+<span class="font-bold text-xl tracking-tight text-slate-900">Stuđiô AI</span>
+<span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-blue-200">CALM WORKSPACE</span>
+</div>
+<p class="text-xs text-slate-500 font-normal">Không gian học tập &amp; trợ lý sinh học AI</p>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-6 w-px bg-slate-200"></div>
+<!-- Status Pill -->
+<div class="flex items-center space-x-2 bg-emerald-50/90 text-emerald-800 px-3 py-1 rounded-full text-xs font-medium border border-emerald-200/60 shadow-2xs">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span>Chế độ tĩnh lặng • 432Hz</span>
+</div>
+</div>
+<!-- Center: Primary Navigation Tabs -->
+<nav class="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/60 shadow-inner">
+<a class="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" href="../10-dashboard/index.html">Tổng quan</a>
+<a class="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" href="../13-planner/index.html">Lập kế hoạch</a>
+<a class="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" href="../14-schedule/index.html">Lịch trình AI</a>
+<!-- Active Tab: Nhiệm vụ -->
+<a class="px-4 py-2 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm transition" href="../11-tasks/index.html">Nhiệm vụ &amp; Chia nhỏ</a>
+<a class="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" href="../18-sound-sanctuary/index.html">Âm thanh &amp; Thư giãn</a>
+<a class="px-4 py-2 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" href="../17-ai-advisor/index.html">Cố vấn AI</a>
+</nav>
+<!-- Right: Mini Audio Player & User Profile -->
+<div class="flex items-center space-x-4">
+<!-- Audio Mini Widget -->
+<div class="flex items-center space-x-2 bg-blue-50/80 hover:bg-blue-100/70 border border-blue-200/60 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium transition cursor-pointer">
+<svg class="w-3.5 h-3.5 animate-pulse text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path>
+</svg>
+<span>Sóng biển 432Hz</span>
+</div>
+<!-- Notification Bell -->
+<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-full transition">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Info & Avatar -->
+<div class="flex items-center space-x-3 pl-2 border-l border-slate-200">
+<div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-semibold text-xs flex items-center justify-center shadow-sm" data-user-initials>
+              MC
+            </div>
+<div class="text-left">
+<div class="text-xs font-bold text-slate-800 leading-tight" data-user-name>Nguyễn Minh Châu</div>
+<div class="text-[11px] text-slate-500" data-user-school>Sinh viên ĐHQG</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: HeaderNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+<!-- Breadcrumbs & AI Engine Sync Bar -->
+<section class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center space-x-3 text-xs">
+<div class="flex items-center space-x-2 text-slate-500">
+<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 14l9-5-9-5-9 5 9 5z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-slate-700">Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+<span>/</span>
+<span class="text-slate-800 font-semibold">Quản lý Nhiệm vụ &amp; Đồ án</span>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100/80 text-blue-700 border border-blue-200">
+<svg class="w-3 h-3 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            AI TASK DECONSTRUCTOR V3.2
+          </span>
+</div>
+<div class="flex items-center space-x-3">
+<button class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-medium text-slate-700 bg-white/90 hover:bg-white border border-slate-300/80 rounded-xl shadow-2xs hover:shadow transition">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Đồng bộ LMS Canvas &amp; Google Classroom</span>
+</button>
+<button class="inline-flex items-center space-x-1.5 px-4 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm hover:shadow transition">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>+ Thêm nhiệm vụ mới</span>
+</button>
+</div>
+</section>
+<!-- Banner Tiêu đề & Giới thiệu -->
+<section class="glass-card rounded-3xl p-6 relative overflow-hidden border border-white/80 shadow-sm">
+<div class="flex justify-between items-start">
+<div class="max-w-3xl space-y-2">
+<div class="inline-flex items-center space-x-2 text-xs font-semibold text-blue-600 uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-blue-600"></span>
+<span>CALM TASK DECONSTRUCTION &amp; ULTRADIAN RHYTHM</span>
+</div>
+<h1 class="text-3xl font-bold text-slate-900 tracking-tight">Nhiệm vụ &amp; Chia nhỏ Thông minh AI</h1>
+<p class="text-slate-600 text-sm leading-relaxed">
+              AI tự động phân rã đồ án, bài tập lớn thành các <span class="text-blue-700 font-semibold">micro-sprints 25 phút Pomodoro</span> theo nhịp sinh học, giúp loại bỏ cảm giác choáng ngợp, chống trì hoãn và duy trì trạng thái thư thái sâu khi học tập.
+            </p>
+</div>
+<!-- Quick Biological Highlight Pill -->
+<div class="glass-pill bg-blue-50/70 border border-blue-200/70 rounded-2xl p-4 flex items-center space-x-4">
+<div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold text-lg">
+              🍅
+            </div>
+<div>
+<div class="text-xs text-slate-500 font-medium">Khung giờ vàng Alpha</div>
+<div class="text-base font-bold text-blue-900">14:30 - 16:30 • Đỉnh tư duy</div>
+<div class="text-[11px] text-emerald-600 font-semibold">Độ sẵn sàng giải quyết bài khó: 94%</div>
+</div>
+</div>
+</div>
+</section>
+<!-- BEGIN: StatsGrid -->
+<!-- 4 Thẻ chỉ số Glassmorphism -->
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-5" id="tasks-stats">
+<!-- Card 1 -->
+<div class="glass-card rounded-2xl p-5 border border-white/80 shadow-2xs hover:shadow-sm transition">
+<div class="flex items-center justify-between text-slate-500 text-xs mb-3 font-medium">
+<span>TỔNG NHIỆM VỤ TUẦN</span>
+<span class="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="flex items-baseline space-x-2 mb-2">
+<span class="text-2xl font-bold text-slate-900">14 việc</span>
+<span class="text-xs text-slate-500 font-normal">(Đã xong 9 • Còn 5)</span>
+</div>
+<!-- Progress bar -->
+<div class="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-blue-600 h-2 rounded-full transition-all" style="width: 64%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-slate-500">
+<span class="text-blue-600 font-medium">Tiến độ 64%</span>
+<span>Chỉ tiêu tuần cân bằng</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card rounded-2xl p-5 border border-white/80 shadow-2xs hover:shadow-sm transition">
+<div class="flex items-center justify-between text-slate-500 text-xs mb-3 font-medium">
+<span>MICRO-SPRINTS HÔM NAY</span>
+<span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="flex items-baseline space-x-2 mb-2">
+<span class="text-2xl font-bold text-slate-900">6 hiệp 25p</span>
+<span class="text-xs text-emerald-600 font-semibold">✓ 4 hoàn tất</span>
+</div>
+<div class="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: 66.6%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-slate-500">
+<span class="text-indigo-600 font-medium">4/6 hiệp đã xong</span>
+<span>Đúng nhịp Ultradian</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card rounded-2xl p-5 border border-white/80 shadow-2xs hover:shadow-sm transition">
+<div class="flex items-center justify-between text-slate-500 text-xs mb-3 font-medium">
+<span>NĂNG LƯỢNG SINH HỌC</span>
+<span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="flex items-baseline space-x-2 mb-2">
+<span class="text-2xl font-bold text-emerald-600">Đỉnh Alpha</span>
+<span class="text-xs text-slate-500 font-normal">(14:30 - 16:30)</span>
+</div>
+<div class="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-emerald-500 h-2 rounded-full transition-all" style="width: 94%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-slate-500">
+<span class="text-emerald-700 font-medium">Tập trung 94%</span>
+<span>Sẵn sàng đồ án khó</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card rounded-2xl p-5 border border-white/80 shadow-2xs hover:shadow-sm transition">
+<div class="flex items-center justify-between text-slate-500 text-xs mb-3 font-medium">
+<span>HẠN CHÓT CẦN CHÚ Ý</span>
+<span class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="flex items-baseline space-x-2 mb-2">
+<span class="text-2xl font-bold text-rose-600">2 Đồ án</span>
+<span class="text-xs text-rose-700 font-medium">trong 48 giờ tới</span>
+</div>
+<div class="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-rose-500 h-2 rounded-full transition-all" style="width: 80%"></div>
+</div>
+<div class="flex justify-between text-[11px] text-slate-500">
+<span class="text-rose-600 font-semibold">ResNet18 (Hôm nay 23:59)</span>
+<span>CSDL (Thứ 6)</span>
+</div>
+</div>
+</section>
+<!-- END: StatsGrid -->
+<!-- BEGIN: TaskWorkspaceLayout -->
+<!-- Khu vực chính 2 cột: Cột trái (Nhiệm vụ & Phân rã) - Cột phải (AI Copilot & Sinh học) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Cột Trái (8/12 - 2/3 Chiều rộng) -->
+<div class="col-span-1 lg:col-span-8 space-y-5" id="tasks-left-col">
+<!-- Bộ lọc Tab Nhiệm Vụ -->
+<div class="glass-card rounded-2xl p-2" id="task-filter-tabs">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-1 text-xs overflow-x-auto">
+<button class="px-4 py-2 rounded-xl bg-blue-600 text-white font-medium shadow-xs">Tất cả nhiệm vụ (14)</button>
+<button class="px-4 py-2 rounded-xl text-slate-600 hover:bg-white/80 font-medium transition">Đang thực hiện (3)</button>
+<button class="px-4 py-2 rounded-xl text-blue-700 bg-blue-50/70 hover:bg-blue-100/70 font-semibold transition flex items-center space-x-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+<span>Khung giờ vàng Alpha (Ưu tiên)</span>
+</button>
+<button class="px-4 py-2 rounded-xl text-slate-600 hover:bg-white/80 font-medium transition">Đồ án lớn &amp; Tiểu luận</button>
+<button class="px-4 py-2 rounded-xl text-slate-600 hover:bg-white/80 font-medium transition">Đã hoàn thành (9)</button>
+</div>
+<div class="flex items-center space-x-2 text-slate-400 pr-2">
+<span class="text-[11px] text-slate-400 font-medium hidden sm:inline" id="task-count-label"></span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-2 mt-2">
+<input id="task-search-input" type="search" placeholder="Tìm theo tên, môn học..." aria-label="Tìm nhiệm vụ"
+  class="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 bg-white/80 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
+<select id="task-sort-select" aria-label="Sắp xếp nhiệm vụ"
+  class="px-3 py-2 rounded-xl border border-slate-200 bg-white/80 text-xs text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer">
+<option value="newest">Mới nhất</option>
+<option value="priority">Ưu tiên cao trước</option>
+<option value="progress">Tiến độ cao trước</option>
+<option value="title">Tên A–Z</option>
+</select>
+</div>
+</div>
+<!-- Danh sach nhiem vu DONG tu /tasks/ -->
+<div id="dynamic-task-list" class="space-y-4" aria-live="polite">
+  <div class="glass-card rounded-2xl p-8 text-center space-y-3" id="tasks-skeleton">
+    <span class="animate-spin inline-block w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full"></span>
+    <p class="text-xs text-slate-500">Đang tải nhiệm vụ từ hệ thống...</p>
+  </div>
+</div>
+<!-- Cột Phải (4/12 - 1/3 Chiều rộng: AI Copilot & Hỗ trợ sinh học) -->
+<div class="col-span-1 lg:col-span-4 space-y-5">
+<!-- Card 1: Loi khuyen sinh hoc THAT tu /circadian + top task -->
+<div class="glass-card rounded-3xl p-5 border border-blue-200/80 bg-gradient-to-br from-blue-50/70 to-indigo-50/40 shadow-sm relative" id="tasks-advice-card">
+<div class="flex items-center space-x-2 text-blue-700 text-xs font-bold mb-2">
+<span class="text-base">🧬</span>
+<span>LỜI KHUYÊN NHỊP SINH HỌC TỪ AI</span>
+</div>
+<p class="text-xs text-slate-700 leading-relaxed" id="tasks-advice-text">Đang phân tích nhịp sinh học...</p>
+<div class="mt-3 pt-3 border-t border-blue-200/50 flex items-center justify-between text-[11px]">
+<span class="text-slate-500" id="tasks-advice-conf"></span>
+<a href="../19-analytics/index.html" class="text-blue-600 font-medium hover:underline">Xem biểu đồ nhịp →</a>
+</div>
+</div>
+<!-- Card 2: Buoc tiep theo THAT (subtask dau chua xong) -->
+<div class="glass-card rounded-3xl p-6 text-center border border-white/90 shadow-sm relative overflow-hidden" id="tasks-next-card">
+<div class="flex items-center justify-between text-xs text-slate-500 mb-2 font-medium">
+<span>BƯỚC TIẾP THEO</span>
+<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px] font-bold" id="tasks-next-subject">—</span>
+</div>
+<div class="py-2">
+<p class="text-sm font-bold text-slate-800 leading-snug" id="tasks-next-title">Đang tải...</p>
+<p class="text-xs text-blue-600 font-medium mt-1" id="tasks-next-window"></p>
+</div>
+<div class="flex items-center justify-center mt-4">
+<button id="tasks-next-start" type="button" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold text-xs shadow-sm flex items-center space-x-1.5 transition">
+<span>Bắt đầu Deep Work 25p</span>
+<span>🍅</span>
+</button>
+</div>
+</div>
+<!-- Card 3: AI Quick Deconstruct Box (Hộp Phân Rã Tức Thì) -->
+<div class="glass-card rounded-3xl p-5 border border-white/80 shadow-sm space-y-3">
+<div class="flex items-center space-x-2">
+<span class="w-6 h-6 rounded-lg bg-blue-600 text-white text-xs font-bold flex items-center justify-center">✨</span>
+<h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">AI Phân Rã Đồ Án Tức Thì</h3>
+</div>
+<p class="text-xs text-slate-500">Dán đề bài lớn hoặc tên đồ án cần làm, AI sẽ bẻ nhỏ thành từng sprint 25 phút vừa sức:</p>
+<div class="space-y-2">
+<textarea id="ai-decompose-input" class="w-full text-xs rounded-xl border-slate-200 focus:border-blue-500 focus:ring focus:ring-blue-200 bg-white/80 placeholder:text-slate-400 resize-none p-3" placeholder="Ví dụ: Tiểu luận Triết học Mác-Lênin 15 trang, Cần nộp sau 5 ngày nữa..." rows="3"></textarea>
+<div class="flex items-center gap-2">
+<label for="ai-deadline-input" class="text-[11px] font-semibold text-slate-500 shrink-0">Hạn nộp:</label>
+<input id="ai-deadline-input" type="date" class="flex-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white/80 text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+</div>
+<button id="ai-decompose-btn" type="button" class="w-full py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-medium text-xs rounded-xl shadow-xs transition flex items-center justify-center space-x-2">
+<span>🪄 Bẻ nhỏ nhiệm vụ với AI</span>
+</button>
+<div id="ai-decompose-result" class="hidden space-y-2" aria-live="polite"></div>
+</div>
+</div>
+<!-- Card 4: Quick Notes (ghi chú thật từ /notes) -->
+<div class="glass-card rounded-3xl p-5 border border-white/80 shadow-sm space-y-3">
+<div class="flex items-center justify-between text-xs font-bold text-slate-700">
+<span>GHI CHÚ NHANH</span>
+<span class="text-[10px] text-slate-400 font-normal" id="notes-count"></span>
+</div>
+<div class="space-y-2 text-xs" id="notes-list" aria-live="polite">
+<div class="p-2.5 text-center text-slate-400">Đang tải ghi chú...</div>
+</div>
+<div class="flex gap-2">
+<input id="note-input" type="text" maxlength="120" placeholder="Ghi nhanh ý tưởng..."
+  class="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white/80 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500">
+<button id="note-add-btn" type="button" aria-label="Thêm ghi chú"
+  class="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold transition">+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- END: TaskWorkspaceLayout -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: StickyBottomBar -->
+<!-- Thanh phiên học tiếp theo cố định đáy màn hình đồng bộ giao diện -->
+<aside class="sticky bottom-0 z-40 glass-panel border-t border-white/70 shadow-lg px-6 py-2.5">
+<div class="max-w-[1600px] mx-auto flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm">
+            ⏳
+          </div>
+<div>
+<div class="flex items-center space-x-2 text-xs font-bold text-slate-800">
+<span>Phiên học tiếp theo: Báo cáo đồ án AI (Viết nhận xét Confusion Matrix)</span>
+<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.2 rounded-full font-medium">25 phút</span>
+</div>
+<p class="text-[11px] text-slate-500">Âm thanh kích hoạt sóng não: Tiếng mưa rơi tĩnh lặng &amp; Nhịp điệu Lo-Fi biển</p>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<button class="px-4 py-1.5 rounded-xl text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Cài đặt âm thanh</span>
+</button>
+<button class="px-5 py-1.5 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition flex items-center space-x-1.5">
+<span>Bắt đầu Pomodoro</span>
+<span>🍅</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- END: StickyBottomBar -->
+<!-- BEGIN: Footer -->
+<footer class="mt-auto py-5 border-t border-slate-200/50 bg-white/40 text-[11px] text-slate-500">
+<div class="max-w-[1600px] mx-auto px-6 flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<span class="font-bold text-slate-700">Stuđiô AI</span>
+<span>•</span>
+<span>Sanctuary of Deep Learning &amp; Circadian Task Rhythms</span>
+</div>
+<div class="flex items-center space-x-5">
+<span>Khung giờ Alpha: 14:30 - 16:30</span>
+<span>•</span>
+<span>Âm nền: Sóng biển 432Hz</span>
+<span>•</span>
+<!-- Stuđiô AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/timer.js"></script>
+<script src="../../assets/js/app.js"></script>
+
+<script data-purpose="tasks-dynamic-management">
+let allTasks = [];
+let activeFilter = 'all';
+let searchQuery = '';
+let sortMode = 'newest';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Sync user info
+  if (window.auth) {
+    const user = auth.getUser();
+    if (user) auth.bindUserToDOM(user);
+    auth.fetchCurrentUser().catch(() => {});
+  }
+
+  // 2. Connect bottom bar buttons
+  document.querySelectorAll('aside.sticky button, button').forEach(btn => {
+    const txt = btn.textContent.trim();
+    if (txt.includes('Bắt đầu Pomodoro')) {
+      btn.addEventListener('click', () => window.location.href = '../16-deep-work-active/index.html');
+    }
+    if (txt.includes('Cài đặt âm thanh')) {
+      btn.addEventListener('click', () => window.location.href = '../18-sound-sanctuary/index.html');
+    }
+    if (txt.includes('Thêm nhiệm vụ mới') || txt.includes('Thêm bài tập')) {
+      btn.addEventListener('click', () => window.location.href = '../12-task-modal/index.html');
+    }
+  });
+
+  // 3. Setup Filter Tabs
+  const tabButtons = document.querySelectorAll('#task-filter-tabs button:not(#task-search-input)');
+  const tabBtnList = Array.from(tabButtons).filter(b => !b.querySelector('svg'));
+  tabBtnList.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => {
+        b.className = 'px-4 py-2 rounded-xl text-slate-600 hover:bg-white/80 font-medium transition';
+      });
+      btn.className = 'px-4 py-2 rounded-xl bg-blue-600 text-white font-medium shadow-xs';
+      
+      const txt = btn.textContent.trim();
+      if (txt.includes('Tất cả')) activeFilter = 'all';
+      else if (txt.includes('Đang thực hiện')) activeFilter = 'in_progress';
+      else if (txt.includes('Đã hoàn thành')) activeFilter = 'completed';
+      else if (txt.includes('Alpha') || txt.includes('Ưu tiên')) activeFilter = 'high_priority';
+      else if (txt.includes('Đồ án lớn')) activeFilter = 'complex';
+      renderTasks();
+    });
+  });
+
+  // 3b. Search + Sort thật trên dữ liệu API
+  const searchInput = document.getElementById('task-search-input');
+  const sortSelect = document.getElementById('task-sort-select');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = (e.target.value || '').trim().toLowerCase();
+      renderTasks();
+    });
+  }
+  if (sortSelect) {
+    sortSelect.addEventListener('change', (e) => {
+      sortMode = e.target.value;
+      renderTasks();
+    });
+  }
+
+  // 3c. AI Deconstruct box -> gọi backend thật
+  const aiInput = document.getElementById('ai-decompose-input');
+  const aiBtn = document.getElementById('ai-decompose-btn');
+  const aiResult = document.getElementById('ai-decompose-result');
+  const aiDeadline = document.getElementById('ai-deadline-input');
+  if (aiDeadline) {
+    aiDeadline.min = new Date().toISOString().slice(0, 10);
+  }
+  if (aiBtn && aiInput && aiResult) {
+    aiBtn.addEventListener('click', async () => {
+      const title = (aiInput.value || '').trim();
+      if (title.length < 5) {
+        showCalmToast('Nhập đề bài ít nhất 5 ký tự để AI phân rã.', 'warning');
+        aiInput.focus();
+        return;
+      }
+      aiBtn.disabled = true;
+      aiBtn.innerHTML = '<span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-white/60 border-t-white rounded-full"></span><span>AI đang phân rã...</span>';
+      try {
+        const res = await api.post('/tasks/ai-decompose', { title });
+        const subs = res.subtasks || [];
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        aiResult.classList.remove('hidden');
+        aiResult.innerHTML = `
+          <div class="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1.5">
+            <p class="font-bold text-slate-800">${esc(res.task_title || title)}</p>
+            <p class="text-slate-600">${esc(res.summary_advice || '')}</p>
+            <ul class="space-y-1 pt-1">
+              ${subs.map(s => `<li class="flex items-start gap-1.5 text-slate-700"><span class="text-blue-600 font-bold">•</span><span>${esc(s.title)} <span class="text-slate-400">(${s.estimated_minutes || 25}p)</span></span></li>`).join('')}
+            </ul>
+            <p class="text-[11px] text-blue-700 font-medium">⏱ Tổng ~${res.total_estimated_minutes || subs.length * 25} phút • ${esc(res.circadian_tip || '')}</p>
+            <button id="ai-save-task-btn" type="button" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition">Lưu thành nhiệm vụ</button>
+          </div>`;
+        aiResult.querySelector('#ai-save-task-btn').addEventListener('click', async () => {
+          try {
+            const dlInput = document.getElementById('ai-deadline-input');
+            let deadlineIso = null;
+            if (dlInput && dlInput.value) {
+              const picked = new Date(dlInput.value + 'T23:59:00');
+              if (picked.getTime() < Date.now()) {
+                showCalmToast('Hạn nộp không được ở quá khứ.', 'warning');
+                return;
+              }
+              deadlineIso = picked.toISOString();
+            }
+            await api.post('/tasks/', {
+              title: res.task_title || title,
+              description: res.summary_advice || '',
+              deadline: deadlineIso,
+              subtasks: subs.map(s => ({
+                title: s.title,
+                estimated_minutes: s.estimated_minutes || 25,
+                pomodoro_count: s.pomodoro_count || 1,
+                recommended_circadian_window: s.recommended_circadian_window || 'Khung giờ vàng chiều (14:00 - 16:30)'
+              }))
+            });
+            showCalmToast(`Đã lưu nhiệm vụ với ${subs.length} micro-sprints!`, 'success');
+            aiResult.classList.add('hidden');
+            aiInput.value = '';
+            await loadTasks();
+          } catch (err) {
+            showCalmToast((err && err.message) || 'Không lưu được nhiệm vụ.', 'error');
+          }
+        });
+      } catch (err) {
+        showCalmToast((err && err.message) || 'AI phân rã thất bại.', 'error');
+      } finally {
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = '<span>🪄 Bẻ nhỏ nhiệm vụ với AI</span>';
+      }
+    });
+  }
+
+  // 3d. Ghi chú thật từ /notes
+  const notesList = document.getElementById('notes-list');
+  const notesCount = document.getElementById('notes-count');
+  const noteInput = document.getElementById('note-input');
+  const noteAddBtn = document.getElementById('note-add-btn');
+  const escNote = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  async function loadNotes() {
+    if (!notesList) return;
+    try {
+      const data = await api.get('/notes/');
+      const notes = (data && data.notes) || [];
+      if (notesCount) notesCount.textContent = `${notes.length} ghi chú`;
+      if (!notes.length) {
+        notesList.innerHTML = '<div class="p-2.5 text-center text-slate-400">Chưa có ghi chú nào.</div>';
+        return;
+      }
+      notesList.innerHTML = notes.map(n => {
+        const dt = n.created_at ? new Date(n.created_at) : null;
+        const when = dt ? dt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '';
+        return `<div class="flex items-center justify-between p-2.5 rounded-xl bg-white/60 border border-slate-200/60">
+          <div class="flex items-center space-x-2 min-w-0">
+            <span>📝</span>
+            <span class="text-slate-700 font-medium truncate" title="${escNote(n.title)}">${escNote(n.title)}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-[10px] text-slate-400">${when}</span>
+            <button type="button" data-note-del="${n.id}" aria-label="Xóa ghi chú" class="text-slate-300 hover:text-rose-600 transition">✕</button>
+          </div>
+        </div>`;
+      }).join('');
+      notesList.querySelectorAll('[data-note-del]').forEach(b => b.addEventListener('click', async () => {
+        try {
+          await api.delete(`/notes/${b.dataset.noteDel}`);
+          loadNotes();
+        } catch (err) {
+          showCalmToast((err && err.message) || 'Không xóa được.', 'error');
+        }
+      }));
+    } catch (err) {
+      notesList.innerHTML = `<div class="p-2.5 text-center text-rose-500">${(err && err.message) || 'Không tải được ghi chú.'}</div>`;
+    }
+  }
+  async function addNote() {
+    const title = (noteInput?.value || '').trim();
+    if (!title) { noteInput?.focus(); return; }
+    noteAddBtn.disabled = true;
+    try {
+      await api.post('/notes/', { title });
+      noteInput.value = '';
+      loadNotes();
+    } catch (err) {
+      showCalmToast((err && err.message) || 'Không lưu được.', 'error');
+    } finally {
+      noteAddBtn.disabled = false;
+    }
+  }
+  if (noteAddBtn) noteAddBtn.addEventListener('click', addNote);
+  if (noteInput) noteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addNote(); });
+
+  // 4. Fetch Tasks from API
+  await loadTasks();
+  loadNotes();
+  loadAdvice();
+});
+
+async function loadTasks() {
+  try {
+    allTasks = await api.get('/tasks/');
+    updateTopKPIs();
+    renderTasks();
+    loadNextCard();
+  } catch (err) {
+    console.error('Failed to load tasks:', err);
+    const container = document.getElementById('dynamic-task-list');
+    if (container) {
+      container.innerHTML = `
+        <div class="glass-card rounded-2xl p-8 text-center space-y-3">
+          <p class="text-base font-semibold text-rose-600">Không tải được nhiệm vụ.</p>
+          <p class="text-xs text-slate-400">${(err && err.message) || ''}</p>
+          <button onclick="loadTasks()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">
+            Thử lại
+          </button>
+        </div>`;
+    }
+    showCalmToast('Không thể kết nối API tasks: ' + err.message, 'error');
+  }
+}
+
+// Card loi khuyen that: pulse + top task
+async function loadAdvice() {
+  const txt = document.getElementById('tasks-advice-text');
+  const conf = document.getElementById('tasks-advice-conf');
+  if (!txt) return;
+  try {
+    const [pulse, tasks] = await Promise.all([
+      api.get('/circadian/pulse'),
+      api.get('/tasks/'),
+    ]);
+    const top = (Array.isArray(tasks) ? tasks.filter(t => t.status !== 'completed') : [])[0];
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    txt.innerHTML = `"${esc(pulse.recommendation || '')}"` +
+      (top ? ` Ưu tiên hiện tại: <strong class="text-blue-900 font-semibold">${esc(top.title)}</strong> (${top.completed_sprints || 0}/${top.total_sprints || 0} sprints).` : '');
+    if (conf) conf.textContent = `Năng lượng ${pulse.pulse_percent}%${pulse.is_golden_hour ? ' • Đang giờ vàng' : ''}`;
+  } catch (err) {
+    txt.textContent = 'Chưa phân tích được nhịp sinh học. Kiểm tra kết nối máy chủ.';
+  }
+}
+
+// Card buoc tiep theo that: subtask dau chua xong trong DB
+function loadNextCard() {
+  const title = document.getElementById('tasks-next-title');
+  if (!title) return;
+  const subj = document.getElementById('tasks-next-subject');
+  const win = document.getElementById('tasks-next-window');
+  const btn = document.getElementById('tasks-next-start');
+  let found = null;
+  for (const t of allTasks) {
+    const s = (t.subtasks || []).find(x => !x.is_completed);
+    if (s) { found = { t, s }; break; }
+  }
+  if (!found) {
+    title.textContent = 'Đã hoàn thành hết mọi bước. Tuyệt vời!';
+    if (subj) subj.textContent = 'Xong';
+    if (win) win.textContent = '';
+    if (btn) btn.disabled = true;
+    return;
+  }
+  title.textContent = found.s.title;
+  if (subj) subj.textContent = found.t.subject_code || found.t.subject_name || 'Nhiệm vụ';
+  if (win) win.textContent = `${found.s.estimated_minutes || 25} phút • ${found.s.recommended_circadian_window || 'Khung giờ vàng'}`;
+  if (btn) {
+    btn.disabled = false;
+    btn.onclick = () => {
+      window.location.href = '../16-deep-work-active/index.html?taskId=' + encodeURIComponent(found.t.id) +
+        '&title=' + encodeURIComponent(found.s.title) + '&duration=' + (found.s.pomodoro_count === 2 ? 50 : 25) + '&sound=ocean';
+    };
+  }
+}
+
+function updateTopKPIs() {
+  const totalCount = allTasks.length;
+  const completedCount = allTasks.filter(t => t.status === 'completed').length;
+  const inProgressCount = totalCount - completedCount;
+  const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  // KPI 1: Tổng nhiệm vụ
+  const kpi1 = document.querySelector('#tasks-stats > div:first-child');
+  if (kpi1) {
+    kpi1.querySelector('.text-2xl.font-bold').textContent = `${totalCount} việc`;
+    kpi1.querySelector('.text-xs.text-slate-500.font-normal').textContent = `(Đã xong ${completedCount} • Còn ${inProgressCount})`;
+    const bar = kpi1.querySelector('.bg-blue-600.h-2');
+    if (bar) bar.style.width = `${pct}%`;
+    const label = kpi1.querySelector('.text-blue-600.font-medium');
+    if (label) label.textContent = `Tiến độ ${pct}%`;
+  }
+}
+
+function renderTasks() {
+  let filtered = allTasks;
+  if (activeFilter === 'in_progress') {
+    filtered = allTasks.filter(t => t.status !== 'completed');
+  } else if (activeFilter === 'completed') {
+    filtered = allTasks.filter(t => t.status === 'completed');
+  } else if (activeFilter === 'high_priority') {
+    filtered = allTasks.filter(t => t.priority === 'high');
+  } else if (activeFilter === 'complex') {
+    filtered = allTasks.filter(t => t.complexity === 'complex');
+  }
+
+  // Search thật
+  if (searchQuery) {
+    filtered = filtered.filter(t =>
+      (t.title || '').toLowerCase().includes(searchQuery) ||
+      (t.subject_name || '').toLowerCase().includes(searchQuery) ||
+      (t.subject_code || '').toLowerCase().includes(searchQuery)
+    );
+  }
+
+  // Sort thật
+  const prioRank = { high: 0, medium: 1, low: 2 };
+  filtered = [...filtered].sort((a, b) => {
+    if (sortMode === 'priority') return (prioRank[a.priority] ?? 9) - (prioRank[b.priority] ?? 9);
+    if (sortMode === 'progress') {
+      const pa = a.total_sprints ? a.completed_sprints / a.total_sprints : 0;
+      const pb = b.total_sprints ? b.completed_sprints / b.total_sprints : 0;
+      return pb - pa;
+    }
+    if (sortMode === 'title') return (a.title || '').localeCompare(b.title || '', 'vi');
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+  });
+
+  const countLabel = document.getElementById('task-count-label');
+  if (countLabel) countLabel.textContent = `${filtered.length}/${allTasks.length} nhiệm vụ`;
+
+  // Find container in left column
+  const col8 = document.getElementById('tasks-left-col');
+  if (!col8) return;
+
+  // Find container in left column (co san trong HTML)
+  let container = document.getElementById('dynamic-task-list');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'dynamic-task-list';
+    container.className = 'space-y-4';
+    col8.appendChild(container);
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="glass-card rounded-2xl p-8 text-center text-slate-500 space-y-3">
+        <p class="text-base font-semibold">Chưa có nhiệm vụ nào trong danh mục này.</p>
+        <p class="text-xs text-slate-400">Hãy thêm đồ án mới hoặc để AI Deconstructor bẻ khóa bài tập giúp bạn!</p>
+        <button onclick="window.location.href='../12-task-modal/index.html'" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">
+          + Thêm bài tập ngay
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(t => {
+    const isCompleted = t.status === 'completed';
+    const pct = t.total_sprints > 0 ? Math.round((t.completed_sprints / t.total_sprints) * 100) : 0;
+    const isPriorityHigh = t.priority === 'high';
+    const badgeColor = isPriorityHigh ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-blue-100 text-blue-700 border-blue-200';
+    const badgeText = isPriorityHigh ? 'Ưu tiên cao' : 'Tiêu chuẩn';
+
+    const subtasksHtml = (t.subtasks && t.subtasks.length > 0) ? t.subtasks.map((sub, idx) => {
+      const isSubDone = sub.is_completed;
+      return `
+        <div class="flex items-center justify-between p-2.5 rounded-xl ${isSubDone ? 'bg-slate-50 border border-slate-200 text-slate-400 line-through' : 'bg-white/85 border border-blue-100/80 text-slate-700 hover:border-blue-300'} text-xs transition">
+          <label class="flex items-center space-x-2.5 cursor-pointer flex-1">
+            <input type="checkbox" ${isSubDone ? 'checked' : ''} onchange="toggleSubtask('${sub.id}', this)" class="rounded text-blue-600 focus:ring-blue-400 border-slate-300 w-4 h-4 cursor-pointer">
+            <span class="font-medium">${sub.title}</span>
+          </label>
+          <div class="flex items-center space-x-2 shrink-0">
+            <span class="text-[10px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">${sub.recommended_circadian_window || 'Khung giờ vàng'}</span>
+            <span class="text-[10px] text-slate-400">${sub.estimated_minutes}p</span>
+          </div>
+        </div>
+      `;
+    }).join('') : '<p class="text-xs text-slate-400 italic">Chưa có bước nhỏ nào.</p>';
+
+    return `
+      <div class="glass-card rounded-3xl p-6 border ${isCompleted ? 'border-slate-200 opacity-80' : 'border-blue-200 shadow-md'} relative transition space-y-4" data-task-id="${t.id}">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div class="flex items-center space-x-3">
+            <span class="${badgeColor} text-xs font-bold px-3 py-0.5 rounded-full border flex items-center space-x-1">
+              <span>${badgeText}</span>
+            </span>
+            <span class="text-xs text-slate-500 font-medium">Môn: <strong>${t.subject_name}</strong></span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs bg-blue-50 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full">
+              ${t.completed_sprints}/${t.total_sprints} Sprints
+            </span>
+            <button onclick="deleteTask('${t.id}')" title="Xóa nhiệm vụ" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 ${isCompleted ? 'line-through text-slate-500' : ''}">${t.title}</h2>
+              <p class="text-xs text-slate-600 mt-1">${t.description || ''}</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <span class="text-2xl font-bold ${pct >= 100 ? 'text-emerald-600' : 'text-blue-600'}">${pct}%</span>
+              <p class="text-[11px] text-slate-500">${t.completed_sprints}/${t.total_sprints} bước</p>
+            </div>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mt-2.5 overflow-hidden">
+            <div class="${pct >= 100 ? 'bg-emerald-500' : 'bg-blue-600'} h-2 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center justify-between">
+            <span>Micro-Steps theo nhịp sinh học (AI Deconstructed):</span>
+            <span class="text-[11px] font-normal text-slate-500 italic">25 phút / hiệp Pomodoro</span>
+          </div>
+          <div class="space-y-2">
+            ${subtasksHtml}
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-xs text-slate-400">Tạo lúc: ${new Date(t.created_at).toLocaleDateString('vi-VN')}</span>
+          <button onclick="window.location.href='../16-deep-work-active/index.html?taskId=${t.id}&title=' + encodeURIComponent('${t.title.replace(/'/g, "\\'")}') + '&duration=25'" class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-105 text-white font-semibold text-xs shadow-sm flex items-center space-x-1.5 transition">
+            <span>Bắt đầu Deep Work 25p</span>
+            <span>🍅</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.toggleSubtask = async function(subtaskId, checkboxEl) {
+  try {
+    const updated = await api.patch('/tasks/subtasks/' + subtaskId + '/toggle');
+    showCalmToast(updated.is_completed ? 'Hoàn thành 1 micro-sprint! Năng lượng duy trì tốt.' : 'Đã chuyển về trạng thái đang làm.', 'success');
+    await loadTasks();
+  } catch (err) {
+    showCalmToast(err.message, 'error');
+    checkboxEl.checked = !checkboxEl.checked;
+  }
+};
+
+window.deleteTask = async function(taskId) {
+  if (!confirm('Bạn có chắc chắn muốn xóa nhiệm vụ này không?')) return;
+  try {
+    await api.delete('/tasks/' + taskId);
+    showCalmToast('Đã xóa nhiệm vụ thành công!', 'success');
+    await loadTasks();
+  } catch (err) {
+    showCalmToast(err.message, 'error');
+  }
+};
+</script>
+</body></html>

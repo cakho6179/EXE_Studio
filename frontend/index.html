@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=pages/01-landing/index.html">
+  <title>Stuđiô AI - Chuyển hướng...</title>
+  <script>
+    // If logged in, go straight to dashboard
+    const token = localStorage.getItem('studi_access_token');
+    if (token) {
+      window.location.href = 'pages/10-dashboard/index.html';
+    } else {
+      window.location.href = 'pages/01-landing/index.html';
+    }
+  </script>
+</head>
+<body style="font-family: sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; background:#f0f7ff; color:#1e3a8a;">
+  <p>Đang chuyển hướng đến Stuđiô AI...</p>
+</body>
+</html>

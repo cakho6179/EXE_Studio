@@ -1,0 +1,1220 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Lập kế hoạch theo Nhịp sinh học AI (Calm Workspace)</title>
+<!-- Google Fonts: Be Vietnam Pro & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="../../assets/js/theme.js"></script>
+<style data-purpose="glassmorphism-and-effects">
+    .bg-watercolor {
+      background-image: url('../../assets/images/lighthouse-wide.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 10px 30px -5px rgba(22, 53, 107, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    }
+    .glass-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="bg-watercolor min-h-screen font-sans text-slate-800 antialiased relative selection:bg-blue-200">
+<!-- Subtle overlay layer to preserve contrast while displaying lighthouse beautifully -->
+<div class="fixed inset-0 bg-blue-50/25 pointer-events-none backdrop-blur-[1px] -z-10"></div>
+<!-- BEGIN: MainHeader synchronized with SCREEN_27 -->
+<header class="sticky top-0 z-40 glass-header px-6 py-3 transition-all shadow-xs">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+<!-- Logo & Brand Badge with IMAGE_88 -->
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2.5">
+<img alt="Stuđiô AI Logo" class="w-9 h-9 object-contain drop-shadow-sm" src="../../assets/images/logo.png">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-bold text-lg text-slate-800 tracking-tight">Stuđiô AI</span>
+<span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-blue-100/80 text-blue-700 border border-blue-200">CALM WORKSPACE</span>
+</div>
+<p class="text-[11px] text-slate-500 hidden sm:block">Không gian học tập &amp; trợ lý sinh học AI</p>
+</div>
+</div>
+<!-- Zen indicator -->
+<div class="hidden lg:flex items-center gap-2 px-3 py-1 bg-white/70 rounded-full border border-slate-200/80 text-xs text-slate-600 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+<span>Chế độ tĩnh lặng • 432Hz</span>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-full border border-slate-200/60 shadow-inner">
+<a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" href="../10-dashboard/index.html">Tổng quan</a>
+<a aria-current="page" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-600 text-white shadow-sm transition" href="../13-planner/index.html">Lập kế hoạch</a>
+<a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" href="../14-schedule/index.html">Lịch trình AI</a>
+<a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition leading-tight text-center" href="../11-tasks/index.html">Nhiệm vụ</a>
+<a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition leading-tight text-center" href="../18-sound-sanctuary/index.html">Âm thanh &amp; Thư giãn</a>
+<a class="px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 transition" href="../17-ai-advisor/index.html">Cố vấn AI</a>
+</nav>
+<!-- Right Utilities & Profile -->
+<div class="flex items-center gap-3">
+<!-- Mini Audio status pill -->
+<div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50/90 border border-blue-100 text-xs text-blue-700 font-medium">
+<svg class="w-3.5 h-3.5 text-blue-600 animate-spin" fill="none" stroke="currentColor" style="animation-duration: 6s;" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>Sóng biển 432Hz</span>
+</div>
+<!-- Notification Bell -->
+<button aria-label="Thông báo" class="relative p-2 rounded-full hover:bg-white/80 text-slate-600 transition" type="button">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Profile -->
+<div class="flex items-center gap-2.5 pl-2 border-l border-slate-200/80">
+<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-semibold flex items-center justify-center text-xs shadow-sm ring-2 ring-white" data-user-initials>
+            MC
+          </div>
+<div class="hidden sm:block text-left">
+<p class="text-xs font-bold text-slate-800 leading-tight" data-user-name>Nguyễn Minh Châu</p>
+<p class="text-[11px] text-slate-500 leading-tight" data-user-school>Sinh viên ĐHQG</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- END: MainHeader -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6 pb-24">
+<!-- SUBHEADER / SECONDARY NAVIGATION BAR -->
+<div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+<!-- Breadcrumb & Biorythm Token -->
+<div class="flex flex-wrap items-center gap-2 min-w-0">
+<div class="flex items-center gap-2 text-slate-500 text-xs font-medium">
+<span class="material-symbols-outlined text-brand-600 text-base">school</span>
+<span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-800 font-semibold truncate" id="planner-week-label">Lập kế hoạch tuần thứ 8 (28/10 - 03/11/2025)</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100/70 text-blue-700 text-xs font-semibold tracking-wide border border-blue-200/60">
+<span class="material-symbols-outlined text-xs animate-spin" style="animation-duration: 6s;">cyclone</span>
+<span>THUẬT TOÁN TƯƠNG THÍCH NHỊP SINH HỌC CHRONOBIOLOGY V3.2</span>
+</div>
+</div>
+<!-- Quick Action Controls -->
+<div class="flex items-center flex-wrap gap-2">
+<button class="px-3 py-2 rounded-xl bg-white/70 hover:bg-white text-slate-700 text-xs font-medium border border-slate-200/80 transition-all shadow-xs flex items-center gap-1.5 active:scale-95" id="btn-sync-canvas">
+<span class="material-symbols-outlined text-brand-600 text-base">sync</span>
+<span>Đồng bộ Canvas &amp; Google (1-Click)</span>
+</button>
+<button class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold transition-all shadow-sm shadow-blue-500/20 flex items-center gap-1.5 hover:brightness-105 active:scale-95" id="btn-ai-balance">
+<span class="material-symbols-outlined text-base">auto_awesome</span>
+<span>Tự động tối ưu lịch (AI Balance)</span>
+</button>
+<button class="px-3 py-2 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 text-blue-700 text-xs font-semibold border border-blue-100 transition-all flex items-center gap-1 active:scale-95" id="btn-add-deadline">
+<span class="material-symbols-outlined text-base">add</span>
+<span>Thêm môn học / Deadline</span>
+</button>
+</div>
+</div>
+<!-- MAIN HERO / EDITORIAL HEADER -->
+<section class="glass-card rounded-3xl p-6 lg:p-7 relative overflow-hidden" data-purpose="hero-circadian">
+<div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+<div class="max-w-3xl space-y-2">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100/70 text-blue-700 text-xs font-semibold border border-blue-200/50">
+<span class="material-symbols-outlined text-xs">tune</span>
+              CHU KỲ ULTRADIAN 90 PHÚT
+            </span>
+<span class="text-slate-500 text-xs">• Chu kỳ minh mẫn tự nhiên</span>
+</div>
+<h1 class="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+            Lập kế hoạch thông minh theo Nhịp sinh học AI
+          </h1>
+<p class="text-sm text-slate-600 leading-relaxed font-normal">
+            AI tự động phân bổ khối lượng bài tập lớn và đồ án vào các khung giờ não bộ đạt trạng thái tỉnh thức cao nhất (<span class="text-brand-600 font-semibold">Alpha 10Hz</span>), bảo vệ giấc ngủ phục hồi và kích hoạt giao thức cảnh báo kiệt sức sớm (<span class="text-blue-700 font-semibold">Anti-burnout protocol</span>).
+          </p>
+</div>
+<!-- Quick Status Widget Pill -->
+<div class="w-full md:w-auto bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/80 rounded-2xl p-4 flex items-center justify-between md:justify-start gap-4 shrink-0 shadow-sm">
+<div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-inner border border-blue-100 text-brand-600">
+<span class="material-symbols-outlined text-2xl">bedtime_off</span>
+<span class="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 font-medium">Trạng thái năng lượng</span>
+<span class="text-lg font-bold text-brand-700" id="hero-alpha-label">Đạt Đỉnh Alpha (94%)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- BIOMETRIC & COURSE METRIC CARDS (4 Glass Cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-purpose="metrics-row" id="planner-metrics">
+<!-- Card 1: Học sâu -->
+<div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:shadow-md transition flex flex-col justify-between gap-3" data-metric="week-hours">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Học sâu tuần này</span>
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-brand-600 flex items-center justify-center border border-blue-100/60">
+<span class="material-symbols-outlined text-lg">timelapse</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-slate-900 tracking-tight" data-m="hours">16.5h</span>
+<span class="text-xs text-slate-500" data-m="target">/ 28h mục tiêu</span>
+</div>
+<div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full transition-all duration-700" data-m="bar" style="width: 59%;"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-500">
+<span class="text-brand-600 font-medium" data-m="pct">Tiến độ 59%</span>
+<span data-m="rest">Còn 11.5h cần hoàn thành</span>
+</div>
+</div>
+<!-- Card 2: Đỉnh Alpha Não bộ -->
+<div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:shadow-md transition flex flex-col justify-between gap-3" data-metric="alpha">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Đỉnh Alpha Não bộ (TỐI ƯU)</span>
+<div class="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-100/60">
+<span class="material-symbols-outlined text-lg">neurology</span>
+</div>
+</div>
+<div class="flex flex-col" data-m="ranges">
+<span class="text-lg font-bold text-slate-800">08:30 - 11:30</span>
+<span class="text-lg font-bold text-brand-600">&amp; 14:30 - 16:30</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-cyan-700 font-medium">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span data-m="pulse">+35% hiệu suất tư duy logic</span>
+</div>
+</div>
+<!-- Card 3: Mỏi mắt & Căng thẳng -->
+<div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:shadow-md transition flex flex-col justify-between gap-3" data-metric="burnout">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Mức độ kiệt sức</span>
+<div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/60">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-emerald-600" data-m="level">Mức Thấp</span>
+<span class="text-xs text-slate-500" data-m="score">(An toàn)</span>
+</div>
+<span class="text-xs text-slate-500 mt-0.5" data-m="detail">4/5 lượt nghỉ ngơi 20-20-20</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span data-m="safety">Bảo vệ 92% chỉ số thị lực tối ưu</span>
+</div>
+</div>
+<!-- Card 4: Đồ án trọng tâm -->
+<div class="glass-card rounded-2xl p-5 relative overflow-hidden group hover:shadow-md transition flex flex-col justify-between gap-3" data-metric="focus-subjects">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Đồ án trọng tâm</span>
+<div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/60">
+<span class="material-symbols-outlined text-lg">folder_special</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-brand-600" data-m="count">3 Môn</span>
+<span class="text-xs text-rose-600 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">CẤP THIẾT</span>
+</div>
+<span class="text-xs text-slate-700 truncate mt-0.5" data-m="names">Machine Learning • CSDL • Web</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-slate-500">
+<span class="material-symbols-outlined text-sm text-cyan-600">alarm</span>
+<span data-m="deadline">Deadline gần nhất: 2 ngày tới</span>
+</div>
+</div>
+</div>
+<!-- MAIN TWO-COLUMN WORKSPACE (8 Cols + 4 Cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- LEFT COLUMN: WEEKLY CHRONO-TIMELINE & PROJECT DECONSTRUCTION (8 cols) -->
+<div class="lg:col-span-8 space-y-6">
+<!-- SECTION A: Dòng thời gian Tuần & Nhịp Sinh Học -->
+<section class="glass-card rounded-3xl p-6 relative" data-purpose="weekly-chrono-timeline">
+<!-- Section Title & Filter Toggle -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<span class="p-2 rounded-xl bg-blue-50 text-blue-600">
+<span class="material-symbols-outlined text-xl">schedule</span>
+</span>
+<div>
+<h2 class="text-base font-bold text-slate-800">Dòng thời gian Tuần &amp; Nhịp Sinh học</h2>
+<p class="text-xs text-slate-500">Điều hướng năng lượng theo nhịp sinh học tự nhiên Ultradian 90 phút</p>
+</div>
+</div>
+<!-- View Switcher Tabs -->
+<div class="flex items-center p-1 rounded-xl bg-slate-100/80 border border-slate-200/60 self-start sm:self-auto" role="tablist" aria-label="Chế độ xem kế hoạch">
+<button data-view="week" role="tab" aria-selected="true" class="px-3 py-1.5 rounded-lg bg-white text-brand-600 shadow-xs text-xs font-semibold">Tuần này</button>
+<button data-view="day" role="tab" aria-selected="false" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 text-xs transition-colors">Xem theo ngày</button>
+<button data-view="eisenhower" role="tab" aria-selected="false" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 text-xs transition-colors">Ma trận Eisenhower AI</button>
+</div>
+</div>
+<!-- Color Coding Legend -->
+<div class="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-blue-50/50 border border-blue-100/50 mt-4">
+<div class="flex items-center gap-1.5 text-xs text-slate-600">
+<span class="w-3 h-3 rounded bg-blue-600"></span>
+<span>Deep Work (Alpha 10Hz)</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-600">
+<span class="w-3 h-3 rounded bg-cyan-400"></span>
+<span>Calm Break (Hồi phục)</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-600">
+<span class="w-3 h-3 rounded bg-indigo-600"></span>
+<span>Focus Sprint (Tư duy)</span>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-slate-600">
+<span class="w-3 h-3 rounded bg-slate-300"></span>
+<span>Light Study (Đọc &amp; Ôn)</span>
+</div>
+</div>
+<!-- Week Days Heatmap Row (render từ /analytics/dashboard + lịch thật) -->
+<div class="overflow-x-auto -mx-1 px-1 pb-1" data-heatmap-scroll>
+<div class="grid grid-cols-7 gap-2 pt-4 min-w-[560px]" id="planner-heatmap">
+<!-- Mon -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white hover:shadow-xs transition-all text-center">
+<span class="text-xs text-slate-500">Thứ 2</span>
+<span class="text-base font-semibold text-slate-800 mt-1">28</span>
+<span class="text-xs text-brand-600 font-medium mt-1">4.5h</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full" style="width: 70%;"></div>
+</div>
+</div>
+<!-- Tue (Active Today) -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-blue-50/90 border-2 border-brand-500 shadow-xs text-center relative">
+<span class="absolute -top-2.5 px-2 py-0.5 rounded-full bg-brand-600 text-white text-[9px] font-bold uppercase tracking-wider">Hôm nay</span>
+<span class="text-xs text-brand-700 font-bold">Thứ 3</span>
+<span class="text-base font-bold text-slate-900 mt-1">29</span>
+<span class="text-xs text-brand-600 font-bold mt-1">6.8h</span>
+<div class="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full" style="width: 95%;"></div>
+</div>
+</div>
+<!-- Wed -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all text-center">
+<span class="text-xs text-slate-500">Thứ 4</span>
+<span class="text-base font-semibold text-slate-800 mt-1">30</span>
+<span class="text-xs text-cyan-600 font-medium mt-1">5.5h</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-cyan-500 h-full rounded-full" style="width: 80%;"></div>
+</div>
+</div>
+<!-- Thu -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all text-center">
+<span class="text-xs text-slate-500">Thứ 5</span>
+<span class="text-base font-semibold text-slate-800 mt-1">31</span>
+<span class="text-xs text-brand-600 font-medium mt-1">4.0h</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+<!-- Fri (Due Date) -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-rose-50/70 border border-rose-200/80 hover:bg-rose-50 transition-all text-center relative">
+<span class="text-xs text-rose-600 font-bold">Thứ 6</span>
+<span class="text-base font-bold text-rose-800 mt-1">01</span>
+<span class="text-xs text-rose-600 font-bold mt-1">6.0h • HẠN</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-rose-500 h-full rounded-full" style="width: 90%;"></div>
+</div>
+</div>
+<!-- Sat -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all text-center">
+<span class="text-xs text-slate-500">Thứ 7</span>
+<span class="text-base font-semibold text-slate-800 mt-1">02</span>
+<span class="text-xs text-slate-500 font-medium mt-1">2.5h</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-slate-400 h-full rounded-full" style="width: 35%;"></div>
+</div>
+</div>
+<!-- Sun -->
+<div class="flex flex-col items-center p-2.5 rounded-2xl bg-teal-50/60 border border-teal-100 hover:bg-teal-50 transition-all text-center">
+<span class="text-xs text-teal-700 font-bold">CN</span>
+<span class="text-base font-semibold text-slate-800 mt-1">03</span>
+<span class="text-xs text-teal-600 font-medium mt-1">1.5h Relax</span>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-teal-500 h-full rounded-full" style="width: 25%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- SCHEDULE DETAIL TIMELINE FOR TODAY (render từ /schedule/timeline) -->
+<div class="flex flex-col gap-3 mt-6 pt-4 border-t border-slate-100" id="planner-day-events">
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-bold text-slate-800" id="planner-day-title">Lịch trình chi tiết hôm nay</h3>
+<span class="px-2.5 py-0.5 rounded-full bg-blue-100/70 text-blue-700 text-xs font-bold border border-blue-200/60" id="planner-ready-badge">...</span>
+</div>
+<span class="text-xs text-slate-500">Múi giờ chuẩn Việt Nam (GMT+7)</span>
+</div>
+<!-- Event 1: Completed Deep Work -->
+<div class="flex items-start gap-3 p-3.5 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white hover:shadow-xs transition-all">
+<div class="flex flex-col items-center shrink-0 w-24">
+<span class="text-xs font-bold text-slate-800">08:30 - 11:00</span>
+<span class="text-[11px] text-slate-400">150 phút</span>
+<span class="mt-2 flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</span>
+</div>
+<div class="flex-1 min-w-0 bg-white/90 p-3.5 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-brand-600 text-white text-[11px] font-bold">ĐỈNH ALPHA • DEEP WORK</span>
+<span class="text-xs text-slate-500">Môn: Machine Learning (CS301)</span>
+</div>
+<span class="text-xs text-emerald-600 font-semibold">Đã hoàn thành • 3 hiệp Pomodoro</span>
+</div>
+<h4 class="text-sm font-semibold text-slate-800">Báo cáo Machine Learning: Viết ma trận nhầm lẫn &amp; Đánh giá mô hình ResNet18</h4>
+<p class="text-xs text-slate-500 line-clamp-1">Hoàn thiện biểu đồ trực quan hóa ROC-AUC và phân tích độ hội tụ loss function.</p>
+</div>
+</div>
+<!-- Event 2: Lunch & Calm Break Completed -->
+<div class="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-50/40 border border-amber-100/60">
+<div class="flex flex-col items-center shrink-0 w-24">
+<span class="text-xs font-medium text-amber-700">11:30 - 13:30</span>
+<span class="text-[11px] text-slate-400">120 phút</span>
+<span class="mt-2 flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700">
+<span class="material-symbols-outlined text-sm">spa</span>
+</span>
+</div>
+<div class="flex-1 min-w-0 bg-white/80 p-3.5 rounded-xl border border-amber-100 flex flex-col gap-1.5">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-semibold">CALM BREAK &amp; PHỤC HỒI</span>
+<span class="text-xs text-slate-500">Quy tắc nhịp sinh học</span>
+</div>
+<h4 class="text-sm font-medium text-slate-800">Ăn trưa dinh dưỡng, tản bộ ngoài trời &amp; Thiền định với sóng biển 432Hz</h4>
+<p class="text-xs text-slate-500">Giảm cortisol thần kinh, tái tạo thụ thể Dopamine cho phiên học buổi chiều.</p>
+</div>
+</div>
+<!-- Event 3: Afternoon Session (CURRENTLY ACTIVE - LIVE) -->
+<div class="flex items-start gap-3 p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/5 border-2 border-brand-500/40 shadow-sm relative overflow-hidden">
+<div class="flex flex-col items-center shrink-0 w-24">
+<span class="text-xs font-bold text-brand-700">14:00 - 17:00</span>
+<span class="text-[11px] text-brand-600 font-semibold">180 phút</span>
+<div class="mt-2 relative flex items-center justify-center w-6 h-6 rounded-full bg-brand-600 text-white shadow-sm">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-600 opacity-60"></span>
+<span class="material-symbols-outlined text-xs">play_arrow</span>
+</div>
+</div>
+<div class="flex-1 min-w-0 bg-white/95 p-4 rounded-xl border border-slate-100 shadow-xs flex flex-col gap-2">
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                      KHUNG GIỜ VÀNG HIỆN TẠI • LIVE
+                    </span>
+<span class="text-xs text-slate-500 font-medium">CSDL Phân tán (IS210)</span>
+</div>
+<span class="text-xs text-brand-700 font-bold">Đang diễn ra • Còn 42 phút phiên 2</span>
+</div>
+<h4 class="text-sm font-bold text-slate-900">Bài tập lớn SQL: Tối ưu hóa câu truy vấn Indexing &amp; Họp nhóm trực tuyến Kỹ thuật Web</h4>
+<p class="text-xs text-slate-600">Phân tích B-Tree Index trên cụm 3 triệu bản ghi giao dịch; rà soát thiết kế RESTful API cho ứng dụng di động.</p>
+<div class="flex items-center gap-2 pt-1">
+<button class="px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20">
+<span class="material-symbols-outlined text-sm">timer</span>
+<span>Tiếp tục Sprint 25p</span>
+</button>
+<button class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-medium transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">notes</span>
+<span>Mở sổ tay mã nguồn</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Event 4: Evening Study -->
+<div class="flex items-start gap-3 p-3.5 rounded-2xl bg-white/60 border border-slate-100 hover:bg-white transition-all">
+<div class="flex flex-col items-center shrink-0 w-24">
+<span class="text-xs font-medium text-slate-700">19:30 - 21:00</span>
+<span class="text-[11px] text-slate-400">90 phút</span>
+<span class="mt-2 flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-500">
+<span class="material-symbols-outlined text-sm">schedule</span>
+</span>
+</div>
+<div class="flex-1 min-w-0 bg-white/80 p-3.5 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+<div class="flex items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-semibold">LIGHT STUDY &amp; ĐỌC TÀI LIỆU</span>
+<span class="text-xs text-slate-500">Tài liệu Khoa học</span>
+</div>
+<span class="text-xs text-slate-500">Sắp tới lúc 19:30</span>
+</div>
+<h4 class="text-sm font-semibold text-slate-800">Đọc paper gốc "Attention Is All You Need" &amp; Tóm tắt ghi chú vào Obsidian</h4>
+<p class="text-xs text-slate-500">Phân tích kiến trúc Multi-Head Attention, ánh xạ các vector truy vấn (Query, Key, Value) chuẩn bị cho buổi Seminar tuần 9.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- SECTION B: Kế hoạch Chia nhỏ Đồ án Lớn (AI Task Sprints) -->
+<section class="glass-card rounded-3xl p-6 relative" data-purpose="tasks-sprint-section">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<span class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+<span class="material-symbols-outlined text-xl">account_tree</span>
+</span>
+<div>
+<h2 class="text-base font-bold text-slate-800">Kế hoạch Chia nhỏ Đồ án Lớn (AI Task Sprints)</h2>
+<p class="text-xs text-slate-500">Thuật toán phân rã nhiệm vụ phức tạp thành các chặng sprint nhỏ 25-45 phút</p>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-xl bg-blue-50 text-brand-600 hover:bg-blue-100/80 border border-blue-100 text-xs font-semibold flex items-center gap-1.5 transition-all self-start sm:self-auto" id="btn-deconstruct-task">
+<span class="material-symbols-outlined text-base">auto_fix_high</span>
+<span>AI Phân rã Đồ án mới</span>
+</button>
+</div>
+<div class="space-y-4 mt-4" id="planner-tasks-container">
+<!-- Project Sprint 1: Machine Learning -->
+<div class="p-4 rounded-2xl bg-white/70 border border-slate-200/70 hover:shadow-xs transition flex flex-col gap-3">
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-md bg-brand-600 text-white text-xs font-bold">CS301</span>
+<span class="text-sm font-bold text-slate-800">Đồ án Trí tuệ Nhân tạo (Machine Learning)</span>
+<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold">Còn 3 ngày</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate-500">Tiến độ 80%</span>
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-brand-600 h-full rounded-full" style="width: 80%;"></div>
+</div>
+</div>
+</div>
+<!-- Task Checklist -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+<!-- Item 1 Completed -->
+<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 text-slate-400">
+<span class="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+<span class="text-xs line-through">Chuẩn bị dữ liệu mẫu &amp; Data Augmentation</span>
+</div>
+<!-- Item 2 Completed -->
+<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 text-slate-400">
+<span class="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+<span class="text-xs line-through">Huấn luyện mô hình ResNet18 trên Colab</span>
+</div>
+<!-- Item 3 Pending Today -->
+<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-4 h-4 rounded border border-slate-300 shrink-0"></span>
+<span class="text-xs font-medium text-slate-800 truncate">Viết nhận xét ma trận nhầm lẫn &amp; F1-score</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-blue-100/70 text-brand-700 text-[11px] font-semibold shrink-0">Sáng mai 09:00</span>
+</div>
+<!-- Item 4 Pending Final -->
+<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-4 h-4 rounded border border-slate-300 shrink-0"></span>
+<span class="text-xs font-medium text-slate-800 truncate">Xuất file LaTeX PDF &amp; Kiểm tra Turnitin</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-medium shrink-0">Thứ 5 16:00</span>
+</div>
+</div>
+</div>
+<!-- Project Sprint 2: Database Systems -->
+<div class="p-4 rounded-2xl bg-white/70 border border-slate-200/70 hover:shadow-xs transition flex flex-col gap-3">
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-md bg-secondary text-white text-xs font-bold">IS210</span>
+<span class="text-sm font-bold text-slate-800">Đồ án CSDL Phân tán &amp; Phân mảnh Sharding</span>
+<span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold">Còn 8 ngày</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate-500">Tiến độ 45%</span>
+<div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-cyan-600 h-full rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+</div>
+<!-- Task Checklist -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+<!-- Item 1 Completed -->
+<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 text-slate-400">
+<span class="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+<span class="text-xs line-through">Thiết kế lược đồ quan hệ phân mảnh ngang</span>
+</div>
+<!-- Item 2 Completed -->
+<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 text-slate-400">
+<span class="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+<span class="text-xs line-through">Cài đặt 3 nút MongoDB Replica Set với Docker</span>
+</div>
+<!-- Item 3 Active Sprint -->
+<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-4 h-4 rounded border border-slate-300 shrink-0"></span>
+<span class="text-xs font-medium text-slate-800 truncate">Thực hiện Benchmark thông lượng ghi qua YCSB</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-blue-100/70 text-blue-700 text-[11px] font-semibold shrink-0">Thứ 5 14:30</span>
+</div>
+<!-- Item 4 Architecture Doc -->
+<div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+<div class="flex items-center gap-2 min-w-0">
+<span class="w-4 h-4 rounded border border-slate-300 shrink-0"></span>
+<span class="text-xs font-medium text-slate-800 truncate">Viết tài liệu kiến trúc &amp; vẽ sơ đồ phân tán</span>
+</div>
+<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-medium shrink-0">Thứ 6 10:00</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT COLUMN: BIORHYTHM CURVE & SOUND & DEADLINES (4 cols) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- CARD 1: Khuyến nghị Nhịp sinh học Não bộ (Alpha Curve) -->
+<section class="glass-card rounded-3xl p-5 space-y-4 relative overflow-hidden" data-purpose="biorhythm-curve">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-blue-100 text-blue-600">
+<span class="material-symbols-outlined text-lg">insights</span>
+</span>
+<h3 class="text-sm font-bold text-slate-800">Nhịp sinh học Não bộ</h3>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-blue-100/80 text-blue-700 text-[10px] font-bold uppercase tracking-wider border border-blue-200/60">TRẠNG THÁI ALPHA</span>
+</div>
+<!-- Energy Curve Sine Visualization -->
+<div class="w-full bg-blue-50/50 rounded-2xl p-3.5 border border-blue-100/60 flex flex-col gap-2 relative">
+<div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+<span>06:00 Sáng</span>
+<span class="text-brand-600 font-bold" id="bio-now-label">14:45 (Hiện tại: 94%)</span>
+<span>23:00 Đêm</span>
+</div>
+<!-- Custom Vector Smooth Wave Chart -->
+<div class="w-full h-28 relative flex items-center justify-center">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 320 120">
+<defs>
+<linearGradient id="waveGradient2" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#2563eb" stop-opacity="0.30"></stop>
+<stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<path d="M 0,90 Q 40,20 80,30 T 160,85 T 230,25 T 320,105 L 320,120 L 0,120 Z" fill="url(#waveGradient2)"></path>
+<path d="M 0,90 Q 40,20 80,30 T 160,85 T 230,25 T 320,105" fill="none" stroke="#2563eb" stroke-linecap="round" stroke-width="3"></path>
+<circle cx="80" cy="30" fill="#006398" r="4"></circle>
+<circle class="animate-ping opacity-40" cx="230" cy="25" fill="#2563eb" r="7"></circle>
+<circle cx="230" cy="25" fill="#2563eb" r="5" stroke="#ffffff" stroke-width="2"></circle>
+<circle cx="160" cy="85" fill="#94a3b8" r="4"></circle>
+</svg>
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate-400">
+<span>Khởi động</span>
+<span class="text-cyan-700 font-medium">Đỉnh 1 (10:00)</span>
+<span>Hồi phục</span>
+<span class="text-brand-600 font-bold">Đỉnh 2 (15:00)</span>
+<span>Thư giãn</span>
+</div>
+</div>
+<!-- AI Assistant Contextual Recommendation -->
+<div class="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-100 flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-brand-700 text-xs font-bold">
+<span class="material-symbols-outlined text-base">psychology</span>
+<span>LỜI KHUYÊN CỦA STUĐIÔ AI</span>
+</div>
+<p class="text-xs text-slate-600 leading-relaxed" id="bio-advice">
+              "Mức độ tỉnh táo não bộ của Minh Châu đang đạt mức tối ưu nhất buổi chiều lúc 14:45. Hãy giải quyết nốt phần thuật toán khó nhất của <strong class="text-slate-800 font-semibold">Báo cáo Machine Learning</strong> trước 16:30 trước khi nhịp năng lượng bước vào pha hạ nhiệt!"
+            </p>
+</div>
+<!-- Activate Deep Mode Button -->
+<button id="btn-deep-mode" type="button" class="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition-all shadow-sm shadow-blue-500/20 flex items-center justify-center gap-2 active:scale-95">
+<span class="material-symbols-outlined text-lg">center_focus_strong</span>
+<span>Kích hoạt Chế độ Tập trung Sâu (Deep Mode)</span>
+</button>
+</section>
+<!-- CARD 2: Hạn nộp & Kỳ thi Cận kề -->
+<section class="glass-card rounded-3xl p-5 space-y-3.5 relative" data-purpose="upcoming-deadlines">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+<span class="material-symbols-outlined text-lg">event_upcoming</span>
+</span>
+<h3 class="text-sm font-bold text-slate-800">Hạn nộp &amp; Kỳ thi Cận kề</h3>
+</div>
+<span class="text-xs text-slate-500 font-medium">3 Đồ án</span>
+</div>
+<div class="space-y-2.5" id="planner-deadlines-container">
+<!-- Deadline 1 -->
+<div class="p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 border border-rose-100 flex flex-col items-center justify-center shrink-0">
+<span class="text-[10px] font-bold uppercase leading-none">T6</span>
+<span class="text-xs font-bold leading-none mt-0.5">01/11</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-xs font-bold text-slate-800 truncate">Báo cáo ML: ResNet18</span>
+<span class="text-[11px] text-slate-500 truncate">Canvas LMS • Hạn 23:59 Thứ 6</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold shrink-0 border border-rose-100">Còn 2 ngày</span>
+</div>
+<!-- Deadline 2 -->
+<div class="p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 flex flex-col items-center justify-center shrink-0">
+<span class="text-[10px] font-bold uppercase leading-none">T3</span>
+<span class="text-xs font-bold leading-none mt-0.5">05/11</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-xs font-bold text-slate-800 truncate">Bài tập lớn SQL &amp; Sharding</span>
+<span class="text-[11px] text-slate-500 truncate">Hệ thống nộp bài Khoa KHMT</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold shrink-0 border border-blue-100">Còn 5 ngày</span>
+</div>
+<!-- Deadline 3 -->
+<div class="p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex flex-col items-center justify-center shrink-0">
+<span class="text-[10px] font-bold uppercase leading-none">T2</span>
+<span class="text-xs font-bold leading-none mt-0.5">11/11</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-xs font-bold text-slate-800 truncate">Đồ án Nhóm Kỹ thuật Web</span>
+<span class="text-[11px] text-slate-500 truncate">Sprint Demo 1 với Giảng viên</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium shrink-0">Tuần sau</span>
+</div>
+</div>
+</section>
+<!-- CARD 3: Không gian Âm thanh Tĩnh tâm 432Hz -->
+<section class="glass-card rounded-3xl p-5 space-y-3.5 relative overflow-hidden" data-purpose="ambient-sound-card">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-blue-100 text-blue-600">
+<span class="material-symbols-outlined text-lg">waves</span>
+</span>
+<h3 class="text-sm font-bold text-slate-800">Âm thanh Tĩnh lặng 432Hz</h3>
+</div>
+<span class="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">ĐANG PHÁT</span>
+</div>
+<!-- Watercolor Lighthouse Visual Card -->
+<div class="relative w-full h-36 rounded-2xl overflow-hidden shadow-xs group">
+<img alt="Lighthouse Ocean Sunset" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" src="../../assets/images/lighthouse-wide.png">
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent flex flex-col justify-end p-3">
+<span class="text-blue-100 text-[11px] font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-blue-300 text-sm">graphic_eq</span>
+                Tần số cộng hưởng Solfeggio
+              </span>
+<h4 class="text-white text-sm font-bold leading-tight">Sóng Biển Chiều &amp; Tiếng Gió 432Hz</h4>
+</div>
+</div>
+<!-- Sound Player Bar -->
+<div class="flex items-center justify-between p-3 rounded-2xl bg-blue-50/50 border border-blue-100/60">
+<div class="flex items-center gap-3">
+<button aria-label="Tạm dừng hoặc phát" class="w-9 h-9 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-xs hover:bg-brand-700 transition-all">
+<span class="material-symbols-outlined text-lg">pause</span>
+</button>
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-slate-800">Biển Vũng Tàu • Chiều tà</span>
+<span class="text-[11px] text-slate-500">Thư giãn sâu não bộ</span>
+</div>
+</div>
+<!-- Dynamic sound wave indicator -->
+<div class="flex items-end gap-1 h-5 px-1">
+<span class="w-1 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+<span class="w-1 h-4 bg-blue-600 rounded-full animate-pulse delay-100"></span>
+<span class="w-1 h-2 bg-blue-600 rounded-full animate-pulse delay-200"></span>
+<span class="w-1 h-3.5 bg-blue-600 rounded-full animate-pulse delay-75"></span>
+</div>
+</div>
+<div class="flex items-center justify-between px-1 text-xs text-slate-500">
+<span>Hẹn giờ tắt: 45 phút</span>
+<a class="text-brand-600 font-medium hover:underline text-xs" href="../18-sound-sanctuary/index.html">Chọn âm thanh khác →</a>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BEGIN: FloatingFocusBar synchronized with SCREEN_27 -->
+<div class="fixed bottom-4 inset-x-4 max-w-4xl mx-auto z-50">
+<div class="glass-card bg-white/95 rounded-2xl p-3 px-5 border border-white/90 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-blue-100/80 flex items-center justify-center text-blue-600 shrink-0">
+          ⏳
+        </div>
+<div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-slate-900">Phiên học tiếp theo: Báo cáo đồ án AI</span>
+<span class="text-[10px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">25 phút</span>
+</div>
+<p class="text-[11px] text-slate-500">Âm thanh kích hoạt sóng não: Tiếng mưa rơi tĩnh lặng &amp; Nhịp điệu Lo-Fi biển</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition" type="button">
+          ⚙️ Cài đặt âm thanh
+        </button>
+<button class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-sm shadow-blue-500/20 transition flex items-center gap-1" id="btn-planner-pomodoro" type="button">
+<span>Bắt đầu Pomodoro</span>
+<span>🍅</span>
+</button>
+</div>
+</div>
+</div>
+<!-- END: FloatingFocusBar -->
+<!-- FOOTER -->
+<footer class="mt-auto border-t border-white/60 bg-white/40 backdrop-blur-md py-4 px-6 text-center text-xs text-slate-500">
+<div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-700">Stuđiô AI</span>
+<span>•</span>
+<span>Sanctuary of Deep Focus</span>
+<span class="hidden sm:inline text-slate-300">•</span>
+<p class="text-[11px] text-slate-500">© 2025 Stuđiô AI CALM WORKSPACE. Không gian học tập tĩnh lặng sinh viên đại học.</p>
+</div>
+<div class="flex items-center gap-4 text-slate-500">
+<a class="hover:underline" href="#">Nguyên tắc Calmspace</a>
+<a class="hover:underline" href="#">Nhịp sinh học &amp; Tập trung</a>
+<a class="hover:underline" href="#">Hỗ trợ sinh viên</a>
+<a class="hover:underline" href="#">Chính sách bảo mật</a>
+</div>
+</div>
+</footer>
+<!-- Studio AI Shared Scripts -->
+<style>
+@media print {
+  header, footer, nav, #calm-toast-container, #studi-ambient-bar, .fixed.bottom-4 { display: none !important; }
+  body { background: #fff !important; }
+  main { padding: 0 !important; }
+}
+body.printing-report header, body.printing-report footer, body.printing-report nav { display: none !important; }
+</style>
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/timer.js"></script>
+<script src="../../assets/js/app.js"></script>
+<script>
+  // Navigation actions
+  const btnAddDeadline = document.getElementById('btn-add-deadline');
+  const btnDeconstruct = document.getElementById('btn-deconstruct-task');
+  const btnPomodoro = document.getElementById('btn-planner-pomodoro');
+  const btnAiBalance = document.getElementById('btn-ai-balance');
+  const btnSyncCanvas = document.getElementById('btn-sync-canvas');
+
+  if (btnAddDeadline) {
+    btnAddDeadline.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.href = '../12-task-modal/index.html';
+    }, true);
+  }
+  if (btnDeconstruct) {
+    btnDeconstruct.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.href = '../12-task-modal/index.html';
+    }, true);
+  }
+  if (btnPomodoro) {
+    btnPomodoro.addEventListener('click', () => {
+      window.location.href = '../16-deep-work-active/index.html';
+    });
+  }
+
+  // AI Balance Chronobiology
+  if (btnAiBalance) {
+    btnAiBalance.addEventListener('click', async () => {
+      if (window.showCalmToast) showCalmToast('Đang điều phối các bài tập vào Khung Giờ Vàng Alpha...', 'info');
+      try {
+        if (window.api) {
+          const res = await api.post('/schedule/auto-balance');
+          if (window.showCalmToast) showCalmToast(res.message || 'Thuật toán AI đã tự động tối ưu lịch trình!', 'success');
+        }
+      } catch (err) {
+        if (window.showCalmToast) showCalmToast((err && err.message) || 'Không tối ưu được lịch. Thử lại sau.', 'error');
+      }
+    });
+  }
+
+  // Canvas Sync (demo - chưa có backend thật)
+  if (btnSyncCanvas) {
+    btnSyncCanvas.addEventListener('click', async () => {
+      if (window.showCalmToast) showCalmToast('Tính năng đồng bộ Canvas LMS đang phát triển (bản demo).', 'warning');
+    });
+  }
+
+  // Load Real Tasks from SQLite Backend
+  async function loadPlannerData() {
+    if (!window.api) return;
+    try {
+      const tasks = await api.get('/tasks/');
+      const tasksContainer = document.getElementById('planner-tasks-container');
+      const deadlinesContainer = document.getElementById('planner-deadlines-container');
+
+      if (Array.isArray(tasks)) {
+        if (!tasks.length) {
+          if (tasksContainer) {
+            tasksContainer.innerHTML = `
+              <div class="p-4 rounded-2xl bg-white/70 border border-slate-200/70 text-center space-y-1.5">
+                <p class="text-xs font-bold text-slate-800">Chưa có đồ án nào.</p>
+                <p class="text-[11px] text-slate-500">Bấm "AI Phân rã Đồ án mới" để bắt đầu.</p>
+              </div>`;
+          }
+          if (deadlinesContainer) {
+            deadlinesContainer.innerHTML = `
+              <div class="p-3 rounded-2xl bg-white/70 border border-slate-100 text-center text-[11px] text-slate-500">
+                Chưa có hạn nộp nào.
+              </div>`;
+          }
+        } else {
+        if (tasksContainer) {
+          tasksContainer.innerHTML = '';
+          tasks.forEach(task => {
+            const total = task.total_sprints ?? task.estimated_sprints ?? 1;
+            const done = task.completed_sprints ?? 0;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            const subjName = task.subject_name || task.subject || 'Môn học';
+            const subjCode = task.subject_code ? ` (${task.subject_code})` : '';
+            const card = document.createElement('div');
+            card.className = 'p-4 rounded-2xl bg-white/70 border border-slate-200/70 hover:shadow-xs transition flex flex-col gap-3';
+            
+            let subtasksHtml = '';
+            if (task.subtasks && task.subtasks.length > 0) {
+              subtasksHtml = task.subtasks.slice(0, 4).map(st => {
+                if (st.is_completed) {
+                  return `
+                    <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 text-slate-400">
+                      <span class="w-4 h-4 rounded bg-emerald-500 text-white flex items-center justify-center shrink-0 text-[10px] font-bold">✓</span>
+                      <span class="text-xs line-through">${st.title}</span>
+                    </div>
+                  `;
+                } else {
+                  return `
+                    <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-4 h-4 rounded border border-slate-300 shrink-0"></span>
+                        <span class="text-xs font-medium text-slate-800 truncate">${st.title}</span>
+                      </div>
+                      <span class="px-2 py-0.5 rounded bg-blue-100/70 text-brand-700 text-[11px] font-semibold shrink-0">${st.estimated_minutes || 25}p</span>
+                    </div>
+                  `;
+                }
+              }).join('');
+            }
+
+            card.innerHTML = `
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md bg-brand-600 text-white text-xs font-bold">${subjName.substring(0, 6).toUpperCase()}</span>
+                  <span class="text-sm font-bold text-slate-800">${task.title}</span>
+                  <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold">${task.status === 'completed' ? 'Đã hoàn thành' : 'Đang thực hiện'}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-slate-500">Tiến độ ${pct}%</span>
+                  <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                    <div class="bg-brand-600 h-full rounded-full" style="width: ${pct}%;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                ${subtasksHtml}
+              </div>
+            `;
+            tasksContainer.appendChild(card);
+          });
+        }
+
+        if (deadlinesContainer) {
+          deadlinesContainer.innerHTML = '';
+          tasks.slice(0, 4).forEach((task) => {
+            const dTotal = task.total_sprints ?? task.estimated_sprints ?? 1;
+            const dDone = task.completed_sprints ?? 0;
+            const dSubj = task.subject_name || task.subject || 'Môn học';
+            const dCode = task.subject_code ? ` (${task.subject_code})` : '';
+            const item = document.createElement('div');
+            item.className = 'p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs';
+            item.innerHTML = `
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 flex flex-col items-center justify-center shrink-0">
+                  <span class="text-[10px] font-bold uppercase leading-none">P${dDone}</span>
+                  <span class="text-xs font-bold leading-none mt-0.5">${dTotal}p</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                  <span class="text-xs font-bold text-slate-800 truncate">${task.title}</span>
+                  <span class="text-[11px] text-slate-500 truncate">${dSubj}${dCode} • Ưu tiên ${task.priority || 'cao'}</span>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold shrink-0 border border-blue-100">${task.status === 'completed' ? 'Xong' : 'Đang làm'}</span>
+            `;
+            deadlinesContainer.appendChild(item);
+          });
+        }
+        } // end else (co du lieu)
+      }
+    } catch (err) {
+      console.log('Planner fetch error:', err);
+      if (window.showCalmToast) showCalmToast('Không tải được dữ liệu mới, đang hiển thị nội dung mẫu. ' + ((err && err.message) || ''), 'warning');
+      const tasksContainer = document.getElementById('planner-tasks-container');
+      if (tasksContainer && !tasksContainer.children.length) {
+        tasksContainer.innerHTML = `
+          <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 text-xs text-rose-700 text-center">
+            Không tải được kế hoạch (${(err && err.message) || ''}).
+            <button onclick="window.location.reload()" class="font-bold underline ml-1">Tải lại</button>
+          </div>`;
+      }
+    }
+  }
+
+  // Heatmap 7 ngày thật: giờ học từ analytics + ngày dương lịch tuần hiện tại
+  async function loadHeatmap() {
+    const box = document.getElementById('planner-heatmap');
+    if (!box || !window.api) return;
+    try {
+      const data = await api.get('/analytics/dashboard');
+      const hours = Array.isArray(data.weekly_focus_hours) ? data.weekly_focus_hours : [0,0,0,0,0,0,0];
+      const days = Array.isArray(data.week_days) ? data.week_days : ['Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','Chủ Nhật'];
+      const now = new Date();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      const todayIdx = (now.getDay() + 6) % 7;
+      const maxH = Math.max(6, ...hours);
+      box.innerHTML = hours.map((h, i) => {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const isToday = i === todayIdx;
+        const pct = Math.round((h / maxH) * 100);
+        return `
+        <div class="flex flex-col items-center p-2.5 rounded-2xl text-center transition-all ${isToday ? 'bg-blue-50/90 border-2 border-brand-500 shadow-xs relative' : 'bg-white/70 border border-slate-100 hover:bg-white'}">
+          ${isToday ? '<span class="absolute -top-2.5 px-2 py-0.5 rounded-full bg-brand-600 text-white text-[9px] font-bold uppercase tracking-wider">Hôm nay</span>' : ''}
+          <span class="text-xs ${isToday ? 'text-brand-700 font-bold' : 'text-slate-500'}">${days[i] || ''}</span>
+          <span class="text-base font-semibold text-slate-800 mt-1">${d.getDate()}</span>
+          <span class="text-xs text-brand-600 font-medium mt-1">${h}h</span>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div class="bg-brand-600 h-full rounded-full" style="width: ${pct}%;"></div>
+          </div>
+        </div>`;
+      }).join('');
+      // Nhãn tuần thật
+      const sun = new Date(monday);
+      sun.setDate(monday.getDate() + 6);
+      const fmt = (dt) => `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}`;
+      const weekNum = Math.ceil((((monday - new Date(monday.getFullYear(), 0, 1)) / 864e5) + 1) / 7);
+      const label = document.getElementById('planner-week-label');
+      if (label) label.textContent = `Lập kế hoạch tuần thứ ${weekNum} (${fmt(monday)} - ${fmt(sun)}/${sun.getFullYear()})`;
+    } catch (err) {
+      console.log('Heatmap load err:', err);
+      if (window.showCalmToast) showCalmToast('Không tải được heatmap tuần. ' + ((err && err.message) || ''), 'warning');
+    }
+  }
+
+  // Lịch chi tiết hôm nay thật từ /schedule/timeline
+  async function loadDayEvents() {
+    const box = document.getElementById('planner-day-events');
+    if (!box || !window.api) return;
+    try {
+      const [events, pulse] = await Promise.all([
+        api.get('/schedule/timeline'),
+        api.get('/circadian/pulse').catch(() => null),
+      ]);
+      const title = document.getElementById('planner-day-title');
+      const badge = document.getElementById('planner-ready-badge');
+      const todayStr = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+      if (title) title.textContent = `Lịch trình chi tiết hôm nay: ${todayStr}`;
+      if (badge && pulse) badge.textContent = `${pulse.pulse_percent}% SẴN SÀNG TƯ DUY`;
+      // Xóa các card tĩnh, giữ header (phần tử đầu)
+      [...box.children].slice(1).forEach(n => n.remove());
+      if (!Array.isArray(events) || !events.length) {
+        const empty = document.createElement('div');
+        empty.className = 'p-4 text-center text-xs text-slate-500';
+        empty.textContent = 'Chưa có sự kiện nào. Thêm phiên học để AI sắp vào khung giờ vàng.';
+        box.appendChild(empty);
+        return;
+      }
+      const typeBadge = { deep_work: 'DEEP WORK', class: 'LỚP HỌC', self_study: 'TỰ HỌC', study_break: 'NGHỈ NGƠI' };
+      events.forEach(ev => {
+        const card = document.createElement('div');
+        card.className = 'flex items-start gap-3 p-3.5 rounded-2xl border transition-all ' +
+          (ev.is_completed ? 'bg-white/70 border-slate-100' : 'bg-white/90 border-slate-200/70 hover:shadow-xs');
+        card.innerHTML = `
+          <div class="flex flex-col items-center shrink-0 w-24">
+            <span class="text-xs font-bold text-slate-800">${ev.start_time} - ${ev.end_time}</span>
+            <span class="mt-2 flex items-center justify-center w-6 h-6 rounded-full ${ev.is_completed ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-700'} text-xs font-bold">${ev.is_completed ? '✓' : '•'}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-0.5 rounded bg-blue-600 text-white text-[11px] font-bold">${typeBadge[ev.event_type] || ev.event_type}</span>
+              ${ev.is_circadian_optimized ? '<span class="text-[10px] text-emerald-700 font-semibold">✓ Tối ưu sinh học</span>' : ''}
+            </div>
+            <h4 class="text-sm font-semibold text-slate-800 mt-1 ${ev.is_completed ? 'line-through text-slate-400' : ''}">${ev.title}</h4>
+            ${ev.description ? `<p class="text-xs text-slate-500 line-clamp-1">${ev.description}</p>` : ''}
+          </div>`;
+        box.appendChild(card);
+      });
+    } catch (err) {
+      console.log('Day events load err:', err);
+    }
+  }
+
+  // View switcher thật: week / day / eisenhower
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-view]').forEach(b => {
+        const on = b === btn;
+        b.setAttribute('aria-selected', String(on));
+        b.className = on
+          ? 'px-3 py-1.5 rounded-lg bg-white text-brand-600 shadow-xs text-xs font-semibold'
+          : 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 text-xs transition-colors';
+      });
+      const v = btn.dataset.view;
+      const heatmap = document.getElementById('planner-heatmap');
+      const dayBox = document.getElementById('planner-day-events');
+      const tasksSec = document.querySelector('[data-purpose="tasks-sprint-section"]');
+      if (v === 'day') {
+        if (heatmap) heatmap.style.display = 'none';
+        if (dayBox) dayBox.style.display = '';
+        if (tasksSec) tasksSec.style.display = 'none';
+        dayBox?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (v === 'eisenhower') {
+        if (heatmap) heatmap.style.display = '';
+        if (dayBox) dayBox.style.display = 'none';
+        if (tasksSec) tasksSec.style.display = '';
+        renderEisenhower();
+      } else {
+        if (heatmap) heatmap.style.display = '';
+        if (dayBox) dayBox.style.display = '';
+        if (tasksSec) tasksSec.style.display = '';
+        loadPlannerData();
+      }
+    });
+  });
+
+  // Ma trận Eisenhower thật từ tasks (khẩn cấp = hạn ≤3 ngày/quá hạn, quan trọng = ưu tiên high)
+  async function renderEisenhower() {
+    const box = document.getElementById('planner-tasks-container');
+    if (!box || !window.api) return;
+    try {
+      const tasks = await api.get('/tasks/');
+      const now = new Date();
+      const urgent = (t) => {
+        if (!t.deadline) return false;
+        const dl = new Date(t.deadline);
+        return (dl - now) < 3 * 864e5;
+      };
+      const groups = [
+        ['KHẨN CẤP & QUAN TRỌNG — Làm ngay', tasks.filter(t => urgent(t) && t.priority === 'high' && t.status !== 'completed')],
+        ['QUAN TRỌNG, chưa gấp — Lên lịch', tasks.filter(t => !urgent(t) && t.priority === 'high' && t.status !== 'completed')],
+        ['GẤP nhưng ít quan trọng — Ủy quyền/rút gọn', tasks.filter(t => urgent(t) && t.priority !== 'high' && t.status !== 'completed')],
+        ['Hoàn thành / ít ưu tiên', tasks.filter(t => t.status === 'completed' || (!urgent(t) && t.priority !== 'high'))],
+      ];
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      box.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">` + groups.map(([label, list], i) => `
+        <div class="p-3.5 rounded-2xl border ${i === 0 ? 'border-rose-300 bg-rose-50/50' : 'border-slate-200 bg-white/70'}">
+          <p class="text-xs font-bold ${i === 0 ? 'text-rose-700' : 'text-slate-700'} mb-2">Q${i + 1}: ${label} (${list.length})</p>
+          <div class="space-y-1.5">
+            ${list.length ? list.map(t => `<div class="text-xs p-2 rounded-xl bg-white border border-slate-100 font-medium text-slate-700 truncate">${esc(t.title)}</div>`).join('') : '<p class="text-[11px] text-slate-400">Trống</p>'}
+          </div>
+        </div>`).join('') + `</div>`;
+    } catch (err) {
+      console.log('Eisenhower err:', err);
+    }
+  }
+
+  // Metrics + biorhythm thật từ analytics/pulse/tasks/profile
+  async function loadMetrics() {
+    if (!window.api) return;
+    try {
+      const [dash, pulse, tasks, profile] = await Promise.all([
+        api.get('/analytics/dashboard'),
+        api.get('/circadian/pulse').catch(() => null),
+        api.get('/tasks/').catch(() => []),
+        api.get('/auth/profile').catch(() => null),
+      ]);
+      const q = (sel) => document.querySelector(`#planner-metrics [data-metric] ${sel}, #planner-metrics ${sel}`);
+      const set = (metric, key, val) => {
+        const el = document.querySelector(`#planner-metrics [data-metric="${metric}"] [data-m="${key}"]`);
+        if (el && val !== undefined) el.textContent = val;
+      };
+      // Card 1: giờ tuần / mục tiêu tuần
+      if (dash) {
+        const targetDay = (profile && profile.target_daily_focus_hours) || 6;
+        const targetWeek = Math.round(targetDay * 7 * 10) / 10;
+        const done = dash.total_week_hours || 0;
+        const pct = targetWeek > 0 ? Math.min(100, Math.round(done / targetWeek * 100)) : 0;
+        set('week-hours', 'hours', `${done}h`);
+        set('week-hours', 'target', `/ ${targetWeek}h mục tiêu`);
+        set('week-hours', 'pct', `Tiến độ ${pct}%`);
+        set('week-hours', 'rest', done >= targetWeek ? 'Đã đạt mục tiêu tuần!' : `Còn ${Math.round((targetWeek - done) * 10) / 10}h cần hoàn thành`);
+        const bar = document.querySelector('#planner-metrics [data-metric="week-hours"] [data-m="bar"]');
+        if (bar) bar.style.width = `${pct}%`;
+        // Card 3: burnout thật
+        const short = String(dash.burnout_risk || '').split('(')[0].trim() || 'Ổn định';
+        set('burnout', 'level', short);
+        set('burnout', 'score', `(Đồng bộ ${dash.circadian_alignment_score || 0}%)`);
+        set('burnout', 'detail', `Streak ${dash.current_streak_days || 0} ngày • Xao nhãng thấp`);
+        set('burnout', 'safety', `Hiệu suất Zen ${dash.zen_efficiency_index || 0}%`);
+      }
+      // Card 2: khung giờ vàng + pulse thật
+      if (pulse) {
+        const parts = String(pulse.golden_hour_range || '').split('&').map(s => s.trim());
+        const box = document.querySelector('#planner-metrics [data-metric="alpha"] [data-m="ranges"]');
+        if (box && parts.length) {
+          box.innerHTML = parts.map((p, i) => i === 0
+            ? `<span class="text-lg font-bold text-slate-800">${p}</span>`
+            : `<span class="text-lg font-bold text-brand-600">&amp; ${p}</span>`).join('');
+        }
+        set('alpha', 'pulse', `Năng lượng hiện tại ${pulse.pulse_percent}%${pulse.is_golden_hour ? ' • Đang giờ vàng' : ''}`);
+      }
+      // Card 4: đồ án + deadline thật
+      if (Array.isArray(tasks)) {
+        const active = tasks.filter(t => t.status !== 'completed');
+        const names = [...new Set(active.map(t => t.subject_name).filter(Boolean))].slice(0, 3).join(' • ');
+        set('focus-subjects', 'count', `${active.length} Môn`);
+        set('focus-subjects', 'names', names || 'Đã xong hết!');
+        const withDl = active.filter(t => t.deadline).map(t => ({ t, dl: new Date(t.deadline) }))
+          .filter(x => !isNaN(x.dl)).sort((a, b) => a.dl - b.dl)[0];
+        if (withDl) {
+          const days = Math.max(0, Math.ceil((withDl.dl - new Date()) / 864e5));
+          set('focus-subjects', 'deadline', `Deadline gần nhất: ${withDl.t.title.slice(0, 30)} (${days} ngày tới)`);
+        } else {
+          set('focus-subjects', 'deadline', 'Chưa có deadline nào');
+        }
+      }
+      // Biorhythm: giờ + pulse + lời khuyên thật
+      const nowLbl = document.getElementById('bio-now-label');
+      if (nowLbl && pulse) {
+        const hm = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+        nowLbl.textContent = `${hm} (Hiện tại: ${pulse.pulse_percent}%)`;
+      }
+      const heroAlpha = document.getElementById('hero-alpha-label');
+      if (heroAlpha && pulse) {
+        heroAlpha.textContent = pulse.is_golden_hour
+          ? `Đang Đỉnh Alpha (${pulse.pulse_percent}%)`
+          : `Năng lượng ${pulse.pulse_percent}%`;
+      }
+      const advice = document.getElementById('bio-advice');
+      if (advice && pulse) {
+        const top = Array.isArray(tasks) && tasks.length ? tasks.filter(t => t.status !== 'completed')[0] : null;
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        advice.innerHTML = `"${esc(pulse.recommendation || '')}"${top ? ` Ưu tiên hiện tại: <strong class="text-slate-800 font-semibold">${esc(top.title)}</strong>.` : ''}`;
+      }
+    } catch (err) {
+      console.log('Metrics load err:', err);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPlannerData();
+    loadHeatmap();
+    loadDayEvents();
+    loadMetrics();
+    // Deep Mode -> sang phiên deep-work 50p kèm âm 432Hz
+    document.getElementById('btn-deep-mode')?.addEventListener('click', () => {
+      window.location.href = '../16-deep-work-active/index.html?duration=50&sound=ocean';
+    });
+  });
+</script>
+</body></html>

@@ -1,0 +1,1061 @@
+<!DOCTYPE html><html class="h-full" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Cấu hình Phiên Tập trung Sâu (Deep Work Onboarding)</title>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 CDN with forms and container-queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script src="../../assets/js/theme.js"></script>
+<!-- BEGIN: Custom Layout & Aesthetic Styles -->
+<style data-purpose="custom-glassmorphism">
+    /* Glassmorphic backdrop filters and subtle inner strokes */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(203, 213, 225, 0.6);
+    }
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+  </style>
+<style data-purpose="radial-progress-animation">
+    /* Subtle breathing aura around the focal dial */
+    @keyframes gentlePulse {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.03); }
+    }
+    .aura-glow {
+      animation: gentlePulse 6s ease-in-out infinite;
+    }
+    /* Dynamic calm breathing pulse during active focus */
+    @keyframes focusPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(37, 99, 235, 0.4); }
+      50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(14, 165, 233, 0.65); }
+    }
+    .focus-breathing-dial {
+      animation: focusPulse 4.5s ease-in-out infinite;
+    }
+    /* Smooth transition for circular progress track */
+    .timer-circle-progress {
+      stroke-dasharray: 691; /* 2 * PI * 110 */
+      stroke-dashoffset: 172.75; /* default 50m / 60m ~ 75% */
+      transform-origin: center;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #dialKnobGroup {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: 125px 125px;
+    }
+  </style>
+<!-- END: Custom Layout & Aesthetic Styles -->
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="min-h-screen bg-slate-900 font-sans antialiased text-slate-800 relative selection:bg-brand-500 selection:text-white flex flex-col justify-between overflow-x-hidden">
+<!-- BEGIN: Scenic Background Layer -->
+<div aria-hidden="true" class="fixed inset-0 z-0 pointer-events-none">
+<img alt="Khung cảnh hải đăng hoàng hôn phong cách màu nước bình yên" class="w-full h-full object-cover object-center filter brightness-[0.98] contrast-[1.02]" src="../../assets/images/lighthouse-wide.png">
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-slate-900/20"></div>
+<div class="absolute inset-0 bg-sky-950/10 mix-blend-overlay"></div>
+</div>
+<!-- END: Scenic Background Layer -->
+<!-- Toast Notification Container -->
+<div class="fixed top-20 right-1/2 translate-x-1/2 z-50 transition-all duration-300 transform -translate-y-6 opacity-0 pointer-events-none flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-slate-900/90 text-white shadow-2xl backdrop-blur-xl border border-white/20 text-xs sm:text-sm font-medium" id="toastNotification">
+<span class="text-base" id="toastIcon">✨</span>
+<span id="toastMessage">Thông báo thông tin</span>
+</div>
+<!-- BEGIN: TopBar -->
+<header class="relative z-20 w-full pt-4 sm:pt-6 px-4 sm:px-8">
+<nav aria-label="Thanh điều hướng nhanh" class="max-w-6xl mx-auto glass-pill rounded-full px-4 sm:px-6 py-2.5 flex items-center justify-between shadow-lg shadow-black/5">
+<!-- Left: Logo & Calm Workspace Badge -->
+<div class="flex items-center space-x-3">
+<div class="relative w-8 h-8 rounded-xl overflow-hidden shadow-sm bg-white/90 p-0.5 flex items-center justify-center">
+<img alt="Stuđiô AI Biểu tượng" class="w-full h-full object-contain" src="../../assets/images/logo.png">
+</div>
+<div class="flex items-center space-x-2">
+<span class="font-bold text-slate-800 text-sm tracking-tight sm:text-base">Stuđiô AI</span>
+<span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wider bg-brand-50 text-brand-700 border border-brand-200">
+          CALM WORKSPACE
+        </span>
+</div>
+</div>
+<!-- Middle: Status Pill (Mindset Indicator) -->
+<div class="hidden lg:flex items-center space-x-2 px-3.5 py-1 rounded-full bg-slate-900/5 border border-slate-900/10 text-xs font-medium text-slate-700" id="mindsetStatusPill">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span id="mindsetStatusText">Chế độ tập trung tĩnh lặng • Sóng não Alpha 432Hz</span>
+</div>
+<!-- Right: Utility Controls & Exit -->
+<div class="flex items-center space-x-2 sm:space-x-3">
+<!-- Quick Sound Indicator -->
+<div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/60 hover:bg-white text-xs font-medium text-slate-700 cursor-pointer transition border border-slate-200/50" id="topSoundBadge" onclick="showToast('Đang phát: Sóng biển &amp; Lofi 432Hz nhịp sinh học', '🎵')">
+<svg class="w-3.5 h-3.5 text-brand-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="hidden sm:inline" id="topSoundText">Sóng biển &amp; Lofi 432Hz</span>
+</div>
+<!-- Language Switcher -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/80 transition" id="langToggleBtn" onclick="toggleLanguage()" title="Đổi ngôn ngữ" type="button">
+<span class="font-bold text-slate-900" id="langVn">VN</span> / <span id="langEn">EN</span>
+</button>
+<div class="h-4 w-[1px] bg-slate-300"></div>
+<!-- Exit Button -->
+<button aria-label="Thoát thiết lập" class="group flex items-center justify-center w-8 h-8 rounded-full bg-slate-100/80 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition" id="exitBtn" onclick="handleExitModal()" type="button">
+<svg class="w-4 h-4 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</nav>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: MainContentModal -->
+<main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 my-auto transition-all duration-300" id="mainModalContainer">
+<div class="w-full max-w-3xl glass-card rounded-3xl shadow-glass border border-white/70 overflow-hidden relative transition-all duration-300" id="mainModalCard">
+<!-- Top Decorative Color Band -->
+<div class="h-1.5 w-full bg-gradient-to-r from-brand-600 via-sky-400 to-indigo-500 transition-all duration-500" id="topColorBand"></div>
+<div class="p-6 sm:p-9 lg:p-10">
+<!-- BEGIN: ModalHeader -->
+<header class="text-center max-w-xl mx-auto mb-8" data-purpose="onboarding-header">
+<!-- Logo Emblem with Pulse Circle -->
+<div class="inline-flex items-center justify-center mb-3">
+<div class="relative flex items-center justify-center">
+<div class="absolute -inset-1.5 rounded-full bg-gradient-to-r from-brand-400 to-blue-600 opacity-30 blur-sm aura-glow"></div>
+<div class="relative w-12 h-12 rounded-2xl bg-white/90 p-1.5 shadow-md flex items-center justify-center border border-white">
+<img alt="Stuđiô AI" class="w-full h-full object-contain" src="../../assets/images/logo.png">
+</div>
+</div>
+</div>
+<!-- Section Eyebrow -->
+<div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-brand-50 border border-brand-200/60 text-[11px] font-bold text-brand-700 uppercase tracking-widest mb-2">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-600 animate-pulse"></span>
+          Thiết lập phiên học • Deep Work v3.2
+        </div>
+<!-- Main Heading -->
+<h1 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight leading-snug">
+          Khởi tạo Phiên Tập trung Sâu
+        </h1>
+<!-- Subtitle -->
+<p class="text-sm sm:text-base text-slate-600 mt-2 font-normal leading-relaxed">
+          Loại bỏ xao nhãng, đồng điệu nhịp sinh học và kích hoạt trạng thái dòng chảy (<span class="text-slate-800 font-medium italic">Flow State</span>).
+        </p>
+</header>
+<!-- END: ModalHeader -->
+<!-- BEGIN: CircularTimerDialSection -->
+<section aria-label="Vòng tròn điều chỉnh thời gian tập trung" class="flex flex-col items-center justify-center mb-8">
+<div class="relative flex items-center justify-center transition-all duration-500 rounded-full p-2" id="timerContainer">
+<!-- Concentric Background Waves -->
+<div class="absolute w-64 h-64 sm:w-72 sm:h-72 rounded-full border border-brand-200/50 aura-glow -z-10"></div>
+<div class="absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full border border-sky-100/60 -z-10"></div>
+<!-- SVG Timer Dial -->
+<svg class="w-60 h-60 sm:w-64 sm:h-64 -rotate-90 filter drop-shadow-sm" viewBox="0 0 250 250">
+<defs>
+<linearGradient id="timerGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#2563eb"></stop>
+<stop offset="60%" stop-color="#0ea5e9"></stop>
+<stop offset="100%" stop-color="#38bdf8"></stop>
+</linearGradient>
+<filter height="140%" id="dialShadow" width="140%" x="-20%" y="-20%">
+<feDropShadow dx="0" dy="2" flood-color="#0284c7" flood-opacity="0.25" stdDeviation="3"></feDropShadow>
+</filter>
+</defs>
+<!-- Track Background -->
+<circle class="opacity-60" cx="125" cy="125" fill="transparent" r="110" stroke="#e2e8f0" stroke-linecap="round" stroke-width="8"></circle>
+<!-- Outer Subtle Tick Marks (Representative) -->
+<circle class="opacity-50" cx="125" cy="125" fill="transparent" r="118" stroke="#cbd5e1" stroke-dasharray="1 12" stroke-width="1.5"></circle>
+<!-- Active Progress Stroke -->
+<circle class="timer-circle-progress" cx="125" cy="125" fill="transparent" filter="url(#dialShadow)" id="timer-progress-track" r="110" stroke="url(#timerGradient)" stroke-linecap="round" stroke-width="10"></circle>
+<!-- Draggable Knob / Pinpoint at the current progress position -->
+<g id="dialKnobGroup" transform="rotate(300 125 125)">
+<circle class="cursor-pointer hover:scale-110 transition-transform" cx="235" cy="125" fill="#ffffff" filter="url(#dialShadow)" r="10" stroke="#2563eb" stroke-width="4"></circle>
+<circle cx="235" cy="125" fill="#2563eb" r="3"></circle>
+</g>
+</svg>
+<!-- Center Dial Content -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center select-none pointer-events-none">
+<!-- Digital Counter -->
+<span class="text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-tight font-mono drop-shadow-sm transition-transform duration-200" id="timer-display">
+              50:00
+            </span>
+<!-- Smart Mode Label -->
+<div class="mt-1 flex items-center space-x-1 text-xs font-semibold text-brand-600 bg-brand-50/80 px-2.5 py-0.5 rounded-full border border-brand-100 transition-colors" id="aiRecommendationBadge">
+<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+<path clip-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" fill-rule="evenodd"></path>
+</svg>
+<span id="aiRecommendationText">Khuyến nghị AI • Đỉnh Alpha</span>
+</div>
+<!-- Cycle Details Subtitle -->
+<span class="text-[11px] text-slate-500 font-medium mt-1" id="cycleDetailSubtitle">
+              Chu kỳ Ultradian tối ưu não bộ
+            </span>
+</div>
+</div>
+<!-- Quick Duration Presets Pill Group -->
+<div aria-label="Chọn nhanh thời lượng" class="mt-6 flex flex-wrap items-center justify-center gap-2" id="presetPillsContainer" role="group">
+<button class="preset-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 bg-white/70 hover:bg-white hover:text-brand-600 border border-slate-200/80 transition-all shadow-sm active:scale-95" data-duration="25" type="button">
+            25m <span class="text-slate-400 font-normal">(Pomodoro)</span>
+</button>
+<button class="preset-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 bg-white/70 hover:bg-white hover:text-brand-600 border border-slate-200/80 transition-all shadow-sm active:scale-95" data-duration="45" type="button">
+            45m <span class="text-slate-400 font-normal">(Nhịp chuẩn)</span>
+</button>
+<!-- Active Preset Default: 50m -->
+<button class="preset-pill active-preset px-3.5 py-1.5 rounded-xl text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-300 shadow-sm transition-all ring-2 ring-brand-400/20 active:scale-95" data-duration="50" type="button">
+            50m <span class="text-brand-600/70 font-normal">(Chuyên sâu)</span>
+</button>
+<button class="preset-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 bg-white/70 hover:bg-white hover:text-brand-600 border border-slate-200/80 transition-all shadow-sm active:scale-95" data-duration="90" type="button">
+            90m <span class="text-slate-400 font-normal">(Chu kỳ Ultradian)</span>
+</button>
+</div>
+</section>
+<!-- END: CircularTimerDialSection -->
+<!-- BEGIN: ConfigurationForm -->
+<form class="space-y-4" data-purpose="deep-work-config-form" onsubmit="event.preventDefault();">
+<!-- Field 1: Task Goal Name with AI Suggestion Dropdown Popover -->
+<div class="space-y-1.5 relative">
+<div class="flex items-center justify-between">
+<label class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5" for="task-name-input">
+<svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Tên nhiệm vụ / Đồ án cần giải quyết
+            </label>
+<button class="inline-flex items-center gap-1 text-[11px] font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md cursor-pointer hover:bg-brand-100 transition active:scale-95 border border-brand-200/50" id="aiSuggestTriggerBtn" type="button">
+              ✨ AI gợi ý từ danh sách hôm nay
+            </button>
+</div>
+<div class="relative">
+<input class="glass-input w-full px-4 py-2.5 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none transition shadow-sm" id="task-name-input" placeholder="VD: Hoàn thiện chương 3 Luận văn tốt nghiệp hoặc Đọc 20 trang tài liệu..." type="text" value="">
+</div>
+<!-- AI Suggestions Popover Dropdown -->
+<div class="hidden absolute top-full mt-2 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border border-brand-200/80 rounded-2xl shadow-xl p-3 transform transition-all duration-200" id="aiSuggestionsPopover">
+<div class="flex items-center justify-between pb-2 border-b border-slate-100 text-xs text-slate-500 font-medium">
+<span class="flex items-center gap-1.5 text-brand-700 font-semibold">
+<span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                Gợi ý nhiệm vụ ưu tiên từ thời khóa biểu &amp; Obsidian:
+              </span>
+<button class="text-slate-400 hover:text-slate-600 text-base leading-none" id="closeAiPopoverBtn" type="button">×</button>
+</div>
+<div class="mt-2 space-y-1.5">
+<div class="task-suggestion-item p-2.5 rounded-xl hover:bg-brand-50/80 cursor-pointer text-xs sm:text-sm text-slate-700 transition flex items-center justify-between group">
+<div class="flex items-center gap-2">
+<span class="text-brand-600 font-semibold group-hover:translate-x-0.5 transition">📌</span>
+<span class="font-medium">Viết báo cáo Machine Learning &amp; Ma trận nhầm lẫn (ResNet18)</span>
+</div>
+<span class="text-[10px] px-2 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-200 font-medium">Hạn 17:00</span>
+</div>
+<div class="task-suggestion-item p-2.5 rounded-xl hover:bg-brand-50/80 cursor-pointer text-xs sm:text-sm text-slate-700 transition flex items-center justify-between group">
+<div class="flex items-center gap-2">
+<span class="text-brand-600 font-semibold group-hover:translate-x-0.5 transition">📊</span>
+<span class="font-medium">Bài tập lớn SQL Tối ưu hóa chỉ mục B-Tree &amp; Execution Plan</span>
+</div>
+<span class="text-[10px] px-2 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 font-medium">Quan trọng</span>
+</div>
+<div class="task-suggestion-item p-2.5 rounded-xl hover:bg-brand-50/80 cursor-pointer text-xs sm:text-sm text-slate-700 transition flex items-center justify-between group">
+<div class="flex items-center gap-2">
+<span class="text-brand-600 font-semibold group-hover:translate-x-0.5 transition">📑</span>
+<span class="font-medium">Đọc Paper Attention Is All You Need &amp; Ghi chú Obsidian</span>
+</div>
+<span class="text-[10px] px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200 font-medium">Nghiên cứu</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Field 2: Expected Duration & Sprint Split -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+<div class="space-y-1.5">
+<label class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5" for="duration-split-select">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Phân bổ chặng nghỉ (Pacing)
+            </label>
+<select class="glass-input w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none transition shadow-sm cursor-pointer" id="duration-split-select">
+<option value="50">50 phút tập trung + 10 phút nghỉ tĩnh</option>
+<option value="25">2 hiệp x 25 phút (Pomodoro kép)</option>
+<option value="45">45 phút tập trung + 15 phút giãn cơ</option>
+<option value="90">90 phút đơn chặng không gián đoạn (Ultradian)</option>
+<option value="free">Tự do (Đếm thời gian tiến dần)</option>
+</select>
+</div>
+<!-- Field 3: Soundscape Ambient Selector -->
+<div class="space-y-1.5">
+<label class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5" for="soundscape-select">
+<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+              Không gian âm thanh đồng bộ
+            </label>
+<select class="glass-input w-full px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none transition shadow-sm font-medium cursor-pointer" id="soundscape-select">
+<option selected="" value="ocean">🌊 Sóng Biển Hải Đăng 432Hz (Đang chọn)</option>
+<option value="rain">🌧️ Mưa Rơi Bên Hiên Gỗ</option>
+<option value="brown">📻 Tiếng Ồn Nâu Thư Thái (Brown Noise)</option>
+<option value="coffee">☕ Quán Cà Phê Mùa Thu Zen</option>
+<option value="silence">🔇 Im Lặng Tuyệt Đối (Pure Silence)</option>
+</select>
+</div>
+</div>
+<!-- Feature Toggle: Block Notifications & Shield Mode -->
+<div class="pt-2">
+<div class="p-3.5 rounded-2xl bg-white/60 border border-slate-200/70 hover:bg-white/80 transition flex items-start justify-between gap-3">
+<div class="flex items-start space-x-3">
+<div class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 mt-0.5 shrink-0 transition-colors" id="shieldIconBox">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-xs sm:text-sm font-bold text-slate-800">
+                    Chặn thông báo triệt để &amp; Chế độ Ẩn danh
+                  </h4>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 transition-colors" id="shieldBadge">Đã kích hoạt</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5 leading-relaxed transition-colors" id="shieldDescription">
+                  Tự động tạm ẩn mạng xã hội, tin nhắn Zalo/Slack và đồng bộ trạng thái “Đang Chú Ý Sâu” cho nhóm làm việc.
+                </p>
+</div>
+</div>
+<!-- Interactive Switch -->
+<label class="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+<input checked="" class="sr-only peer" id="shieldToggle" type="checkbox">
+<div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
+</label>
+</div>
+</div>
+<!-- Soundscape Quick Pills (Distraction-Free Zen Touch) -->
+<div class="pt-1">
+<div class="flex items-center justify-between text-[11px] text-slate-500 mb-1.5">
+<span>Thử nhanh dải âm tự nhiên:</span>
+<span class="text-brand-600 font-medium cursor-pointer hover:underline" id="eqCustomizeBtn" onclick="showToast('Đã mở giao diện EQ tinh chỉnh tần số âm thanh 432Hz/528Hz', '🎛️')">Tùy chỉnh EQ</span>
+</div>
+<div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs" id="soundQuickChipsContainer">
+<!-- Active Chip -->
+<button class="sound-chip px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 border border-brand-300 font-medium whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm transition ring-1 ring-brand-400/30" data-sound="ocean" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse chip-indicator"></span>
+              Sóng Biển Hải Đăng (432Hz)
+            </button>
+<button class="sound-chip px-2.5 py-1 rounded-lg bg-white/60 text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-800 font-medium whitespace-nowrap cursor-pointer transition flex items-center gap-1.5" data-sound="rain" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 hidden chip-indicator"></span>
+              Mưa Rơi Hiên Gỗ
+            </button>
+<button class="sound-chip px-2.5 py-1 rounded-lg bg-white/60 text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-800 font-medium whitespace-nowrap cursor-pointer transition flex items-center gap-1.5" data-sound="brown" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 hidden chip-indicator"></span>
+              Tiếng Ồn Nâu
+            </button>
+<button class="sound-chip px-2.5 py-1 rounded-lg bg-white/60 text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-800 font-medium whitespace-nowrap cursor-pointer transition flex items-center gap-1.5" data-sound="silence" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 hidden chip-indicator"></span>
+              Im Lặng
+            </button>
+</div>
+</div>
+<!-- BEGIN: PrimaryCallToActionButtons -->
+<div class="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+<button class="w-full sm:w-auto flex-1 order-1 sm:order-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-600 via-blue-600 to-sky-500 hover:from-brand-700 hover:to-sky-600 text-white font-semibold text-sm sm:text-base shadow-glow-blue hover:shadow-lg transition-all transform active:scale-[0.99] flex items-center justify-center gap-2" id="startFocusBtn" type="button">
+<span id="startFocusText">Bắt đầu Tập trung Ngay (Deep Flow)</span>
+<svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" id="startFocusIcon" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="w-full sm:w-auto order-2 sm:order-1 flex items-center justify-center sm:justify-start space-x-3 text-xs">
+<button class="text-slate-600 hover:text-slate-900 font-medium underline-offset-4 hover:underline py-2 active:scale-95 transition" id="scheduleBtn" type="button">
+              Gán vào Lịch Sinh học
+            </button>
+<span class="text-slate-300">•</span>
+<button class="text-slate-400 hover:text-slate-600 font-normal py-2 active:scale-95 transition" id="resetDefaultBtn" type="button">
+              Khôi phục mặc định
+            </button>
+</div>
+</div>
+<!-- END: PrimaryCallToActionButtons -->
+</form>
+<!-- END: ConfigurationForm -->
+</div>
+</div>
+</main>
+<!-- END: MainContentModal -->
+<!-- BEGIN: PageFooter -->
+<footer class="relative z-20 pb-4 px-4 text-center">
+<div class="max-w-md mx-auto py-1 px-3 rounded-full bg-slate-900/40 backdrop-blur-md border border-white/10 text-[11px] text-white/80 font-light tracking-wide shadow-sm">
+    © 2025 Stuđiô AI • Không gian học tập tĩnh lặng tối ưu bởi trí tuệ nhân tạo. Cam kết bảo vệ trạng thái chú ý sâu.
+  </div>
+</footer>
+<!-- Stuđiô AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/app.js"></script>
+<!-- BEGIN: Interactive Vanilla JavaScript Logic -->
+<script>
+  // State variables
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramTaskId = urlParams.get('taskId');
+  const paramTitle = urlParams.get('title');
+  const paramDuration = urlParams.get('duration');
+  const paramSound = urlParams.get('sound');
+  let currentTaskId = paramTaskId || null;
+
+  let currentDurationMinutes = paramDuration ? parseInt(paramDuration) : 50;
+  let remainingSeconds = currentDurationMinutes * 60;
+  let timerInterval = null;
+  let isTimerRunning = false;
+  const CIRCLE_CIRCUMFERENCE = 691; // 2 * PI * 110
+
+  // DOM Elements
+  const timerDisplay = document.getElementById('timer-display');
+  const timerProgressTrack = document.getElementById('timer-progress-track');
+  const dialKnobGroup = document.getElementById('dialKnobGroup');
+  const timerContainer = document.getElementById('timerContainer');
+  const startFocusBtn = document.getElementById('startFocusBtn');
+  const startFocusText = document.getElementById('startFocusText');
+  const durationSplitSelect = document.getElementById('duration-split-select');
+  const soundscapeSelect = document.getElementById('soundscape-select');
+  const soundChips = document.querySelectorAll('.sound-chip');
+  const presetPills = document.querySelectorAll('.preset-pill');
+  const aiSuggestTriggerBtn = document.getElementById('aiSuggestTriggerBtn');
+  const aiSuggestionsPopover = document.getElementById('aiSuggestionsPopover');
+  const closeAiPopoverBtn = document.getElementById('closeAiPopoverBtn');
+  const taskInputField = document.getElementById('task-name-input');
+  const taskItems = document.querySelectorAll('.task-suggestion-item');
+  const shieldToggle = document.getElementById('shieldToggle');
+  const shieldBadge = document.getElementById('shieldBadge');
+  const shieldIconBox = document.getElementById('shieldIconBox');
+  const shieldDescription = document.getElementById('shieldDescription');
+  const scheduleBtn = document.getElementById('scheduleBtn');
+  const resetDefaultBtn = document.getElementById('resetDefaultBtn');
+  const toastNotification = document.getElementById('toastNotification');
+  const toastMessage = document.getElementById('toastMessage');
+  const toastIcon = document.getElementById('toastIcon');
+  const topSoundText = document.getElementById('topSoundText');
+  const aiRecommendationText = document.getElementById('aiRecommendationText');
+  const cycleDetailSubtitle = document.getElementById('cycleDetailSubtitle');
+
+  let toastTimeout = null;
+  function showToast(message, icon = '✨') {
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastMessage.textContent = message;
+    toastIcon.textContent = icon;
+    toastNotification.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
+    toastNotification.classList.add('opacity-100', 'translate-y-0');
+    toastTimeout = setTimeout(() => {
+      toastNotification.classList.remove('opacity-100', 'translate-y-0');
+      toastNotification.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none');
+    }, 3200);
+  }
+
+  // Format seconds to mm:ss
+  function formatTime(sec) {
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // Update SVG Circle Progress & Knob position
+  function updateCircleProgress(percent) {
+    // 0% -> full circumference (hidden), 100% -> 0 offset (fully drawn)
+    // Here we map progress from total duration
+    const offset = CIRCLE_CIRCUMFERENCE - (percent * CIRCLE_CIRCUMFERENCE);
+    timerProgressTrack.style.strokeDashoffset = offset;
+    
+    // Rotate knob around 360 degrees
+    const degrees = percent * 360;
+    dialKnobGroup.setAttribute('transform', `rotate(${degrees} 125 125)`);
+  }
+
+  // Máy trạng thái chặng: focus -> break -> focus... (Pomodoro kép, 50+10...)
+  let legs = [{ kind: 'focus', minutes: 50 }, { kind: 'break', minutes: 10 }];
+  let phaseIdx = 0;
+  let totalFocusElapsed = 0; // giây focus đã trôi (tính actual_minutes thật)
+  let elapsedUpSeconds = 0;  // chế độ tự do: đếm lên
+
+  function buildLegs(minutes) {
+    if (minutes === 25) return [{ kind: 'focus', minutes: 25 }, { kind: 'break', minutes: 5 }, { kind: 'focus', minutes: 25 }];
+    if (minutes === 45) return [{ kind: 'focus', minutes: 45 }, { kind: 'break', minutes: 15 }];
+    if (minutes === 90) return [{ kind: 'focus', minutes: 90 }];
+    return [{ kind: 'focus', minutes: 50 }, { kind: 'break', minutes: 10 }];
+  }
+
+  function currentLeg() { return legs[phaseIdx] || legs[0]; }
+
+  function updatePhaseLabel() {
+    const leg = currentLeg();
+    const pos = `${phaseIdx + 1}/${legs.length}`;
+    if (!cycleDetailSubtitle) return;
+    if (leg.kind === 'break') {
+      cycleDetailSubtitle.textContent = `Chặng ${pos}: Nghỉ tĩnh ${leg.minutes} phút (mắt + nước)`;
+    } else if (leg.kind === 'free') {
+      cycleDetailSubtitle.textContent = 'Chế độ tự do: bấm Dừng để kết thúc & ghi nhận';
+    } else if (legs.length > 1) {
+      cycleDetailSubtitle.textContent = `Chặng ${pos}: Tập trung ${leg.minutes} phút`;
+    }
+  }
+
+  // Set Preset Duration
+  function setDuration(minutes) {
+    currentDurationMinutes = minutes;
+    legs = buildLegs(minutes);
+    phaseIdx = 0;
+    totalFocusElapsed = 0;
+    elapsedUpSeconds = 0;
+    remainingSeconds = legs[0].minutes * 60;
+    timerDisplay.textContent = `${String(legs[0].minutes).padStart(2, '0')}:00`;
+    document.title = 'Stuđiô AI - Tập trung sâu';
+    updatePhaseLabel();
+
+    // Vòng tròn hiện % đã trôi (mới set -> 0%)
+    updateCircleProgress(0);
+
+    // Update active state in presets
+    presetPills.forEach(pill => {
+      const pDuration = parseInt(pill.dataset.duration);
+      if (pDuration === minutes) {
+        pill.className = "preset-pill active-preset px-3.5 py-1.5 rounded-xl text-xs font-semibold text-brand-700 bg-brand-50 border border-brand-300 shadow-sm transition-all ring-2 ring-brand-400/20 active:scale-95";
+      } else {
+        pill.className = "preset-pill px-3 py-1.5 rounded-xl text-xs font-medium text-slate-600 bg-white/70 hover:bg-white hover:text-brand-600 border border-slate-200/80 transition-all shadow-sm active:scale-95";
+      }
+    });
+
+    // Synchronize pacing split dropdown
+    if (minutes === 50) {
+      durationSplitSelect.value = "50";
+      aiRecommendationText.textContent = "Khuyến nghị AI • Đỉnh Alpha";
+      cycleDetailSubtitle.textContent = "Chu kỳ Ultradian tối ưu não bộ";
+    } else if (minutes === 25) {
+      durationSplitSelect.value = "25";
+      aiRecommendationText.textContent = "Pomodoro chuẩn • Tối đa sức bật";
+      cycleDetailSubtitle.textContent = "25 phút tập trung cao độ + 5 phút nghỉ";
+    } else if (minutes === 45) {
+      durationSplitSelect.value = "45";
+      aiRecommendationText.textContent = "Nhịp trường học chuẩn • Cân bằng";
+      cycleDetailSubtitle.textContent = "45 phút tập trung + 15 phút giãn cơ";
+    } else if (minutes === 90) {
+      durationSplitSelect.value = "90";
+      aiRecommendationText.textContent = "Đỉnh Chu kỳ Ultradian • Siêu tập trung";
+      cycleDetailSubtitle.textContent = "90 phút đào sâu không ngắt quãng";
+    }
+  }
+
+  // Handle Preset Clicks
+  presetPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      if (isTimerRunning) pauseTimer();
+      const dur = parseInt(pill.dataset.duration);
+      setDuration(dur);
+      showToast(`Đã chọn mốc ${dur} phút. Chúc bạn một phiên tập trung hiệu quả!`, '⏳');
+    });
+  });
+
+  // Handle Pacing Select Change
+  durationSplitSelect.addEventListener('change', (e) => {
+    const val = e.target.value;
+    if (val !== 'free') {
+      const dur = parseInt(val);
+      if (!isNaN(dur)) {
+        if (isTimerRunning) pauseTimer();
+        setDuration(dur);
+      }
+    } else {
+      if (isTimerRunning) pauseTimer();
+      legs = [{ kind: 'free', minutes: 0 }];
+      phaseIdx = 0;
+      totalFocusElapsed = 0;
+      elapsedUpSeconds = 0;
+      remainingSeconds = 0;
+      timerDisplay.textContent = '00:00';
+      updateCircleProgress(0);
+      updatePhaseLabel();
+      aiRecommendationText.textContent = "Chế độ tự do • Đếm lên";
+      showToast("Chế độ đếm tự do: bấm Bắt đầu, bấm Dừng để ghi nhận số phút thật", "⏱️");
+    }
+  });
+
+  // Timer Tick
+  async function completeFocusSession() {
+    if (isTimerRunning) pauseTimer();
+    const plannedMin = legs.filter(l => l.kind === 'focus').reduce((a, l) => a + l.minutes, 0) || currentDurationMinutes;
+    const actualMin = Math.max(1, Math.round(totalFocusElapsed / 60));
+    const soundKey = soundscapeSelect.value;
+    const soundName = soundMap[soundKey] ? soundMap[soundKey].label : 'Sóng Biển 432Hz';
+
+    showToast(`Đang ghi nhận phiên học (${actualMin}p) vào cơ sở dữ liệu...`, '💾');
+    try {
+      if (window.api) {
+        const res = await api.post('/focus/session/complete', {
+          task_id: currentTaskId,
+          planned_minutes: plannedMin,
+          actual_minutes: actualMin,
+          ambient_sound_used: soundName
+        });
+        showToast(res.message || '🎉 Đã hoàn tất phiên Deep Work & cập nhật tiến độ!', '🏆');
+        setTimeout(() => {
+          window.location.href = '../10-dashboard/index.html';
+        }, 1800);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Đã lưu tiến độ học tập!', '✨');
+      setTimeout(() => {
+        window.location.href = '../10-dashboard/index.html';
+      }, 1500);
+    }
+  }
+
+  function startTimer() {
+    if (isTimerRunning) return;
+    // Phiên cũ đã xong hết chặng -> bắt đầu vòng mới, tránh lặp complete
+    if (currentLeg().kind !== 'free' && remainingSeconds <= 0) {
+      phaseIdx = 0;
+      totalFocusElapsed = 0;
+      remainingSeconds = currentLeg().minutes * 60;
+      timerDisplay.textContent = formatTime(remainingSeconds);
+      updateCircleProgress(0);
+      updatePhaseLabel();
+    }
+    isTimerRunning = true;
+    persistTimer();
+
+    // Visual breathing indicators
+    timerContainer.classList.add('focus-breathing-dial');
+    startFocusText.textContent = "Đang Tập Trung (Bấm để Tạm dừng)";
+    startFocusBtn.classList.remove('from-brand-600', 'via-blue-600', 'to-sky-500');
+    startFocusBtn.classList.add('from-emerald-600', 'via-teal-600', 'to-sky-600');
+
+    // Trigger Web Audio thật theo sound đang chọn
+    if (window.calmAudio) {
+      const track = toAudioTrack(soundscapeSelect.value);
+      if (track) {
+        if (window.calmAudio.currentTrackId !== track) window.calmAudio.switchTrack(track);
+        if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+      } else {
+        window.calmAudio.stopAll();
+      }
+    }
+
+    showToast("🌿 Đã kích hoạt trạng thái Deep Flow 432Hz. Hãy thở chậm và chú tâm.", "🌊");
+
+    timerInterval = setInterval(() => {
+      const leg = currentLeg();
+      if (leg.kind === 'free') {
+        // Đếm lên, không tự kết thúc
+        elapsedUpSeconds++;
+        totalFocusElapsed++;
+        timerDisplay.textContent = formatTime(elapsedUpSeconds);
+        document.title = `(${formatTime(elapsedUpSeconds)}) Stuđiô AI - Tập trung sâu`;
+        updateCircleProgress((elapsedUpSeconds % 3600) / 3600);
+        if (elapsedUpSeconds % 10 === 0) persistTimer();
+        return;
+      }
+      if (remainingSeconds > 0) {
+        remainingSeconds--;
+        if (leg.kind === 'focus') totalFocusElapsed++;
+        timerDisplay.textContent = formatTime(remainingSeconds);
+        document.title = `(${formatTime(remainingSeconds)}) Stuđiô AI - Tập trung sâu`;
+
+        const totalSeconds = leg.minutes * 60;
+        const elapsed = totalSeconds - remainingSeconds;
+        updateCircleProgress(elapsed / totalSeconds);
+        if (remainingSeconds % 5 === 0) persistTimer();
+      } else {
+        // Hết 1 chặng: sang chặng tiếp hay kết thúc?
+        if (phaseIdx < legs.length - 1) {
+          phaseIdx++;
+          const next = currentLeg();
+          remainingSeconds = next.minutes * 60;
+          timerDisplay.textContent = formatTime(remainingSeconds);
+          updateCircleProgress(0);
+          updatePhaseLabel();
+          persistTimer();
+          if (next.kind === 'break') {
+            if (window.calmAudio) window.calmAudio.stopAll();
+            showToast(`Hết chặng tập trung. Nghỉ ${next.minutes} phút: đứng dậy, uống nước, nhìn xa.`, '☕');
+            startFocusText.textContent = `Đang Nghỉ (${next.minutes}p) — bấm để bỏ qua`;
+          } else {
+            showToast(`Hết giờ nghỉ. Vào chặng tập trung ${next.minutes} phút!`, '🔥');
+            startFocusText.textContent = `Chặng ${phaseIdx + 1}: Đang Tập Trung (Bấm để Tạm dừng)`;
+            if (window.calmAudio) {
+              const track = toAudioTrack(soundscapeSelect.value);
+              if (track) {
+                if (window.calmAudio.currentTrackId !== track) window.calmAudio.switchTrack(track);
+                if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+              }
+            }
+          }
+        } else {
+          clearInterval(timerInterval);
+          isTimerRunning = false;
+          clearPersist();
+          document.title = 'Stuđiô AI - Tập trung sâu';
+          timerContainer.classList.remove('focus-breathing-dial');
+          startFocusText.textContent = "Hoàn thành! Nghỉ ngơi nào ✨";
+          if (window.calmAudio) {
+            window.calmAudio.stopAll();
+          }
+          completeFocusSession();
+        }
+      }
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    if (!isTimerRunning) return;
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    persistTimer();
+    document.title = 'Stuđiô AI - Tập trung sâu';
+    timerContainer.classList.remove('focus-breathing-dial');
+    startFocusText.textContent = "Tiếp tục Phiên Tập trung";
+    startFocusBtn.classList.remove('from-emerald-600', 'via-teal-600', 'to-sky-600');
+    startFocusBtn.classList.add('from-brand-600', 'via-blue-600', 'to-sky-500');
+    if (window.calmAudio) {
+      window.calmAudio.stopAll();
+    }
+    showToast("Đã tạm dừng phiên. Hãy thư giãn mắt một chút!", "⏸️");
+  }
+
+  // Persist timer để refresh không mất phiên
+  const PERSIST_KEY = 'studi_deep_timer';
+  function persistTimer() {
+    try {
+      localStorage.setItem(PERSIST_KEY, JSON.stringify({
+        taskId: currentTaskId,
+        title: taskInputField?.value || '',
+        duration: currentDurationMinutes,
+        remaining: remainingSeconds,
+        running: isTimerRunning,
+        sound: soundscapeSelect?.value || 'ocean',
+        legs, phaseIdx, totalFocusElapsed, elapsedUpSeconds,
+        savedAt: Date.now()
+      }));
+    } catch {}
+  }
+  function clearPersist() { try { localStorage.removeItem(PERSIST_KEY); } catch {} }
+  function restoreTimer() {
+    try {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s || typeof s.remaining !== 'number') return;
+      // Bỏ qua phiên quá cũ (>3h)
+      if (Date.now() - (s.savedAt || 0) > 3 * 3600 * 1000) { clearPersist(); return; }
+      currentTaskId = s.taskId || currentTaskId;
+      if (s.title && taskInputField && !paramTitle) taskInputField.value = s.title;
+      if (s.duration) { setDuration(s.duration); }
+      if (Array.isArray(s.legs) && s.legs.length) legs = s.legs;
+      phaseIdx = Math.min(s.phaseIdx || 0, legs.length - 1);
+      totalFocusElapsed = s.totalFocusElapsed || 0;
+      elapsedUpSeconds = s.elapsedUpSeconds || 0;
+      const leg = currentLeg();
+      if (leg.kind === 'free') {
+        timerDisplay.textContent = formatTime(elapsedUpSeconds);
+        updateCircleProgress((elapsedUpSeconds % 3600) / 3600);
+      } else {
+        remainingSeconds = Math.max(0, Math.min(leg.minutes * 60, s.remaining));
+        timerDisplay.textContent = formatTime(remainingSeconds);
+        const total = leg.minutes * 60;
+        updateCircleProgress((total - remainingSeconds) / total);
+      }
+      updatePhaseLabel();
+      if (s.sound) setActiveSound(s.sound);
+      if (s.running && (currentLeg().kind === 'free' || remainingSeconds > 0)) {
+        showToast('Đã khôi phục phiên đang chạy trước khi refresh.', '🔄');
+        startTimer();
+      }
+    } catch {}
+  }
+  window.addEventListener('beforeunload', (e) => {
+    if (isTimerRunning) {
+      persistTimer();
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+  // Phím tắt: Space pause/resume, M mute
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea, select')) return;
+    if (e.code === 'Space') { e.preventDefault(); if (!isTimerRunning) startTimer(); else pauseTimer(); }
+    if (e.key === 'm' || e.key === 'M') { if (window.calmAudio) window.calmAudio.togglePlay(); }
+  });
+
+  startFocusBtn.addEventListener('click', () => {
+    // Đang nghỉ mà bấm -> bỏ qua nghỉ, vào chặng tiếp
+    if (isTimerRunning && currentLeg().kind === 'break') {
+      if (phaseIdx < legs.length - 1) {
+        phaseIdx++;
+        remainingSeconds = currentLeg().minutes * 60;
+        timerDisplay.textContent = formatTime(remainingSeconds);
+        updateCircleProgress(0);
+        updatePhaseLabel();
+        persistTimer();
+        startFocusText.textContent = `Chặng ${phaseIdx + 1}: Đang Tập Trung (Bấm để Tạm dừng)`;
+        showToast('Đã bỏ qua giờ nghỉ. Tập trung nào!', '🔥');
+      } else {
+        pauseTimer();
+      }
+      return;
+    }
+    if (!isTimerRunning) {
+      startTimer();
+    } else {
+      pauseTimer();
+    }
+  });
+
+  // Reset (Dừng hẳn + xóa persist) — có confirm khi đang chạy;
+  // ở chế độ tự do đã đếm >1p thì hỏi kết thúc & ghi nhận
+  resetDefaultBtn.addEventListener('click', () => {
+    if (currentLeg().kind === 'free' && elapsedUpSeconds >= 60) {
+      if (confirm(`Kết thúc phiên tự do (${formatTime(elapsedUpSeconds)}) và ghi nhận?`)) {
+        completeFocusSession();
+        return;
+      }
+    }
+    if (isTimerRunning) {
+      if (!confirm('Phiên đang chạy. Dừng và đặt lại từ đầu?')) return;
+      pauseTimer();
+    }
+    clearPersist();
+    document.title = 'Stuđiô AI - Tập trung sâu';
+    setDuration(50);
+    remainingSeconds = 50 * 60;
+    setActiveSound('ocean');
+    shieldToggle.checked = true;
+    updateShieldState(true);
+    showToast("Đã dừng và đặt lại phiên (50m, Sóng Biển 432Hz)", "🔄");
+  });
+
+  // Soundscape mapping (đồng bộ audio.js: ocean/rain/binaural; brown/silence fallback rõ ràng)
+  const soundMap = {
+    ocean: { selectVal: "ocean", label: "Sóng Biển Hải Đăng 432Hz", topLabel: "Sóng biển & Lofi 432Hz", audio: "ocean" },
+    rain: { selectVal: "rain", label: "Mưa Rơi Bên Hiên Gỗ", topLabel: "Tiếng Mưa Rơi Hiên Gỗ", audio: "rain" },
+    brown: { selectVal: "brown", label: "Tiếng Ồn Nâu Thư Thái (Brown Noise)", topLabel: "Brown Noise êm dịu", audio: "ocean" },
+    coffee: { selectVal: "coffee", label: "Quán Cà Phê Mùa Thu Zen", topLabel: "Cà phê Zen (tạm dùng Sóng Biển)", audio: "ocean" },
+    silence: { selectVal: "silence", label: "Im Lặng Tuyệt Đối (Pure Silence)", topLabel: "Không gian tĩnh lặng", audio: null }
+  };
+  const toAudioTrack = (k) => {
+    if (k === 'ocean' || k === 'brown' || k === 'coffee') return 'ocean';
+    if (k === 'rain') return 'rain';
+    return null; // silence: không phát
+  };
+
+  function setActiveSound(soundKey, opts = {}) {
+    // Update Dropdown
+    if (soundscapeSelect.value !== soundKey) {
+      soundscapeSelect.value = soundKey;
+    }
+    // Update Topbar Badge
+    if (soundMap[soundKey]) {
+      topSoundText.textContent = soundMap[soundKey].topLabel;
+    }
+    // Phát âm thật qua calmAudio (chỉ khi đang chạy hoặc opts.play)
+    if (window.calmAudio && (opts.play || isTimerRunning)) {
+      const track = toAudioTrack(soundKey);
+      if (track) {
+        if (window.calmAudio.currentTrackId !== track) window.calmAudio.switchTrack(track);
+        if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+      } else {
+        window.calmAudio.stopAll();
+      }
+    }
+
+    // Update Quick Chips visual
+    soundChips.forEach(chip => {
+      const ind = chip.querySelector('.chip-indicator');
+      if (chip.dataset.sound === soundKey) {
+        chip.className = "sound-chip px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 border border-brand-300 font-medium whitespace-nowrap flex items-center gap-1.5 cursor-pointer shadow-sm transition ring-1 ring-brand-400/30";
+        if (ind) {
+          ind.classList.remove('hidden', 'bg-slate-400');
+          ind.classList.add('bg-brand-500', 'animate-pulse');
+        }
+      } else {
+        chip.className = "sound-chip px-2.5 py-1 rounded-lg bg-white/60 text-slate-600 border border-slate-200 hover:bg-white hover:text-slate-800 font-medium whitespace-nowrap cursor-pointer transition flex items-center gap-1.5";
+        if (ind) {
+          ind.classList.add('hidden');
+          ind.classList.remove('animate-pulse', 'bg-brand-500');
+        }
+      }
+    });
+  }
+
+  soundChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const soundKey = chip.dataset.sound;
+      setActiveSound(soundKey, { play: true });
+      const name = soundMap[soundKey] ? soundMap[soundKey].label : soundKey;
+      if (soundKey === 'brown') showToast(`Đã đồng bộ dải âm: ${name} (tạm dùng Sóng Biển 432Hz)`, '🎧');
+      else showToast(`Đã đồng bộ dải âm: ${name}`, '🎧');
+    });
+  });
+
+  soundscapeSelect.addEventListener('change', (e) => {
+    const val = e.target.value;
+    setActiveSound(val, { play: true });
+    showToast(`Đã chuyển đổi âm nền: ${e.target.options[e.target.selectedIndex].text}`, '🎶');
+  });
+
+  // AI Task Suggestion Popover logic
+  aiSuggestTriggerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    aiSuggestionsPopover.classList.toggle('hidden');
+  });
+
+  closeAiPopoverBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    aiSuggestionsPopover.classList.add('hidden');
+  });
+
+  taskItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const taskText = item.querySelector('.font-medium').textContent.trim();
+      taskInputField.value = taskText;
+      aiSuggestionsPopover.classList.add('hidden');
+      showToast(`Đã nạp nhiệm vụ: "${taskText.substring(0, 32)}..."`, '🎯');
+    });
+  });
+
+  // Close popover on outer click
+  document.addEventListener('click', (e) => {
+    if (!aiSuggestionsPopover.contains(e.target) && e.target !== aiSuggestTriggerBtn) {
+      aiSuggestionsPopover.classList.add('hidden');
+    }
+  });
+
+  // Shield Toggle Switch Interaction
+  function updateShieldState(isActive) {
+    if (isActive) {
+      shieldBadge.textContent = "Đã kích hoạt";
+      shieldBadge.className = "px-1.5 py-0.2 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 transition-colors";
+      shieldIconBox.className = "w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 mt-0.5 shrink-0 transition-colors";
+      shieldDescription.textContent = "Tự động tạm ẩn mạng xã hội, tin nhắn Zalo/Slack và đồng bộ trạng thái “Đang Chú Ý Sâu” cho nhóm làm việc.";
+    } else {
+      shieldBadge.textContent = "Đã tắt";
+      shieldBadge.className = "px-1.5 py-0.2 rounded text-[10px] font-medium bg-slate-100 text-slate-600 transition-colors";
+      shieldIconBox.className = "w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 mt-0.5 shrink-0 transition-colors";
+      shieldDescription.textContent = "Chế độ ẩn danh tạm dừng. Bạn vẫn có thể nhận thông báo thông thường trong phiên học.";
+    }
+  }
+
+  shieldToggle.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    updateShieldState(isChecked);
+    if (isChecked) {
+      showToast("🛡️ Đã bật Chế độ Khiên Ẩn danh & Chặn thông báo triệt để.", "✅");
+    } else {
+      showToast("Đã cho phép thông báo trong phiên học.", "🔔");
+    }
+  });
+
+  // Schedule to Biorhythm Calendar — KHÔNG kết thúc phiên, chỉ lưu lịch
+  scheduleBtn.addEventListener('click', async () => {
+    try {
+      if (window.api) {
+        await api.post('/schedule/events', {
+          task_id: currentTaskId,
+          title: `Học sâu: ${(taskInputField?.value || 'Phiên tập trung').slice(0, 80)}`,
+          description: `Phiên ${currentDurationMinutes}p còn ${formatTime(remainingSeconds)}`,
+          event_date: new Date().toISOString().slice(0, 10),
+          start_time: '14:00',
+          end_time: '15:30',
+          event_type: 'deep_work',
+          is_circadian_optimized: true
+        });
+        showToast('Đã lưu phiên vào Lịch Sinh học.', '📅');
+      }
+    } catch (e) {
+      showToast((e && e.message) || 'Không lưu được lịch.', 'error');
+    }
+  });
+
+  // Exit — confirm khi đang chạy để không mất phiên
+  function handleExitModal() {
+    if (isTimerRunning) {
+      if (!confirm('Phiên đang chạy. Thoát sẽ tạm dừng và lưu lại. Tiếp tục?')) return;
+      pauseTimer();
+    }
+    showToast("Đang lưu trạng thái làm việc tĩnh lặng của bạn...", "👋");
+    setTimeout(() => {
+      window.location.href = '../10-dashboard/index.html';
+    }, 400);
+  }
+
+  // Language switch indicator
+  let currentLang = 'VN';
+  function toggleLanguage() {
+    currentLang = currentLang === 'VN' ? 'EN' : 'VN';
+    const vnSpan = document.getElementById('langVn');
+    const enSpan = document.getElementById('langEn');
+    if (currentLang === 'EN') {
+      vnSpan.className = "text-slate-600";
+      enSpan.className = "font-bold text-slate-900";
+      showToast("Switched language interface to English (Preview)", "🌐");
+    } else {
+      vnSpan.className = "font-bold text-slate-900";
+      enSpan.className = "text-slate-600";
+      showToast("Đã đổi giao diện sang Tiếng Việt", "🇻🇳");
+    }
+  }
+
+  // Initial circular configuration & param loading
+  if (paramTitle) {
+    taskInputField.value = decodeURIComponent(paramTitle);
+  }
+  if (paramDuration) {
+    setDuration(parseInt(paramDuration));
+  } else {
+    updateCircleProgress(0);
+  }
+  if (paramSound) {
+    setActiveSound(paramSound);
+  }
+  // Khôi phục phiên cũ nếu không có param duration (tránh đè param mới)
+  if (!paramDuration) restoreTimer();
+
+  // Load real tasks from SQLite into AI Suggestion Popover
+  if (window.api) {
+    api.get('/tasks/').then(tasks => {
+      if (Array.isArray(tasks) && tasks.length > 0) {
+        const popoverContainer = aiSuggestionsPopover.querySelector('.space-y-2');
+        if (popoverContainer) {
+          popoverContainer.innerHTML = '';
+          tasks.forEach(task => {
+            const item = document.createElement('div');
+            item.className = 'task-suggestion-item p-2.5 rounded-xl hover:bg-slate-50 transition cursor-pointer flex items-center justify-between border border-transparent hover:border-slate-200';
+            item.innerHTML = `
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0">🎯</span>
+                <span class="font-medium text-xs text-slate-800 truncate">${task.title}</span>
+              </div>
+              <span class="text-[10px] font-semibold text-brand-600 bg-blue-50 px-2 py-0.5 rounded-full shrink-0">${task.completed_sprints}/${task.total_sprints ?? task.estimated_sprints ?? 1}</span>
+            `;
+            item.addEventListener('click', () => {
+              currentTaskId = task.id;
+              taskInputField.value = task.title;
+              aiSuggestionsPopover.classList.add('hidden');
+              showToast(`Đã chọn: "${task.title}"`, '🎯');
+            });
+            popoverContainer.appendChild(item);
+          });
+        }
+      }
+    }).catch(err => console.log('Tasks fetch error:', err));
+  }
+</script>
+<!-- END: Interactive Vanilla JavaScript Logic -->
+</body></html>

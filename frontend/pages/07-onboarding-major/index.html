@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Chọn Lĩnh vực Học tập</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Be Vietnam Pro -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<script src="../../assets/js/theme.js"></script>
+<!-- BEGIN: Custom Atmospheric Styles -->
+<style data-purpose="background-and-atmosphere">
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: #f3efe9;
+      /* Serene watercolor coastal scenery with pastel sky, ocean and gentle shoreline */
+      background-image: 
+        radial-gradient(circle at 18% 40%, rgba(255, 235, 215, 0.5) 0%, transparent 40%),
+        radial-gradient(circle at 85% 35%, rgba(254, 215, 170, 0.45) 0%, transparent 45%),
+        linear-gradient(180deg, #e5eef7 0%, #f6e7df 28%, #fae2d6 50%, #d8e5ee 75%, #bdd3d4 100%);
+      background-attachment: fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* Ambient watercolor haze overlay */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 70%),
+                  radial-gradient(circle at 12% 65%, rgba(135, 170, 145, 0.15) 0%, transparent 40%),
+                  radial-gradient(circle at 88% 70%, rgba(150, 185, 215, 0.2) 0%, transparent 50%);
+      z-index: 0;
+    }
+  </style>
+<style data-purpose="animations">
+    @keyframes gentlePulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.38);
+      }
+      50% {
+        transform: scale(1.015);
+        box-shadow: 0 8px 26px -1px rgba(37, 99, 235, 0.52);
+      }
+    }
+
+    .pulse-btn {
+      animation: gentlePulse 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-panel {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.08), 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+<!-- END: Custom Atmospheric Styles -->
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="relative flex flex-col justify-between text-slate-700 min-h-screen antialiased selection:bg-blue-100 selection:text-blue-800"><div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" data-purpose="background-scenery"><img alt="Khung cảnh màu nước ngọn hải đăng bình yên" class="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[0.98] scale-[1.01]" src="../../assets/images/lighthouse-wide.png"><div class="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-slate-900/25"></div><div class="absolute inset-0 backdrop-blur-[1.5px]"></div></div>
+<!-- BEGIN: TopFloatingHeader -->
+<header class="relative z-20 w-full px-4 sm:px-8 pt-5 pb-2 flex justify-between items-center text-xs">
+<!-- Calm Status Pill -->
+<div class="flex items-center gap-2 bg-white/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/80 shadow-sm text-slate-700 font-medium">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span>Chế độ tập trung tĩnh lặng</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-500 tracking-wider text-[10px] uppercase font-semibold">CALM MODE ON</span>
+</div>
+<!-- Audio Atmosphere & Locale Quick-bar -->
+<div class="flex items-center gap-2.5">
+<!-- Ambient Music Pill -->
+<div class="flex items-center gap-2 bg-white/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/80 shadow-sm text-slate-600 hover:text-slate-900 cursor-pointer transition-colors">
+<svg class="w-3.5 h-3.5 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-slate-700">Sóng biển &amp; Lofi 432Hz</span>
+</div>
+<!-- Language Selector -->
+<div class="flex items-center gap-1.5 bg-white/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/80 shadow-sm text-slate-600 font-medium cursor-pointer">
+<span class="text-blue-600 font-semibold">VN</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-400 hover:text-slate-600">EN</span>
+<svg class="w-3 h-3 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<!-- Dark Mode Toggle Button -->
+<button aria-label="Chuyển chế độ tối" class="p-2 bg-white/70 backdrop-blur-md rounded-full border border-white/80 shadow-sm text-slate-600 hover:text-slate-900 transition-colors">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: TopFloatingHeader -->
+<!-- BEGIN: MainContent -->
+<main class="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:py-10">
+<!-- Onboarding Card Container -->
+<section class="glass-panel w-full max-w-[560px] rounded-3xl p-7 sm:p-9 transition-all duration-300">
+<!-- Brand Logo & Header Meta -->
+<div class="text-center flex flex-col items-center">
+<!-- Logo Badge -->
+<div class="relative w-14 h-14 rounded-2xl bg-white/90 border border-blue-100 shadow-md flex items-center justify-center p-2 mb-3">
+<img alt="Stuđiô AI Logo" class="w-full h-full object-contain" src="../../assets/images/logo.png">
+<span class="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-white"></span>
+</div>
+<!-- System Tag -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-100/80 text-[11px] font-semibold text-blue-600 tracking-wide uppercase mb-3">
+<span>Stuđiô AI</span>
+<span class="text-blue-300">•</span>
+<span>Thiết lập cá nhân hóa</span>
+</div>
+<!-- Step Indicator -->
+<div class="w-full max-w-xs mb-4">
+<div class="flex justify-between items-center text-[11px] font-medium text-slate-500 mb-1.5">
+<span class="text-blue-600 font-semibold">Bước 1 / 3:</span>
+<span>Định hình Không gian Học tập</span>
+</div>
+<div class="h-1.5 w-full bg-blue-100/60 rounded-full overflow-hidden flex gap-1">
+<div class="h-full w-1/3 bg-blue-600 rounded-full"></div>
+<div class="h-full w-1/3 bg-slate-200/60 rounded-full"></div>
+<div class="h-full w-1/3 bg-slate-200/60 rounded-full"></div>
+</div>
+</div>
+<!-- Title & Description -->
+<h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-2">
+          Bạn muốn tập trung vào lĩnh vực nào?
+        </h1>
+<p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+          Stuđiô AI sẽ tùy biến nhịp sinh học, âm thanh nền và lộ trình hỗ trợ phù hợp nhất cho bạn.
+        </p>
+</div>
+<!-- BEGIN: SelectionGrid -->
+<!-- Interactive Grid of Study Focus Areas -->
+<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5" data-purpose="study-topics-grid">
+<!-- Option 1: Coding (Selected State) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border bg-blue-50/90 border-blue-400 text-blue-900 shadow-sm transition-all duration-200" data-selected="true">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">💻</span>
+<div>
+<p class="text-xs font-semibold leading-snug">Lập trình &amp; Kỹ thuật</p>
+<p class="text-[10px] text-blue-600 font-medium">Coding &amp; Software Tech</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+</span>
+</div>
+<!-- Option 2: Design (Selected State) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border bg-blue-50/90 border-blue-400 text-blue-900 shadow-sm transition-all duration-200" data-selected="true">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">🎨</span>
+<div>
+<p class="text-xs font-semibold leading-snug">Thiết kế &amp; Sáng tạo</p>
+<p class="text-[10px] text-blue-600 font-medium">Design &amp; UI/UX</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+</span>
+</div>
+<!-- Option 3: Languages (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">🗣️</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Ngôn ngữ &amp; Ngoại ngữ</p>
+<p class="text-[10px] text-slate-400">IELTS, TOEIC &amp; Giao tiếp</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 4: Scientific Research & Thesis (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">🔬</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Nghiên cứu &amp; Đồ án</p>
+<p class="text-[10px] text-slate-400">Khoa học &amp; Luận văn</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 5: Economics & Finance (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">📊</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Kinh tế &amp; Tài chính</p>
+<p class="text-[10px] text-slate-400">Business &amp; Finance</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 6: Medicine & Health (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">⚕️</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Y dược &amp; Sức khỏe</p>
+<p class="text-[10px] text-slate-400">Medical &amp; Life Sciences</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 7: Law & Social Sciences (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">⚖️</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Luật &amp; Khoa học xã hội</p>
+<p class="text-[10px] text-slate-400">Law &amp; Humanities</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 8: Certification & Exams (Unselected) -->
+<div class="cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">📚</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Ôn thi &amp; Chứng chỉ</p>
+<p class="text-[10px] text-slate-400">Kỳ thi chuyên ngành</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+<!-- Option 9: Self Development (Spanning 2 columns for symmetry) -->
+<div class="sm:col-span-2 cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200">
+<div class="flex items-center gap-2.5">
+<span class="text-lg">✨</span>
+<div>
+<p class="text-xs font-semibold leading-snug group-hover:text-blue-700">Tự học &amp; Phát triển bản thân</p>
+<p class="text-[10px] text-slate-400">Kỹ năng mềm, tư duy phản biện &amp; phong cách sống tập trung</p>
+</div>
+</div>
+<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>
+</div>
+</div>
+<!-- END: SelectionGrid -->
+<!-- AI Tip Card -->
+<div class="mt-4 p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-amber-900 flex items-start gap-2.5 text-xs">
+<span class="text-base shrink-0">💡</span>
+<p class="text-[11px] leading-relaxed text-amber-800/90 font-medium">
+<strong class="font-semibold text-amber-900">Mẹo:</strong> Bạn có thể chọn nhiều lĩnh vực và tùy ý chỉnh sửa lại bất kỳ lúc nào trong phần Cài đặt không gian.
+        </p>
+</div>
+<!-- Action Buttons -->
+<div class="mt-5 flex flex-col items-center gap-2.5">
+<button id="btn-next-major" class="pulse-btn w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2" type="button">
+<span>Tiếp tục</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="w-full flex items-center justify-between">
+<a class="text-xs text-slate-500 hover:text-slate-700 py-1 transition-colors font-medium" href="../06-verify-email/index.html">← Quay lại</a>
+<a class="text-xs text-slate-400 hover:text-slate-600 py-1 transition-colors font-medium" href="../08-onboarding-goals/index.html">
+          Bỏ qua bước này
+        </a>
+</div>
+</div>
+</section>
+</main>
+<!-- Stuđiô AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/app.js"></script>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="relative z-20 pb-4 pt-1 px-4 text-center">
+<!-- Trust Micro-badge -->
+<div class="mb-2 flex items-center justify-center gap-1.5 text-xs text-slate-600 font-medium">
+<div class="flex text-amber-400 text-xs">
+<span>★</span><span>★</span><span>★</span><span>★</span><span class="text-amber-300">★</span>
+</div>
+<span class="font-semibold text-slate-700"></span>
+<span class="text-slate-400">•</span>
+<span class="text-slate-500">Không gian học tập tĩnh lặng cho sinh viên Việt Nam</span>
+</div>
+<!-- Legal and Brand Links -->
+<div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+<span>© 2025 CalmSpace Inc. • Stuđiô AI - Không gian học tập tĩnh lặng.</span>
+<span class="hidden sm:inline text-slate-300">•</span>
+<a class="hover:text-slate-700 transition-colors" href="#">Điều khoản dịch vụ</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-700 transition-colors" href="#">Chính sách quyền riêng tư</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-700 transition-colors" href="#">Quy chuẩn dữ liệu AI</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-700 transition-colors" href="#">Hỗ trợ 24/7</a>
+</div>
+</footer>
+<!-- END: Footer -->
+<script>
+// A11y: cards thành checkbox keyboard
+document.querySelectorAll('[data-purpose="study-topics-grid"] > div').forEach(function(card, idx){
+  card.setAttribute('role', 'checkbox');
+  card.setAttribute('tabindex', '0');
+  if (card.getAttribute('data-selected') !== 'true') card.setAttribute('aria-checked', 'false');
+  else card.setAttribute('aria-checked', 'true');
+  const label = card.querySelector('p.font-semibold');
+  if (label) card.setAttribute('aria-label', label.textContent.trim());
+  const toggle = function(){
+    var isSel = card.getAttribute('data-selected')==='true';
+    if(isSel){
+      card.setAttribute('data-selected','false');
+      card.setAttribute('aria-checked','false');
+      card.className='cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border border-white/80 bg-white/60 hover:bg-white/95 hover:border-blue-200 hover:shadow-sm text-slate-700 transition-all duration-200';
+      var indicator=card.querySelector('span:last-child');
+      if(indicator){indicator.outerHTML='<span class="w-5 h-5 rounded-full border border-slate-300 bg-white group-hover:border-blue-300 shrink-0"></span>';}
+    }else{
+      card.setAttribute('data-selected','true');
+      card.setAttribute('aria-checked','true');
+      card.className='cursor-pointer group relative flex items-center justify-between p-3.5 rounded-xl border bg-blue-50/90 border-blue-400 text-blue-900 shadow-sm transition-all duration-200';
+      var indicator2=card.querySelector('span:last-child');
+      if(indicator2){indicator2.outerHTML='<span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path></svg></span>';}
+    }
+  };
+  card.addEventListener('click', toggle);
+  card.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+});
+
+var nextBtn = document.getElementById('btn-next-major');
+if (nextBtn) {
+  nextBtn.addEventListener('click', async function() {
+    var selectedCards = document.querySelectorAll('[data-purpose="study-topics-grid"] > div[data-selected="true"]');
+    if (selectedCards.length === 0) {
+      if (window.showCalmToast) showCalmToast('Vui lòng chọn ít nhất 1 lĩnh vực để AI gợi ý lộ trình.', 'warning');
+      return;
+    }
+    var selectedMajor = "Khoa học Máy tính & AI";
+    var title = selectedCards[0].querySelector('p.font-semibold');
+    if (title) selectedMajor = title.textContent.trim();
+    nextBtn.disabled = true;
+    nextBtn.classList.add('opacity-70','cursor-not-allowed');
+    // Update local user session
+    try {
+      if (window.auth && typeof window.auth.getUser === 'function') {
+        var u = window.auth.getUser();
+        if (u) {
+          u.major = selectedMajor;
+          if (typeof window.auth.setUser === 'function') window.auth.setUser(u);
+        }
+      }
+    } catch(e) {}
+
+    // Send PUT request to API (await, báo lỗi thật)
+    try {
+      if (window.api && typeof window.api.put === 'function') {
+        await window.api.put('/auth/profile', { major: selectedMajor });
+      }
+    } catch(e) {
+      if (window.showCalmToast) showCalmToast('Không lưu được online, đã lưu tạm offline.', 'warning');
+    } finally {
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('opacity-70','cursor-not-allowed');
+    }
+
+    if (window.showCalmToast) showCalmToast('Đã lưu ngành học: ' + selectedMajor, 'success');
+    setTimeout(function() {
+      window.location.href = '../08-onboarding-goals/index.html';
+    }, 300);
+  });
+}
+</script></body></html>

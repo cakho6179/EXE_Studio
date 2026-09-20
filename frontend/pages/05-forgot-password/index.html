@@ -1,0 +1,325 @@
+<!DOCTYPE html><html lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Stuđiô AI - Quên mật khẩu &amp; Khôi phục tài khoản</title>
+<!-- Tailwind CSS CDN with Forms & Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Font Awesome Icons for polished UI iconography -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<!-- Google Font: Be Vietnam Pro (chung toàn site) -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<script src="../../assets/js/theme.js"></script>
+<style data-purpose="custom-background">
+    /* Watercolor lighthouse seaside pastel artistic ambiance */
+    body {
+      background: radial-gradient(circle at 18% 45%, rgba(254, 243, 199, 0.45) 0%, transparent 45%),
+                  radial-gradient(circle at 82% 30%, rgba(253, 230, 138, 0.35) 0%, transparent 40%),
+                  radial-gradient(circle at 50% 85%, rgba(191, 219, 254, 0.5) 0%, transparent 50%),
+                  linear-gradient(135deg, #fef7ee 0%, #fdf2e9 25%, #f1f5f9 60%, #e0f2fe 100%);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Soft watercolor landscape impression using pseudo-elements */
+    .watercolor-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.85;
+      background-image: 
+        radial-gradient(ellipse 260px 420px at 15% 58%, rgba(180, 83, 9, 0.12), transparent 70%),
+        radial-gradient(ellipse 350px 250px at 10% 75%, rgba(13, 148, 136, 0.15), transparent 75%),
+        radial-gradient(ellipse 600px 300px at 85% 65%, rgba(251, 146, 60, 0.15), transparent 70%),
+        radial-gradient(ellipse 500px 220px at 70% 88%, rgba(56, 189, 248, 0.2), transparent 60%);
+      filter: blur(12px);
+    }
+
+    /* Lighthouse silhouette artistic impression in watercolor style */
+    .lighthouse-art {
+      position: fixed;
+      left: 7%;
+      bottom: 12%;
+      width: 170px;
+      height: 380px;
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 0;
+      background: linear-gradient(to bottom, #78350f, #9a3412 40%, #0f172a 100%);
+      clip-path: polygon(42% 0%, 58% 0%, 65% 15%, 68% 45%, 75% 85%, 85% 100%, 15% 100%, 25% 85%, 32% 45%, 35% 15%);
+      filter: blur(2.5px);
+    }
+    
+    .lighthouse-light {
+      position: fixed;
+      left: 12%;
+      bottom: 42%;
+      width: 480px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(254, 240, 138, 0.45) 0%, rgba(254, 243, 199, 0.15) 35%, transparent 70%);
+      transform: rotate(-15deg);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(14px);
+    }
+
+    /* Refined backdrop glass effect */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+  <link rel="stylesheet" href="../../assets/css/calm.css">
+</head>
+<body class="font-sans text-slate-800 antialiased flex flex-col justify-between min-h-screen relative selection:bg-blue-100 selection:text-blue-700"><div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" data-purpose="background-scenery"><img alt="Khung cảnh màu nước ngọn hải đăng bình yên hoàng hôn" class="w-full h-full object-cover object-center filter brightness-[1.02] contrast-[0.98] scale-[1.01]" src="../../assets/images/lighthouse-wide.png"><div class="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-slate-900/25"></div><div class="absolute inset-0 backdrop-blur-[1.5px]"></div></div>
+<!-- Watercolor artistic background elements -->
+<!-- BEGIN: TopBarNavigation -->
+<header class="w-full px-6 pt-6 pb-2 relative z-10 flex justify-between items-center max-w-7xl mx-auto">
+<!-- Left: Calm Status Indicator -->
+<div class="glass-nav rounded-full px-4 py-2 flex items-center space-x-2 text-xs font-medium text-slate-700">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+</span>
+<span>Chế độ tập trung tĩnh lặng</span>
+<span class="text-slate-300">|</span>
+<span class="text-slate-500 uppercase tracking-wider text-[10px] font-semibold">Calm Mode On</span>
+</div>
+<!-- Right: Sound track & Language tools -->
+<div class="flex items-center space-x-3">
+<!-- Ambient Sound Pill -->
+<button class="glass-nav rounded-full px-4 py-2 flex items-center space-x-2 text-xs text-slate-700 hover:bg-white/95 transition shadow-sm" type="button">
+<i class="fa-solid fa-music text-blue-500 text-xs"></i>
+<span>Sóng biển &amp; Lofi 432Hz</span>
+</button>
+<!-- Language Pill -->
+<div class="glass-nav rounded-full px-3 py-1.5 flex items-center space-x-1.5 text-xs text-slate-700 font-medium">
+<span class="font-bold text-blue-600">VN</span>
+<span class="text-slate-300">/</span>
+<span class="text-slate-400 hover:text-slate-600 cursor-pointer">EN</span>
+<i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-0.5"></i>
+</div>
+<!-- Theme Mode Pill -->
+<button aria-label="Đổi chế độ giao diện" class="glass-nav rounded-full w-8 h-8 flex items-center justify-center text-slate-600 hover:text-slate-900 transition" type="button">
+<i class="fa-regular fa-moon text-xs"></i>
+</button>
+</div>
+</header>
+<!-- END: TopBarNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="flex-grow flex items-center justify-center px-4 py-8 relative z-10">
+<div class="w-full max-w-[530px]">
+<!-- BEGIN: PasswordResetCard -->
+<div class="glass-card rounded-[2.2rem] p-8 md:p-10 shadow-2xl relative transition-all">
+<!-- Header Branding & Icon -->
+<div class="flex flex-col items-center text-center">
+<!-- Animated Logo Holder with subtle pulse halo -->
+<div class="relative mb-4 group cursor-pointer">
+<div class="absolute -inset-1.5 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-3xl blur opacity-60 group-hover:opacity-100 transition duration-500"></div>
+<div class="relative w-16 h-16 bg-white rounded-2xl p-2.5 shadow-md flex items-center justify-center border border-slate-100">
+<img alt="Stuđiô AI Logo" class="w-full h-full object-contain" src="../../assets/images/logo.png">
+</div>
+<!-- Status mini indicator badge -->
+<span class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 border-2 border-white rounded-full"></span>
+</div>
+<!-- Product Tagline Pill -->
+<div class="inline-flex items-center space-x-1.5 bg-blue-50/90 border border-blue-200/70 text-blue-700 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide uppercase mb-3">
+<span>Stuđiô AI</span>
+<span class="text-blue-300">•</span>
+<span>Khôi phục truy cập</span>
+</div>
+<!-- Title -->
+<h1 class="text-2xl md:text-[26px] font-bold text-slate-900 tracking-tight">Khôi phục mật khẩu</h1>
+<!-- Subtitle / Explanation -->
+<p class="mt-2 text-xs md:text-sm text-slate-500 leading-relaxed max-w-md">
+            Nhập email sinh viên (<span class="font-medium text-slate-700">.edu.vn</span>) hoặc tài khoản đã đăng ký. Stuđiô AI sẽ gửi mã xác thực khôi phục hoặc liên kết đăng nhập an toàn.
+          </p>
+</div>
+<!-- Mode Selector: Email vs SSO Instant Option -->
+<div class="mt-6 p-1 bg-slate-100/90 rounded-2xl grid grid-cols-2 gap-1 border border-slate-200/60" data-purpose="recovery-method-tabs">
+<button class="py-2.5 px-3 rounded-xl text-xs font-semibold bg-white text-blue-700 shadow-sm flex items-center justify-center space-x-1.5 transition" type="button">
+<i class="fa-regular fa-envelope text-blue-600"></i>
+<span>Email (.edu.vn)</span>
+</button>
+<button class="py-2.5 px-3 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-center space-x-1.5 transition" type="button">
+<i class="fa-solid fa-graduation-cap text-slate-400"></i>
+<span>Cổng SSO trường</span>
+</button>
+</div>
+<!-- BEGIN: RecoveryForm -->
+<form action="#" class="mt-6 space-y-4" method="POST">
+<!-- Email / Student ID Field Container -->
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<label class="text-xs font-medium text-slate-700" for="recovery-identifier">
+                Email học tập hoặc Mã sinh viên
+              </label>
+<span class="inline-flex items-center text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+<i class="fa-solid fa-check mr-1 text-[9px]"></i> Hỗ trợ SSO .edu.vn
+              </span>
+</div>
+<div class="relative rounded-2xl shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+<i class="fa-regular fa-user text-sm"></i>
+</div>
+<input class="block w-full rounded-2xl border-slate-200 bg-slate-50/60 pl-10 pr-4 py-3 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition" id="recovery-identifier" name="identifier" placeholder="chau.nguyen@sinhvien.edu.vn hoặc MSSV" required="" type="text" autocomplete="username">
+</div>
+</div>
+<!-- Secondary Choice Shortcut Button -->
+<div class="pt-1">
+<button class="w-full bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200/80 text-blue-700 text-xs font-medium py-2.5 px-4 rounded-2xl flex items-center justify-between transition group" type="button">
+<span class="flex items-center space-x-2">
+<i class="fa-solid fa-graduation-cap text-blue-600"></i>
+<span>Bạn nhớ tài khoản trường? <strong>Đăng nhập SSO trực tiếp</strong></span>
+</span>
+<span class="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-md tracking-wider group-hover:bg-blue-700">Fast SSO</span>
+</button>
+</div>
+<!-- Main CTA Button -->
+<div class="pt-2">
+<button class="w-full bg-calm-blue hover:bg-calm-blue-hover text-white text-sm font-semibold py-3.5 px-4 rounded-2xl shadow-md hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2" type="submit">
+<span>Gửi liên kết khôi phục an toàn</span>
+<i class="fa-solid fa-arrow-right text-xs"></i>
+</button>
+</div>
+<!-- Student Friendly Tip Callout Box -->
+<div class="mt-4 p-3.5 bg-amber-50/80 border border-amber-200/70 rounded-2xl flex items-start space-x-2.5 text-left">
+<span class="text-base text-amber-500 mt-0.5">💡</span>
+<p class="text-xs text-amber-900/90 leading-relaxed">
+<strong>Mẹo:</strong> Nếu bạn đang dùng email trường cấp (<span class="font-medium">@sinhvien...</span>), bạn có thể đăng nhập tức thì qua hệ thống SSO nội bộ mà không cần thiết lập lại mật khẩu thủ công.
+            </p>
+</div>
+</form>
+<!-- END: RecoveryForm -->
+<!-- Navigation and Alternative Actions -->
+<div class="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+<!-- Back to Login -->
+<a class="text-slate-600 hover:text-blue-600 font-medium inline-flex items-center space-x-1.5 transition" href="../02-login/index.html">
+<i class="fa-solid fa-arrow-left text-[11px]"></i>
+<span>Quay lại Đăng nhập</span>
+</a>
+<!-- Register Link -->
+<div class="text-slate-500">
+            Chưa có tài khoản? 
+            <a class="text-blue-600 hover:text-blue-700 font-semibold hover:underline" href="../03-register/index.html">Đăng ký ngay →</a>
+</div>
+</div>
+</div>
+<!-- END: PasswordResetCard -->
+<!-- Social Proof Badge below card -->
+<div class="mt-5 text-center">
+<div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-sm border border-white/80 shadow-sm text-xs text-slate-600">
+<div class="flex text-amber-400 text-[11px] space-x-0.5">
+<i class="fa-solid fa-star"></i>
+<i class="fa-solid fa-star"></i>
+<i class="fa-solid fa-star"></i>
+<i class="fa-solid fa-star"></i>
+<i class="fa-solid fa-star-half-stroke"></i>
+</div>
+<span class="font-bold text-slate-800"></span>
+<span class="text-slate-300">•</span>
+<span>Không gian học tập tĩnh lặng cho sinh viên Việt Nam</span>
+</div>
+</div>
+</div>
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: MainFooter -->
+<footer class="w-full py-5 px-6 relative z-10 text-center text-xs text-slate-500 border-t border-slate-200/40 backdrop-blur-sm bg-white/30">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+<p>© 2025 CalmSpace Inc. • Stuđiô AI - Không gian học tập tĩnh lặng.</p>
+<div class="flex items-center space-x-4">
+<a class="hover:text-slate-800 transition" href="#">Điều khoản dịch vụ</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-800 transition" href="#">Chính sách quyền riêng tư</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-800 transition" href="#">Quy chuẩn dữ liệu AI</a>
+<span class="text-slate-300">•</span>
+<a class="hover:text-slate-800 transition" href="#">Hỗ trợ 24/7</a>
+</div>
+</div>
+</footer>
+<!-- END: MainFooter -->
+<!-- Studio AI Shared Scripts -->
+<script src="../../assets/js/api.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/audio.js"></script>
+<script src="../../assets/js/timer.js"></script>
+<script src="../../assets/js/app.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    // Inline error
+    let errBox = document.getElementById('forgot-error-box');
+    if (!errBox && form) {
+      errBox = document.createElement('div');
+      errBox.id = 'forgot-error-box';
+      errBox.setAttribute('role', 'alert');
+      errBox.className = 'hidden p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium';
+      form.prepend(errBox);
+    }
+    const showErr = (m) => { if (!errBox) return; if (!m) { errBox.classList.add('hidden'); errBox.textContent=''; return; } errBox.textContent = m; errBox.classList.remove('hidden'); };
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        showErr('');
+        const input = document.getElementById('recovery-identifier');
+        const val = (input ? input.value.trim() : '');
+        if (!val) { showErr('Vui lòng nhập email hoặc mã sinh viên.'); input?.focus(); return; }
+        const isEmail = val.includes('@');
+        if (isEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { showErr('Email chưa đúng định dạng.'); input?.focus(); return; }
+        if (!isEmail) { showErr('Vui lòng nhập email .edu.vn (tra cứu bằng MSSV chưa hỗ trợ).'); input?.focus(); return; }
+        const btn = form.querySelector('button[type="submit"]');
+        const orig = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.classList.add('opacity-70','cursor-not-allowed'); btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full"></span><span>Đang gửi mã...</span>'; }
+        (async () => {
+          try {
+            const res = await window.api.post('/auth/forgot', { email: val });
+            try {
+              localStorage.setItem('studi_recovery_email', val);
+              localStorage.setItem('studi_otp_sent_at', String(Date.now()));
+              // Demo chua co mail server: luu ma de trang verify hien thi + tu dien
+              if (res.dev_code) sessionStorage.setItem('studi_demo_otp', res.dev_code);
+              else sessionStorage.removeItem('studi_demo_otp');
+            } catch {}
+            if (window.showCalmToast) {
+              showCalmToast(res.message || 'Đã gửi mã khôi phục.', 'success');
+              if (res.dev_code) showCalmToast(`Mã demo của bạn: ${res.dev_code}`, 'info', 8000);
+            }
+            window.location.href = '../06-verify-email/index.html';
+          } catch (err) {
+            showErr((err && err.message) || 'Không gửi được mã.');
+            if (window.showCalmToast) showCalmToast((err && err.message) || 'Không gửi được mã.', 'error');
+          } finally {
+            if (btn) { btn.disabled = false; btn.classList.remove('opacity-70','cursor-not-allowed'); btn.innerHTML = orig; }
+          }
+        })();
+      });
+    }
+
+    // SSO button -> sang trang chọn tài khoản Google/SSO
+    document.querySelectorAll('button').forEach(btn => {
+      if (btn.textContent.includes('Đăng nhập SSO trực tiếp') || (btn.textContent.includes('Fast SSO') && btn.type === 'button')) {
+        btn.addEventListener('click', function() {
+          window.location.href = '../04-google-auth/index.html';
+        });
+      }
+    });
+  });
+</script>
+</body></html>
