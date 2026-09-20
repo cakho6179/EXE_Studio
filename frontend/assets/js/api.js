@@ -8,20 +8,61 @@ const API_BASE_URL = window.location.origin.includes('8000')
 const api = {
   baseUrl: API_BASE_URL,
 
+  // Bọc storage để không chết script khi trình duyệt chặn (file://, chặn cookie)
+  _get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  _set(key, val) { try { localStorage.setItem(key, val); } catch {} },
+  _del(key) { try { localStorage.removeItem(key); } catch {} },
+
   getToken() {
-    return localStorage.getItem('studi_access_token') || null;
+    return this._get('studi_access_token');
   },
 
   setToken(token) {
-    localStorage.setItem('studi_access_token', token);
+    this._set('studi_access_token', token);
+  },
+
+  getRefreshToken() {
+    return this._get('studi_refresh_token');
+  },
+
+  setRefreshToken(token) {
+    this._set('studi_refresh_token', token);
   },
 
   removeToken() {
-    localStorage.removeItem('studi_access_token');
-    localStorage.removeItem('studi_user');
+    this._del('studi_access_token');
+    this._del('studi_refresh_token');
+    this._del('studi_user');
   },
 
-  async request(endpoint, options = {}) {
+  // Lưu cặp token (access + refresh) trả về từ auth login/register/refresh
+  setAuthPair(data) {
+    if (!data) return;
+    if (data.access_token) this.setToken(data.access_token);
+    if (data.refresh_token) this.setRefreshToken(data.refresh_token);
+    if (data.user) this._set('studi_user', JSON.stringify(data.user));
+  },
+
+  // Đổi refresh token lấy cặp token mới khi access hết hạn
+  async refreshSession() {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) return false;
+    try {
+      const resp = await fetch(`${this.baseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken })
+      });
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      this.setAuthPair(data);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async request(endpoint, options = {}, _retried = false) {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
     const headers = {
       'Content-Type': 'application/json',
@@ -50,6 +91,13 @@ const api = {
     }
 
     if (response.status === 401) {
+      // Access token hết hạn -> thử đổi bằng refresh token (chỉ thử 1 lần để tránh lặp)
+      if (!_retried && this.getRefreshToken()) {
+        const refreshed = await this.refreshSession();
+        if (refreshed) {
+          return this.request(endpoint, options, true);
+        }
+      }
       this.removeToken();
       const err = new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
       err.code = 401;
@@ -103,7 +151,7 @@ const api = {
   },
 
   // Upload file thật (multipart/form-data, không ép Content-Type JSON)
-  async postForm(endpoint, formData) {
+  async postForm(endpoint, formData, _retried = false) {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
     const headers = {};
     const token = this.getToken();
@@ -118,6 +166,13 @@ const api = {
       throw new Error('Không kết nối được máy chủ Stuđiô AI.');
     }
     if (response.status === 401) {
+      // Thử refresh 1 lần giống request() JSON trước khi coi như hết phiên
+      if (!_retried && this.getRefreshToken()) {
+        const refreshed = await this.refreshSession();
+        if (refreshed) {
+          return this.postForm(endpoint, formData, true);
+        }
+      }
       this.removeToken();
       throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
     }

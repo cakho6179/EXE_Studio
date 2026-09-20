@@ -98,7 +98,7 @@
           </div>
 
           <!-- Notification Icon -->
-          <button class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-white/80 transition relative">
+          <button title="Thông báo" aria-label="Thông báo" class="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-800 hover:bg-white/80 transition relative">
             <i class="fa-regular fa-bell text-sm"></i>
             <span class="w-2 h-2 bg-red-500 rounded-full absolute top-2 right-2 border-2 border-white"></span>
           </button>
@@ -222,7 +222,7 @@
                   <i class="fa-solid fa-download text-[11px]"></i>
                   <span class="hidden sm:inline">Xuất biên bản</span>
                 </button>
-                <button class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Làm mới ngữ cảnh">
+                <button id="advisor-refresh-btn" type="button" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition" title="Làm mới ngữ cảnh">
                   <i class="fa-solid fa-arrows-rotate text-xs"></i>
                 </button>
               </div>
@@ -395,8 +395,8 @@
                   <div class="text-[10px] text-blue-600 font-medium">Tần số Alpha kích thích tư duy sâu</div>
                 </div>
               </div>
-              <button class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs hover:bg-blue-700 transition">
-                <i class="fa-solid fa-pause text-[10px]"></i>
+              <button id="advisor-sound-toggle" type="button" aria-label="Tạm dừng hoặc phát âm thanh" class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs hover:bg-blue-700 transition">
+                <i id="advisor-sound-icon" class="fa-solid fa-pause text-[10px]"></i>
               </button>
             </div>
 
@@ -472,7 +472,7 @@
               </div>
             </div>
 
-            <button class="w-full mt-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">
+            <button id="advisor-canvas-sync" type="button" class="w-full mt-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
               <span>Đồng bộ kết quả vào Canvas LMS</span>
             </button>
@@ -910,6 +910,46 @@
           if (ttl && top) ttl.textContent = `Mục tiêu phiên làm việc • ${top.subject_name || 'Đồ án'}`;
         } catch {}
       })();
+
+      // Nut phu sidebar: play am thanh, refresh lich su, sync canvas trung thuc
+      const advSoundBtn = document.getElementById('advisor-sound-toggle');
+      if (advSoundBtn) {
+        const paintAdvSound = () => {
+          const icon = document.getElementById('advisor-sound-icon');
+          if (icon && window.calmAudio) {
+            icon.className = window.calmAudio.isPlaying
+              ? 'fa-solid fa-pause text-[10px]'
+              : 'fa-solid fa-play text-[10px]';
+          }
+        };
+        advSoundBtn.addEventListener('click', () => {
+          if (window.calmAudio) { window.calmAudio.togglePlay(); paintAdvSound(); }
+        });
+        paintAdvSound();
+      }
+      const advRefresh = document.getElementById('advisor-refresh-btn');
+      if (advRefresh) {
+        advRefresh.addEventListener('click', async () => {
+          if (!currentSessionId) return;
+          try {
+            const msgs = await api.get(`/advisor/sessions/${encodeURIComponent(currentSessionId)}/messages`);
+            setMessages('');
+            msgs.forEach(msg => {
+              const who = msg.sender || msg.role || 'advisor';
+              appendMessage(msg.content, who === 'user' ? 'user' : 'advisor');
+            });
+            if (window.showCalmToast) showCalmToast('Đã tải lại lịch sử phiên.', 'success');
+          } catch (err) {
+            if (window.showCalmToast) showCalmToast((err && err.message) || 'Không tải lại được.', 'error');
+          }
+        });
+      }
+      const advCanvas = document.getElementById('advisor-canvas-sync');
+      if (advCanvas) {
+        advCanvas.addEventListener('click', () => {
+          if (window.showCalmToast) showCalmToast('Bản demo: đồng bộ Canvas LMS chưa kết nối.', 'warning');
+        });
+      }
 
       async function loadChatHistory() {
         await renderSessions();

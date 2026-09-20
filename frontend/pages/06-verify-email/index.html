@@ -195,7 +195,7 @@
 </div>
 <p class="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1">
 <span>Đã gửi mã xác minh 6 số đến hộp thư trên.</span>
-<a class="underline text-slate-600 hover:text-blue-600" href="#help">Kiểm tra thư rác?</a>
+<a id="spam-help-link" class="underline text-slate-600 hover:text-blue-600 cursor-pointer">Kiểm tra thư rác?</a>
 </p>
 </div>
 <!-- OTP Input Section -->
@@ -239,7 +239,7 @@
 <div id="otp-error-box" role="alert" aria-live="assertive" class="hidden mt-2 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"></div>
 <!-- Alternative Help Link -->
 <div class="mt-2 text-right">
-<a class="text-xs text-slate-500 hover:text-blue-600 transition-colors" href="#fallback-link">
+<a class="text-xs text-slate-500 hover:text-blue-600 transition-colors" href="../04-google-auth/index.html">
                 Không nhận được mã? Gửi qua liên kết bảo mật SSO →
               </a>
 </div>
@@ -401,6 +401,16 @@
         } catch (err) {
           showOtpErr((err && err.message) || 'Không gửi lại được mã.');
           tickResend();
+        }
+      });
+    }
+
+    // Link tro giup: huong dan tim mail that (khong phai toast gia)
+    const spamLink = document.getElementById('spam-help-link');
+    if (spamLink) {
+      spamLink.addEventListener('click', () => {
+        if (window.showCalmToast) {
+          showCalmToast('Mở hộp thư, kiểm tra mục Spam/Quảng cáo và tìm mail từ Stuđiô AI. Bản demo hiện mã ngay dưới ô nhập.', 'info', 6000);
         }
       });
     }

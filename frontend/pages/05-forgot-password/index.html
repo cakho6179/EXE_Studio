@@ -150,12 +150,12 @@
           </p>
 </div>
 <!-- Mode Selector: Email vs SSO Instant Option -->
-<div class="mt-6 p-1 bg-slate-100/90 rounded-2xl grid grid-cols-2 gap-1 border border-slate-200/60" data-purpose="recovery-method-tabs">
-<button class="py-2.5 px-3 rounded-xl text-xs font-semibold bg-white text-blue-700 shadow-sm flex items-center justify-center space-x-1.5 transition" type="button">
+<div class="mt-6 p-1 bg-slate-100/90 rounded-2xl grid grid-cols-2 gap-1 border border-slate-200/60" data-purpose="recovery-method-tabs" role="tablist" aria-label="Phương thức khôi phục">
+<button id="tab-email-mode" role="tab" aria-selected="true" class="py-2.5 px-3 rounded-xl text-xs font-semibold bg-white text-blue-700 shadow-sm flex items-center justify-center space-x-1.5 transition" type="button">
 <i class="fa-regular fa-envelope text-blue-600"></i>
 <span>Email (.edu.vn)</span>
 </button>
-<button class="py-2.5 px-3 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-center space-x-1.5 transition" type="button">
+<button id="tab-sso-mode" role="tab" aria-selected="false" class="py-2.5 px-3 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-center space-x-1.5 transition" type="button">
 <i class="fa-solid fa-graduation-cap text-slate-400"></i>
 <span>Cổng SSO trường</span>
 </button>
@@ -261,8 +261,28 @@
 <script src="../../assets/js/timer.js"></script>
 <script src="../../assets/js/app.js"></script>
 
-<script>
+  <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Tabs phương thức khôi phục: Email OTP / SSO đưa về trang chọn tài khoản
+    const tabEmail = document.getElementById('tab-email-mode');
+    const tabSso = document.getElementById('tab-sso-mode');
+    const ACTIVE = 'py-2.5 px-3 rounded-xl text-xs font-semibold bg-white text-blue-700 shadow-sm flex items-center justify-center space-x-1.5 transition';
+    const IDLE = 'py-2.5 px-3 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center justify-center space-x-1.5 transition';
+    function paintTabs(emailActive) {
+      if (tabEmail) {
+        tabEmail.className = emailActive ? ACTIVE : IDLE;
+        tabEmail.setAttribute('aria-selected', String(emailActive));
+      }
+      if (tabSso) {
+        tabSso.className = emailActive ? IDLE : ACTIVE;
+        tabSso.setAttribute('aria-selected', String(!emailActive));
+      }
+    }
+    if (tabEmail) tabEmail.addEventListener('click', () => paintTabs(true));
+    if (tabSso) tabSso.addEventListener('click', () => {
+      paintTabs(false);
+      setTimeout(() => { window.location.href = '../04-google-auth/index.html'; }, 350);
+    });
     const form = document.querySelector('form');
     // Inline error
     let errBox = document.getElementById('forgot-error-box');

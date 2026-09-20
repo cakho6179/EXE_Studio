@@ -85,10 +85,10 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS setup
+# CORS setup: phải khớp origins thật với allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

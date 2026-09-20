@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.core.database import get_db
+from app.core.timeutils import vn_now, vn_day_start_utc
 from app.models.entities import User, Task, MicroSubtask, FocusSession, ScheduleEvent
 from app.api.v1.auth import get_current_user
 
@@ -14,6 +15,7 @@ def get_notifications(
     current_user: User = Depends(get_current_user),
 ):
     """Thông báo học thuật dựng từ dữ liệu DB thật (deadline, tồn đọng, phiên hôm nay)."""
+    # So deadline theo giờ VN (deadline lưu naive UTC sau khi client gửi kèm múi giờ)
     now = datetime.utcnow()
     items = []
 
@@ -43,8 +45,8 @@ def get_notifications(
             "time_label": left_txt,
         })
 
-    # 2. Phiên focus hôm nay
-    today_start = datetime.combine(now.date(), datetime.min.time())
+    # 2. Phiên focus hôm nay (ranh giới theo giờ VN)
+    today_start = vn_day_start_utc(0)
     today_count = db.query(FocusSession).filter(
         FocusSession.user_id == current_user.id, FocusSession.created_at >= today_start
     ).count()

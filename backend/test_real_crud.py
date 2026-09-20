@@ -45,7 +45,7 @@ def run_tests():
             {"title": "Đánh giá mAP@0.5 và viết báo cáo", "estimated_minutes": 25, "pomodoro_count": 1}
         ]
     }, headers=headers)
-    assert res_task.status_code == 200, f"Create task failed: {res_task.text}"
+    assert res_task.status_code in (200, 201), f"Create task failed: {res_task.text}"
     task_data = res_task.json()
     task_id = task_data['id']
     subtask_id_1 = task_data['subtasks'][0]['id']
@@ -66,7 +66,7 @@ def run_tests():
         "ambient_sound_used": "Sóng Biển 432Hz",
         "notes": "Hoàn thành bước cấu hình mạng backbone"
     }, headers=headers)
-    assert res_focus.status_code == 200, f"Focus session failed: {res_focus.text}"
+    assert res_focus.status_code in (200, 201), f"Focus session failed: {res_focus.text}"
     print(f"5a. [PASS] Ghi nhận phiên Pomodoro 25p thành công vào DB!")
 
     # Verify task updated
@@ -83,7 +83,7 @@ def run_tests():
         "event_type": "deep_work",
         "is_circadian_optimized": True
     }, headers=headers)
-    assert res_ev_create.status_code == 200
+    assert res_ev_create.status_code in (200, 201)
     ev_id = res_ev_create.json()['id']
     print(f"6a. [PASS] Tạo sự kiện thời khóa biểu thành công ID: {ev_id}")
 

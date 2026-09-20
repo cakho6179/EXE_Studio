@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 from app.core.database import get_db
+from app.core.timeutils import vn_day_start_utc
 from app.models.entities import User, MoodEntry
 from app.api.v1.auth import get_current_user
 from pydantic import BaseModel
@@ -17,7 +18,7 @@ class MoodCreate(BaseModel):
     note: Optional[str] = None
 
 
-@router.post("/")
+@router.post("/", status_code=201)
 def save_mood(
     mood_in: MoodCreate,
     db: Session = Depends(get_db),
@@ -37,7 +38,8 @@ def get_today_mood(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    today_start = datetime.combine(datetime.utcnow().date(), datetime.min.time())
+    # "Hôm nay" theo lịch Việt Nam (fix lệch UTC)
+    today_start = vn_day_start_utc(0)
     entries = db.query(MoodEntry).filter(
         MoodEntry.user_id == current_user.id, MoodEntry.created_at >= today_start
     ).order_by(MoodEntry.created_at.desc()).all()

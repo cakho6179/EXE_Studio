@@ -411,6 +411,7 @@
   const paramTitle = urlParams.get('title');
   const paramDuration = urlParams.get('duration');
   const paramSound = urlParams.get('sound');
+  const paramMode = urlParams.get('mode');
   let currentTaskId = paramTaskId || null;
 
   let currentDurationMinutes = paramDuration ? parseInt(paramDuration) : 50;
@@ -1016,7 +1017,10 @@
   if (paramTitle) {
     taskInputField.value = decodeURIComponent(paramTitle);
   }
-  if (paramDuration) {
+  if (paramMode === 'free') {
+    durationSplitSelect.value = 'free';
+    durationSplitSelect.dispatchEvent(new Event('change'));
+  } else if (paramDuration) {
     setDuration(parseInt(paramDuration));
   } else {
     updateCircleProgress(0);

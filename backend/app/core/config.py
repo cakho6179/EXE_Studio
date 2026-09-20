@@ -8,17 +8,33 @@ class Settings(BaseSettings):
     # Bí mật đọc từ .env (không hardcode key thật trong source)
     SECRET_KEY: str = "dev-only-change-me"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
+    # Access token ngắn hạn + refresh token dài hạn (an toàn hơn JWT 7 ngày)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     DATABASE_URL: str = "sqlite:///./studi_ai.db"
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.5-flash-lite"
+
+    # Google OAuth: đặt GOOGLE_CLIENT_ID trong .env để bật kiểm tra aud cho id_token thật
+    GOOGLE_CLIENT_ID: str = ""
+
+    # SMTP gửi email OTP (bỏ trống = chỉ log OTP ra console - chế độ demo)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "Stuđiô AI <no-reply@studio-ai.local>"
+
+    # Chế độ demo học thuật: trả dev_code trong response /auth/forgot để hoàn tất luồng không cần email.
+    # ĐẶT FALSE khi deploy production (bắt buộc cấu hình SMTP).
+    OTP_RETURN_DEV_CODE: bool = True
+
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://127.0.0.1:5500",
-        "*"
     ]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

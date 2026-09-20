@@ -257,6 +257,15 @@ textarea:focus-visible,
   animation: calmFadeIn 0.25s ease-out;
 }
 
+/* ==========================================================================
+   8. FOCUS-DIM MODE (khiên tập trung: ẩn header/footer đỡ xao nhãng)
+   ========================================================================== */
+
+body.focus-dim header,
+body.focus-dim footer {
+  display: none;
+}
+
 @keyframes calmFadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }

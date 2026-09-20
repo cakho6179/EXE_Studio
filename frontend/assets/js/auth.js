@@ -4,7 +4,8 @@
 const auth = {
   // null khi chưa có user lưu (không trả user giả để tránh che lỗi)
   getUser() {
-    const userStr = localStorage.getItem('studi_user');
+    let userStr = null;
+    try { userStr = localStorage.getItem('studi_user'); } catch { return null; }
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -27,11 +28,24 @@ const auth = {
   },
 
   setUser(user) {
-    localStorage.setItem('studi_user', JSON.stringify(user));
+    try { localStorage.setItem('studi_user', JSON.stringify(user)); } catch {}
   },
 
   isLoggedIn() {
-    return !!localStorage.getItem('studi_access_token');
+    let token = null;
+    try { token = localStorage.getItem('studi_access_token'); } catch { return false; }
+    if (!token) return false;
+    // Kiểm tra hạn dùng phía client (không verify chữ ký): hết hạn + không còn
+    // refresh token -> coi như chưa login để guard chuyển về trang đăng nhập sớm
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        let hasRefresh = false;
+        try { hasRefresh = !!localStorage.getItem('studi_refresh_token'); } catch {}
+        return hasRefresh; // còn refresh -> request() đầu tiên sẽ tự gia hạn
+      }
+    } catch {}
+    return true;
   },
 
   // Trải nghiệm 1-chạm = đăng nhập thật bằng tài khoản demo seed trong DB
@@ -71,7 +85,8 @@ const auth = {
     const result = await window.api.post('/auth/login', { email, password });
     // api.post ném Error nếu backend trả 400 -> caller hiện lỗi, không fallback
     if (result && result.access_token) {
-      window.api.setToken(result.access_token);
+      // Lưu cả cặp access + refresh token để phiên dài hạn, tự gia hạn khi hết hạn
+      window.api.setAuthPair(result);
       if (result.user) {
         this.setUser(result.user);
       } else {
@@ -85,7 +100,7 @@ const auth = {
   async register(data) {
     const result = await window.api.post('/auth/register', data);
     if (result && result.access_token) {
-      window.api.setToken(result.access_token);
+      window.api.setAuthPair(result);
       if (result.user) this.setUser(result.user);
       return result;
     }
@@ -94,18 +109,17 @@ const auth = {
 
   logout() {
     window.api.removeToken();
-    localStorage.removeItem('studi_user');
-    localStorage.removeItem('studi_access_token');
+    try {
+      localStorage.removeItem('studi_user');
+      localStorage.removeItem('studi_access_token');
+    } catch {}
     if (window.showCalmToast) {
       window.showCalmToast('Đã đăng xuất không gian học tập an toàn.', 'info');
     }
     setTimeout(() => {
+      // Đường dẫn tương đối để chạy đúng cả http://localhost:8000/ lẫn file://
       const isPages = window.location.pathname.includes('/pages/');
-      if (isPages) {
-        window.location.href = '../02-login/index.html';
-      } else {
-        window.location.href = '/pages/02-login/index.html';
-      }
+      window.location.href = isPages ? '../02-login/index.html' : 'pages/02-login/index.html';
     }, 400);
   },
 

@@ -101,7 +101,7 @@
 <span>Sóng biển 432Hz</span>
 </div>
 <!-- Notification Bell -->
-<button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-full transition">
+<button title="Thông báo" aria-label="Thông báo" class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-white/60 rounded-full transition">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
 </svg>
@@ -458,9 +458,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // 3. Setup Filter Tabs
+  // 3. Setup Filter Tabs (nhãn đếm thật từ DB, cập nhật mỗi lần render)
   const tabButtons = document.querySelectorAll('#task-filter-tabs button:not(#task-search-input)');
   const tabBtnList = Array.from(tabButtons).filter(b => !b.querySelector('svg'));
+  function paintTabCounts() {
+    const nAll = allTasks.length;
+    const nProg = allTasks.filter(t => t.status !== 'completed').length;
+    const nDone = allTasks.filter(t => t.status === 'completed').length;
+    const nHigh = allTasks.filter(t => t.priority === 'high' && t.status !== 'completed').length;
+    const nComplex = allTasks.filter(t => t.complexity === 'complex' && t.status !== 'completed').length;
+    tabBtnList.forEach(btn => {
+      const txt = btn.textContent.trim();
+      // Tab Alpha bọc text trong span con -> sửa đúng span đó
+      const inner = btn.querySelector('span:last-child');
+      const setLabel = (label) => {
+        if (inner && inner !== btn.querySelector('span.w-1\\.5')) {
+          inner.textContent = label;
+        } else {
+          btn.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
+          btn.append(document.createTextNode(label));
+        }
+      };
+      if (txt.includes('Tất cả')) setLabel(`Tất cả nhiệm vụ (${nAll})`);
+      else if (txt.includes('Đang thực hiện')) setLabel(`Đang thực hiện (${nProg})`);
+      else if (txt.includes('Đã hoàn thành')) setLabel(`Đã hoàn thành (${nDone})`);
+      else if (txt.includes('Alpha') || txt.includes('Ưu tiên')) setLabel(`Khung giờ vàng Alpha (${nHigh})`);
+      else if (txt.includes('Đồ án lớn')) setLabel(`Đồ án lớn & Tiểu luận (${nComplex})`);
+    });
+  }
   tabBtnList.forEach(btn => {
     btn.addEventListener('click', () => {
       tabButtons.forEach(b => {
@@ -637,6 +662,7 @@ async function loadTasks() {
     allTasks = await api.get('/tasks/');
     updateTopKPIs();
     renderTasks();
+    paintTabCounts();
     loadNextCard();
   } catch (err) {
     console.error('Failed to load tasks:', err);

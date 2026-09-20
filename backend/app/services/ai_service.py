@@ -27,14 +27,19 @@ class AIService:
             gen_config["response_mime_type"] = "application/json"
 
         for model in candidate_models:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": gen_config
             }
             try:
+                # API key truyền qua header (an toàn hơn nhét vào URL query)
                 async with httpx.AsyncClient(timeout=14.0) as client:
-                    resp = await client.post(url, json=payload)
+                    resp = await client.post(
+                        url,
+                        json=payload,
+                        headers={"x-goog-api-key": api_key},
+                    )
                     if resp.status_code == 200:
                         data = resp.json()
                         candidates = data.get("candidates", [])

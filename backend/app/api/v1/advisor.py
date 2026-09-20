@@ -125,7 +125,10 @@ def get_chat_history(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    session = db.query(ChatSession).filter(ChatSession.user_id == current_user.id).first()
+    """Lịch sử chat của phiên MỚI NHẤT (ổn định: luôn ORDER BY created_at DESC trước khi lấy)."""
+    session = db.query(ChatSession).filter(
+        ChatSession.user_id == current_user.id
+    ).order_by(ChatSession.created_at.desc()).first()
     if not session:
         return []
     return db.query(ChatMessage).filter(ChatMessage.session_id == session.id).order_by(ChatMessage.created_at.asc()).all()
@@ -133,6 +136,27 @@ def get_chat_history(
 
 ALLOWED_DOC_EXTS = {".pdf", ".docx", ".tex", ".txt", ".md"}
 MAX_DOC_BYTES = 25 * 1024 * 1024
+
+
+def _extract_document_text(suffix: str, content: bytes) -> str:
+    """Trích xuất text thật từ PDF/DOCX/TXT để AI có ngữ cảnh giáo trình.
+    Thư viện chưa cài -> trả chuỗi rỗng, không làm sập luồng upload."""
+    try:
+        if suffix == ".pdf":
+            from pypdf import PdfReader
+            import io
+            reader = PdfReader(io.BytesIO(content))
+            return "\n".join((page.extract_text() or "") for page in reader.pages[:40])
+        if suffix == ".docx":
+            import docx
+            import io
+            doc = docx.Document(io.BytesIO(content))
+            return "\n".join(p.text for p in doc.paragraphs[:500])
+    except ImportError:
+        print("[Studio AI] Cài 'pypdf' và 'python-docx' để đọc được nội dung PDF/DOCX.")
+    except Exception as e:
+        print(f"[Studio AI] Trích text tài liệu thất bại: {e}")
+    return ""
 
 
 @router.post("/upload")
@@ -154,13 +178,15 @@ async def upload_document(
     upload_dir.mkdir(exist_ok=True)
     safe_name = f"{current_user.id}_{int(datetime.utcnow().timestamp())}_{Path(file.filename).name}"
     (upload_dir / safe_name).write_bytes(content)
-    # Đọc thử text để AI có ngữ cảnh thật (txt/md; pdf/docx chỉ đếm dung lượng ở bản này)
-    text_preview = ""
+
+    # Trích text thật cho mọi định dạng (txt/md/tex decode UTF-8; PDF/DOCX qua thư viện)
     if suffix in {".txt", ".md", ".tex"}:
         try:
-            text_preview = content.decode("utf-8", errors="ignore")[:2000]
+            text_preview = content.decode("utf-8", errors="ignore")
         except Exception:
             text_preview = ""
+    else:
+        text_preview = _extract_document_text(suffix, content)
     # Lưu metadata vào DB để trang Knowledge liệt kê thật
     from app.models.entities import Document
     doc = Document(

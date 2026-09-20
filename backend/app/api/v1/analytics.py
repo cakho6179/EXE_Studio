@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from datetime import datetime, date, timedelta
 from app.core.database import get_db
+from app.core.timeutils import VN_UTC_OFFSET
 from app.models.entities import User, Task, FocusSession
 from app.api.v1.auth import get_current_user
 
@@ -24,26 +25,43 @@ def get_analytics_dashboard(
     selected = range_param if range_param in RANGE_BUCKETS else "week"
     n_buckets, bucket_days = RANGE_BUCKETS[selected]
     today = date.today()
-    week_days_labels = []
-    weekly_focus_hours = []
 
-    # 1. Giờ focus thật, gộp theo bucket của phạm vi được chọn
+    # ==== 1 QUERY DUY NHẤT thay ~40 query lẻ trước đây ====
+    # Lấy (thời điểm, phút focus, số xao nhãng) của toàn bộ phiên focus của user.
+    # Buckets, streak, điểm sinh học, burnout đều tính in-memory từ danh sách này.
+    session_rows = db.query(
+        FocusSession.created_at,
+        FocusSession.actual_minutes,
+        FocusSession.distractions_count,
+    ).filter(FocusSession.user_id == current_user.id).all()
+
+    # Gom theo NGÀY LỊCH VIỆT NAM (created_at lưu naive-UTC, +7 để ra giờ VN)
+    minutes_by_vn_date = {}
+    distr_by_vn_date = {}
+    all_vn_hours = []
+    total_sessions = len(session_rows)
+    total_focus_min = 0
+    for created_at, minutes, distractions in session_rows:
+        vn_dt = created_at + VN_UTC_OFFSET
+        all_vn_hours.append(vn_dt.hour)
+        d = vn_dt.date()
+        minutes_by_vn_date[d] = minutes_by_vn_date.get(d, 0) + (minutes or 0)
+        distr_by_vn_date[d] = distr_by_vn_date.get(d, 0) + (distractions or 0)
+        total_focus_min += minutes or 0
+
+    # 1. Giờ focus theo bucket của phạm vi được chọn
+    weekly_focus_hours = []
+    week_days_labels = []
     total_real_week_minutes = 0
     for b in range(n_buckets - 1, -1, -1):
         end_day = today - timedelta(days=b * bucket_days)
         start_day = end_day - timedelta(days=bucket_days - 1)
-        day_start = datetime.combine(start_day, datetime.min.time())
-        day_end = datetime.combine(end_day, datetime.max.time())
-
-        sessions = db.query(FocusSession).filter(
-            FocusSession.user_id == current_user.id,
-            FocusSession.created_at >= day_start,
-            FocusSession.created_at <= day_end
-        ).all()
-
-        total_mins = sum(s.actual_minutes for s in sessions)
-        total_real_week_minutes += total_mins
-        hours = round(total_mins / 60.0, 1)
+        bucket_mins = sum(
+            m for d, m in minutes_by_vn_date.items()
+            if start_day <= d <= end_day
+        )
+        total_real_week_minutes += bucket_mins
+        hours = round(bucket_mins / 60.0, 1)
 
         if selected == "week":
             weekday_vn = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"][end_day.weekday()]
@@ -56,63 +74,41 @@ def get_analytics_dashboard(
 
     total_week_hours = round(total_real_week_minutes / 60.0, 1)
 
-    # Số liệu thật từ DB (không dùng đường cong giả khi user mới)
-
     # 2. Real Task completion rate
     total_tasks = db.query(Task).filter(Task.user_id == current_user.id).count()
     completed_tasks = db.query(Task).filter(Task.user_id == current_user.id, Task.status == "completed").count()
     completion_rate = int((completed_tasks / total_tasks) * 100) if total_tasks > 0 else 0
 
-    # 3. Consecutive Day Streak (thật, không mặc định 12)
+    # 3. Consecutive Day Streak (ngày có >= 1 phiên, ranh giới theo giờ VN)
     streak = 0
     for i in range(30):
-        check_day = today - timedelta(days=i)
-        count = db.query(FocusSession).filter(
-            FocusSession.user_id == current_user.id,
-            FocusSession.created_at >= datetime.combine(check_day, datetime.min.time()),
-            FocusSession.created_at <= datetime.combine(check_day, datetime.max.time())
-        ).count()
-        if count > 0:
+        if (today - timedelta(days=i)) in minutes_by_vn_date:
             streak += 1
         elif i > 0:
             break
 
-    # 4. Circadian alignment score (thật: 0 khi chưa có phiên)
-    all_sessions = db.query(FocusSession).filter(FocusSession.user_id == current_user.id).all()
-    if all_sessions:
-        aligned_count = 0
-        for s in all_sessions:
-            h = s.created_at.hour
-            if (8 <= h < 12) or (14 <= h < 17) or (19 <= h < 22):
-                aligned_count += 1
-        circadian_score = int((aligned_count / len(all_sessions)) * 100)
+    # 4. Circadian alignment score: phiên rơi vào khung giờ vàng (giờ VN)
+    if all_vn_hours:
+        aligned = sum(1 for h in all_vn_hours if (8 <= h < 12) or (14 <= h < 17) or (19 <= h < 22))
+        circadian_score = int((aligned / len(all_vn_hours)) * 100)
     else:
         circadian_score = 0
 
-    # 5. Subject radar + chi tiết từng môn (số liệu thật cho thẻ Skills)
+    # 5. Subject radar + chi tiết từng môn (điểm công bằng: % sprint hoàn thành, 0-100)
     from app.models.entities import MicroSubtask
-    tasks_by_subject = {}
-    subject_details = []
-    all_tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
-    for t in all_tasks:
-        name = f"{t.subject_name} ({t.subject_code})" if t.subject_code else (t.subject_name or "Chung")
-        tasks_by_subject[name] = tasks_by_subject.get(name, 0) + (t.completed_sprints * 20)
-
-    subject_radar = []
-    if tasks_by_subject:
-        for subj, val in tasks_by_subject.items():
-            score = min(98, max(0, 75 + val)) if val else 0
-            subject_radar.append({"subject": subj, "score": score})
-    # Gom sprints theo môn để render thẻ kỹ năng
     subj_groups = {}
-    for t in all_tasks:
+    for t in db.query(Task).filter(Task.user_id == current_user.id).all():
         key = (t.subject_name or "Chung", t.subject_code or "")
         g = subj_groups.setdefault(key, {"completed": 0, "total": 0, "tasks": 0})
         g["completed"] += t.completed_sprints or 0
         g["total"] += t.total_sprints or 0
         g["tasks"] += 1
+
+    subject_radar = []
+    subject_details = []
     for (sname, scode), g in subj_groups.items():
         pct = int(g["completed"] / g["total"] * 100) if g["total"] else 0
+        subject_radar.append({"subject": f"{sname} ({scode})" if scode else sname, "score": pct})
         level = "Mới bắt đầu" if pct < 25 else ("Đang tiến bộ" if pct < 60 else ("Khá giỏi" if pct < 90 else "Chuyên gia"))
         subject_details.append({
             "subject_name": sname,
@@ -126,8 +122,6 @@ def get_analytics_dashboard(
         })
 
     # 6. Huy hiệu theo luật thật (streak / phiên / sprints / hoàn thành / sinh học)
-    total_sessions = len(all_sessions)
-    total_focus_min = sum(s.actual_minutes for s in all_sessions)
     completed_subtasks = db.query(MicroSubtask).join(Task, MicroSubtask.task_id == Task.id).filter(
         Task.user_id == current_user.id, MicroSubtask.is_completed == True
     ).count()
@@ -165,13 +159,16 @@ def get_analytics_dashboard(
     ]
 
     # burnout tính từ xao nhãng trung bình thay vì text cứng
-    avg_distr = (sum(s.distractions_count for s in all_sessions) / len(all_sessions)) if all_sessions else 0
+    avg_distr = (sum(distr_by_vn_date.values()) / total_sessions) if total_sessions else 0
     if avg_distr <= 1:
         burnout = "Cực kỳ thấp (Vùng an toàn)"
     elif avg_distr <= 2:
         burnout = "Thấp (Ổn định)"
     else:
         burnout = "Trung bình (Cần thêm nghỉ ngơi)"
+
+    # Chỉ số bình yên: trung bình hài hòa của hiệu suất hoàn thành & đồng bộ sinh học
+    zen_efficiency_index = int((completion_rate + circadian_score) / 2) if (total_tasks or total_sessions) else 0
 
     return {
         "range": selected,
@@ -187,6 +184,6 @@ def get_analytics_dashboard(
         "total_sessions": total_sessions,
         "total_focus_minutes": total_focus_min,
         "completed_subtasks": completed_subtasks,
-        "zen_efficiency_index": min(99, max(0, 80 + streak)) if (streak or circadian_score) else 0,
+        "zen_efficiency_index": zen_efficiency_index,
         "burnout_risk": burnout
     }

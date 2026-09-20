@@ -15,4 +15,10 @@ services:
       - ENVIRONMENT=production
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - SECRET_KEY=${SECRET_KEY:-calm_super_secret_jwt_key_study_ai_2025}
+      - OTP_RETURN_DEV_CODE=false
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
     restart: unless-stopped

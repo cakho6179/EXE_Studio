@@ -130,13 +130,13 @@
 </svg>
           Sóng Solfeggio &amp; Nhịp sinh học v3.2
         </span>
-<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-full font-medium transition shadow-xs">
+<button id="top-spatial-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-full font-medium transition shadow-xs">
 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
           Đồng bộ Tai nghe Không gian 3D
         </button>
-<button class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-xs">
+<button id="top-save-preset-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-xs">
 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
@@ -591,6 +591,13 @@
 <span class="text-blue-600 font-bold">→</span>
 </div>
 </div>
+<!-- Preset CỦA TÔI (lưu trên server, đồng bộ đa thiết bị) -->
+<div class="pt-1">
+<p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Preset của tôi</p>
+<div class="space-y-2" id="my-presets-list" aria-live="polite">
+<div class="p-2.5 text-center text-[11px] text-slate-400">Đang tải preset...</div>
+</div>
+</div>
 </div>
 <!-- WIDGET 4: AI CIRCADIAN ADVICE -->
 <div class="bg-linear-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-5 shadow-md relative overflow-hidden">
@@ -630,19 +637,19 @@
 </div>
 <!-- Playback Controls -->
 <div class="flex items-center gap-3 shrink-0">
-<button class="p-2 text-slate-500 hover:text-slate-800 transition" title="Lùi lại">
+<button id="dock-prev-btn" type="button" class="p-2 text-slate-500 hover:text-slate-800 transition" title="Lùi lại">
 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
 </button>
 <button class="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md hover:scale-105 transition" id="dock-play-btn" title="Tạm dừng/Phát">
 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
 </button>
-<button class="p-2 text-slate-500 hover:text-slate-800 transition" title="Bài tiếp">
+<button id="dock-next-btn" type="button" class="p-2 text-slate-500 hover:text-slate-800 transition" title="Bài tiếp">
 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg>
 </button>
 </div>
 <!-- Quick Action Buttons -->
 <div class="hidden sm:flex items-center gap-2 shrink-0">
-<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition">
+<button id="dock-eq-btn" type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition" title="Mở EQ trong Sanctuary">
 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
@@ -741,6 +748,187 @@
     const nm = document.getElementById('ai-advice-name');
     const u = window.auth ? window.auth.getUser() : null;
     if (nm && u && u.full_name) nm.textContent = u.full_name;
+  } catch {}
+
+  // Lo-fi rows: play fallback trung thực + tim yêu thích lưu local thật
+  const favKey = 'studi_lofi_favs';
+  const getFavs = () => {
+    try { return JSON.parse(localStorage.getItem(favKey) || '[]'); } catch { return []; }
+  };
+  document.querySelectorAll('article:nth-of-type(3) > div > div.flex.items-center.justify-between').forEach((row) => {
+    const title = row.querySelector('h3')?.textContent?.trim() || 'Lo-fi';
+    const playBtn = row.querySelector('button.w-8');
+    if (playBtn && !playBtn.dataset.wired) {
+      playBtn.dataset.wired = '1';
+      playBtn.setAttribute('aria-label', `Phát thử: ${title}`);
+      playBtn.addEventListener('click', () => {
+        if (window.calmAudio) {
+          calmAudio.switchTrack('ocean');
+          if (!calmAudio.isPlaying) calmAudio.playCurrentTrack();
+          updatePlayIcons(calmAudio.isPlaying);
+        }
+        if (window.showCalmToast) showCalmToast(`"${title}" chưa có synth offline — đang phát Sóng Biển 432Hz thay thế.`, 'warning');
+      });
+    }
+    const heart = row.querySelector('button.text-sm');
+    if (heart && !heart.dataset.wired) {
+      heart.dataset.wired = '1';
+      heart.setAttribute('aria-label', `Yêu thích: ${title}`);
+      const paintFav = () => {
+        const on = getFavs().includes(title);
+        heart.className = (on ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500') + ' text-sm transition';
+      };
+      paintFav();
+      heart.addEventListener('click', () => {
+        const favs = getFavs();
+        const i = favs.indexOf(title);
+        if (i >= 0) favs.splice(i, 1); else favs.push(title);
+        try { localStorage.setItem(favKey, JSON.stringify(favs)); } catch {}
+        paintFav();
+      });
+    }
+  });
+
+  // Dock prev/next + EQ + top spatial/save buttons
+  const dockPrev = document.getElementById('dock-prev-btn');
+  if (dockPrev) dockPrev.addEventListener('click', () => {
+    if (!window.calmAudio) return;
+    const keys = Object.keys(window.CALM_TRACKS || { ocean: 1, rain: 1, binaural: 1 });
+    const cur = keys.indexOf(window.calmAudio.currentTrackId);
+    window.calmAudio.switchTrack(keys[(cur - 1 + keys.length) % keys.length]);
+    if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+    updatePlayIcons(window.calmAudio.isPlaying);
+  });
+  const dockNext = document.getElementById('dock-next-btn');
+  if (dockNext) dockNext.addEventListener('click', () => {
+    if (window.calmAudio) {
+      window.calmAudio.nextTrack();
+      if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+      updatePlayIcons(window.calmAudio.isPlaying);
+    }
+  });
+  const dockEq = document.getElementById('dock-eq-btn');
+  if (dockEq) dockEq.addEventListener('click', () => {
+    const target = Array.from(document.querySelectorAll('h2')).find(h => h.textContent.includes('Bộ Trộn Âm'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (window.showCalmToast) showCalmToast('Kéo 3 thanh trượt mixer để chỉnh từng kênh.', 'info');
+  });
+  const topSpatial = document.getElementById('top-spatial-btn');
+  if (topSpatial) topSpatial.addEventListener('click', () => {
+    if (!window.calmAudio) return;
+    window.calmAudio.setSpatial(!(window.calmAudio.spatial !== false));
+    const st = document.getElementById('spatial-toggle');
+    if (st) st.checked = window.calmAudio.spatial !== false;
+    if (window.showCalmToast) showCalmToast(window.calmAudio.spatial !== false ? 'Đã bật vòm 3D.' : 'Đã thu hẹp vòm âm.', 'info');
+  });
+  const topSave = document.getElementById('top-save-preset-btn');
+  if (topSave) topSave.addEventListener('click', async () => {
+    if (!window.calmAudio) return;
+    const name = (prompt('Đặt tên cho preset phối âm hiện tại:') || '').trim();
+    if (!name) return;
+    topSave.disabled = true;
+    try {
+      await api.post('/audio/presets', {
+        name,
+        track: window.calmAudio.currentTrackId,
+        volume: window.calmAudio.volume,
+        levels: window.calmAudio.trackLevels || {},
+        spatial_on: window.calmAudio.spatial !== false,
+      });
+      try { localStorage.removeItem('studi_preset_fav'); } catch {}
+      loadMyPresets();
+      if (window.showCalmToast) showCalmToast(`Đã lưu preset "${name}" lên hệ thống!`, 'success');
+    } catch (err) {
+      // Rớt mạng: giữ bản local như trước
+      try {
+        const preset = {
+          track: window.calmAudio.currentTrackId,
+          volume: window.calmAudio.volume,
+          levels: window.calmAudio.trackLevels || {},
+          spatial: window.calmAudio.spatial !== false,
+          savedAt: Date.now(),
+        };
+        localStorage.setItem('studi_preset_fav', JSON.stringify(preset));
+        if (window.showCalmToast) showCalmToast('Mất kết nối: đã lưu preset tạm trên trình duyệt.', 'warning');
+      } catch {
+        if (window.showCalmToast) showCalmToast((err && err.message) || 'Không lưu được preset.', 'error');
+      }
+    } finally {
+      topSave.disabled = false;
+    }
+  });
+
+  // Danh sach preset that tu server + ap dung/xoa
+  async function loadMyPresets() {
+    const box = document.getElementById('my-presets-list');
+    if (!box) return;
+    try {
+      const data = await api.get('/audio/presets');
+      const items = (data && data.presets) || [];
+      if (!items.length) {
+        box.innerHTML = '<div class="p-2.5 text-center text-[11px] text-slate-400">Chưa có preset nào. Bấm "+ Lưu Phối Âm" ở trên.</div>';
+        return;
+      }
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      box.innerHTML = items.map(p => `
+        <div class="p-2.5 rounded-xl bg-blue-50/60 hover:bg-blue-50 border border-blue-100 transition flex justify-between items-center text-xs">
+          <div class="min-w-0">
+            <span class="font-semibold text-slate-800 block truncate">${esc(p.name)}</span>
+            <span class="text-[11px] text-slate-500">${esc(p.track)} • ${Math.round((p.volume ?? 0.65) * 100)}%</span>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" data-preset-apply="${p.id}" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition">Dùng</button>
+            <button type="button" data-preset-del="${p.id}" aria-label="Xóa preset" class="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition">✕</button>
+          </div>
+        </div>`).join('');
+      box.querySelectorAll('[data-preset-apply]').forEach(b => b.addEventListener('click', () => {
+        const p = items.find(x => x.id === b.dataset.presetApply);
+        if (!p || !window.calmAudio) return;
+        if (p.levels) Object.entries(p.levels).forEach(([tr, lv]) => window.calmAudio.setTrackVolume(tr, lv));
+        window.calmAudio.setVolume(p.volume ?? 0.65);
+        if (typeof window.calmAudio.setSpatial === 'function') window.calmAudio.setSpatial(p.spatial_on !== false);
+        window.calmAudio.switchTrack(p.track);
+        if (!window.calmAudio.isPlaying) window.calmAudio.playCurrentTrack();
+        updatePlayIcons(window.calmAudio.isPlaying);
+        const ms = document.getElementById('master-volume-slider');
+        if (ms) ms.value = Math.round(window.calmAudio.volume * 100);
+        const st = document.getElementById('spatial-toggle');
+        if (st) st.checked = window.calmAudio.spatial !== false;
+        if (window.showCalmToast) showCalmToast(`Đã áp preset "${p.name}".`, 'success');
+      }));
+      box.querySelectorAll('[data-preset-del]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Xóa preset này?')) return;
+        try {
+          await api.delete(`/audio/presets/${b.dataset.presetDel}`);
+          loadMyPresets();
+        } catch (err) {
+          if (window.showCalmToast) showCalmToast((err && err.message) || 'Không xóa được.', 'error');
+        }
+      }));
+    } catch (err) {
+      box.innerHTML = `<div class="p-2.5 text-center text-[11px] text-rose-500">${(err && err.message) || 'Không tải được preset.'}</div>`;
+    }
+  }
+  loadMyPresets();
+
+  // Nạp preset đã lưu (nếu có) vào slider + engine
+  try {
+    const raw = localStorage.getItem('studi_preset_fav');
+    if (raw && window.calmAudio) {
+      const preset = JSON.parse(raw);
+      if (preset.levels) {
+        Object.entries(preset.levels).forEach(([tr, lv]) => window.calmAudio.setTrackVolume(tr, lv));
+      }
+      document.querySelectorAll('article:nth-of-type(2) input[type="range"]').forEach(slider => {
+        const card = slider.closest('.p-4.rounded-2xl');
+        const title = card?.querySelector('h3')?.textContent || '';
+        const key = /sóng biển/i.test(title) ? 'ocean' : (/mưa/i.test(title) ? 'rain' : 'binaural');
+        const lv = window.calmAudio.getTrackVolume(key);
+        slider.value = Math.round(lv * 100);
+        const label = slider.parentElement?.querySelector('span.font-mono');
+        if (label) label.textContent = `${slider.value}%`;
+      });
+    }
   } catch {}
 
   // Đồng bộ icon theo trạng thái phát thực (vd: quay lại từ trang khác)

@@ -185,3 +185,17 @@ class Note(Base):
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AudioPreset(Base):
+    """Preset phối âm đã lưu của user (đồng bộ đa thiết bị, thay localStorage)."""
+    __tablename__ = "audio_presets"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    track = Column(String(50), default="ocean")
+    volume = Column(Float, default=0.65)
+    levels_json = Column(Text, default="{}")
+    spatial_on = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

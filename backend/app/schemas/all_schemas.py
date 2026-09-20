@@ -1,15 +1,15 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import List, Optional, Literal
+from pydantic import BaseModel, Field
 
 # Auth Schemas
 class UserRegister(BaseModel):
     email: str
-    password: str
-    full_name: str
+    password: str = Field(min_length=8, max_length=128)
+    full_name: str = Field(min_length=2, max_length=255)
     university: Optional[str] = "ĐHQG TP.HCM"
     major: Optional[str] = "Công nghệ Thông tin"
-    academic_year: Optional[int] = 3
+    academic_year: Optional[int] = Field(default=3, ge=1, le=7)
 
 class UserLogin(BaseModel):
     email: str
@@ -17,6 +17,7 @@ class UserLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
     user: dict
 
@@ -84,13 +85,14 @@ class MicroSubtaskCreate(BaseModel):
     recommended_circadian_window: Optional[str] = "Khung giờ vàng chiều"
 
 class TaskCreate(BaseModel):
-    title: str
+    title: str = Field(min_length=2, max_length=255)
     description: Optional[str] = None
     subject_name: Optional[str] = "Trí tuệ nhân tạo"
     subject_code: Optional[str] = "CS301"
     deadline: Optional[datetime] = None
-    priority: Optional[str] = "high"
-    complexity: Optional[str] = "medium"
+    priority: Optional[Literal["high", "medium", "low"]] = "high"
+    complexity: Optional[Literal["simple", "medium", "complex"]] = "medium"
+    status: Optional[Literal["pending", "in_progress", "completed"]] = None
     subtasks: Optional[List[MicroSubtaskCreate]] = []
 
 class TaskOut(BaseModel):
@@ -133,14 +135,38 @@ class AIDeconstructResponse(BaseModel):
     subtasks: List[AISubtaskItem]
 
 
+# ---- Task update & schedule event update ----
+class TaskUpdate(BaseModel):
+    """Cập nhật một phần thông tin nhiệm vụ (mọi trường đều optional)."""
+    title: Optional[str] = Field(default=None, min_length=2, max_length=255)
+    description: Optional[str] = None
+    subject_name: Optional[str] = None
+    subject_code: Optional[str] = None
+    deadline: Optional[datetime] = None
+    priority: Optional[Literal["high", "medium", "low"]] = None
+    complexity: Optional[Literal["simple", "medium", "complex"]] = None
+    status: Optional[Literal["pending", "in_progress", "completed"]] = None
+    total_sprints: Optional[int] = Field(default=None, ge=0, le=200)
+
+class MicroSubtaskUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=2, max_length=255)
+    estimated_minutes: Optional[int] = Field(default=None, ge=5, le=120)
+    pomodoro_count: Optional[int] = Field(default=None, ge=1, le=8)
+    order_index: Optional[int] = Field(default=None, ge=0)
+    is_completed: Optional[bool] = None
+    recommended_circadian_window: Optional[str] = None
+
+
 # Focus Schemas
 class FocusSessionCreate(BaseModel):
     task_id: Optional[str] = None
-    planned_minutes: int = 25
-    actual_minutes: int = 25
-    distractions_count: int = 0
+    planned_minutes: int = Field(default=25, ge=1, le=240)
+    actual_minutes: int = Field(default=25, ge=0, le=240)
+    distractions_count: int = Field(default=0, ge=0, le=100)
     ambient_sound_used: Optional[str] = "Sóng Biển 432Hz"
     notes: Optional[str] = None
+    # Tự tick micro-sprint kế tiếp khi hoàn thành phiên (client chọn, mặc định True giữ tương thích)
+    complete_next_subtask: bool = True
 
 class FocusSessionOut(BaseModel):
     id: str
@@ -159,13 +185,25 @@ class FocusSessionOut(BaseModel):
 # Schedule Schemas
 class ScheduleEventCreate(BaseModel):
     task_id: Optional[str] = None
-    title: str
+    title: str = Field(min_length=2, max_length=255)
     description: Optional[str] = None
     event_date: Optional[str] = None # YYYY-MM-DD
     start_time: str # "14:00"
     end_time: str   # "15:30"
     event_type: str = "deep_work"
     is_circadian_optimized: bool = True
+
+class ScheduleEventUpdate(BaseModel):
+    """Cập nhật một phần sự kiện lịch: đổi giờ, đổi tên, đánh dấu hoàn thành..."""
+    task_id: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=2, max_length=255)
+    description: Optional[str] = None
+    event_date: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    event_type: Optional[str] = None
+    is_completed: Optional[bool] = None
+    is_circadian_optimized: Optional[bool] = None
 
 class ScheduleEventOut(BaseModel):
     id: str

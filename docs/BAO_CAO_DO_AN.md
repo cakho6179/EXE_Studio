@@ -53,7 +53,7 @@ Dự án áp dụng mô hình **Multi-Page Architecture (MPA) kết hợp Univer
 
 ## 3. Mô Hình Cơ Sở Dữ Liệu Quan Hệ (ERD)
 
-Hệ thống cơ sở dữ liệu SQLite (`backend/studi_ai.db`) được chuẩn hóa với 7 bảng thực thể:
+Hệ thống cơ sở dữ liệu SQLite (`backend/studi_ai.db`) được chuẩn hóa với 11 bảng thực thể:
 
 ```mermaid
 erDiagram
@@ -61,9 +61,19 @@ erDiagram
     USERS ||--o{ TASKS : "1 - N"
     USERS ||--o{ SCHEDULE_EVENTS : "1 - N"
     USERS ||--o{ FOCUS_SESSIONS : "1 - N"
-    USERS ||--o{ ADVISOR_MESSAGES : "1 - N"
+    USERS ||--o{ CHAT_SESSIONS : "1 - N"
+    USERS ||--o{ MOOD_ENTRIES : "1 - N"
+    USERS ||--o{ NOTES : "1 - N"
+    USERS ||--o{ DOCUMENTS : "1 - N"
+    CHAT_SESSIONS ||--o{ CHAT_MESSAGES : "1 - N"
     TASKS ||--o{ MICRO_SUBTASKS : "1 - N"
     TASKS ||--o{ SCHEDULE_EVENTS : "0 - N"
+    OTP_CODES {
+        string email UK
+        string code
+        datetime expires_at
+        boolean is_used
+    }
 
     USERS {
         string id PK
@@ -173,7 +183,12 @@ erDiagram
   3. *Sóng Alpha 528Hz*: Tần số Solfeggio 528Hz kết hợp âm trầm Sub-bass 60Hz.
 - **Persistent Audio Bar**: Thanh nhạc mini kính mờ ghim góc dưới màn hình giúp nghe nhạc liên tục khi chuyển trang.
 
-### 4.4. Hệ Thống Xác Thực & Trải Nghiệm 1-Chạm
+### 4.4. Hệ Thống Xác Thực & Bảo Mật (đã cứng hóa)
+- **Access + Refresh Token**: Access token ngắn hạn (60 phút) kèm refresh token dài hạn (30 ngày, type=refresh, jti duy nhất); frontend tự gia hạn phiên trong suốt, refresh token không dùng để gọi API.
+- **Rate Limiting**: Đăng nhập sai tối đa 10 lần/5 phút, thử OTP tối đa 5 lần/10 phút, gửi OTP tối đa 3 lần/10 phút (sliding window in-memory).
+- **OTP qua Email SMTP**: Mã 6 số hiệu lực 10 phút, gửi qua SMTP TLS (cấu hình `SMTP_HOST` trong `.env`); chế độ demo trả `dev_code` khi `OTP_RETURN_DEV_CODE=true`, tắt khi deploy production.
+- **Google Sign-In**: Xác minh `id_token` qua tokeninfo của Google, kiểm tra `aud` theo `GOOGLE_CLIENT_ID` và `email_verified` (chế độ demo không id_token vẫn đăng nhập tài khoản mẫu).
+- **Validate Input**: Pydantic Field ràng buộc email định dạng, mật khẩu ≥ 8 ký tự, enum priority/complexity/status, giờ HH:MM, giờ focus 1–240 phút.
 - **1-Click Guest Experience**: Nút *"Trải nghiệm ngay 1-chạm"* trên Landing, Login và Register giúp người dùng trải nghiệm ngay 100% tính năng với tài khoản mẫu đầy đủ dữ liệu.
 - **Universal Logout & Profile Dropdown**: Menu hồ sơ tương tác và hộp thoại xác nhận đăng xuất an toàn trên toàn bộ workspace.
 - **Profile Modal Trực Tiếp**: Chỉnh sửa họ tên, ngành học, chronotype, mục tiêu GPA tức thì.
@@ -187,7 +202,16 @@ erDiagram
 2. Máy chủ FastAPI sẽ tự động chạy tại cổng `8000` và mở trình duyệt tại:
    `http://localhost:8000/pages/01-landing/index.html`
 
-### 5.2. Triển khai bằng Docker (Dành cho Production / Giảng viên chấm điểm)
+### 5.2. Biến môi trường (.env) cho Production
+| Biến | Ý nghĩa | Khuyến nghị production |
+|---|---|---|
+| `SECRET_KEY` | Ký JWT | Chuỗi ngẫu nhiên ≥ 32 ký tự |
+| `GEMINI_API_KEY` | Gọi Gemini AI | Bắt buộc cho AI thật |
+| `OTP_RETURN_DEV_CODE` | Trả mã OTP trong API response | `false` |
+| `SMTP_HOST/PORT/USER/PASSWORD/FROM` | Gửi email OTP | Cấu hình SMTP thật |
+| `GOOGLE_CLIENT_ID` | Kiểm tra aud của id_token Google | Client ID của ứng dụng |
+
+### 5.3. Triển khai bằng Docker (Dành cho Production / Giảng viên chấm điểm)
 Chỉ cần chạy duy nhất 1 lệnh trong thư mục gốc:
 ```bash
 docker-compose up --build
@@ -196,10 +220,14 @@ Hệ thống sẽ đóng gói toàn bộ Backend FastAPI, cơ sở dữ liệu S
 - Trang chủ: `http://localhost:8000/pages/01-landing/index.html`
 - API Swagger UI: `http://localhost:8000/docs`
 
+### 5.4. Kiểm Thử Tự Động
+- `backend/test_real_crud.py`: 8 bước kiểm thử luồng chính (login JWT, profile, task + subtasks, focus session, schedule, auto-balance, AI advisor, analytics) trên database thật.
+- `backend/test_enhancements.py`: 27 kiểm thử tính năng bảo mật & CRUD mới (refresh token rotation, chặn refresh token gọi API, email normalize, validate input, rate-limit 429, CRUD task/subtask/event, ownership 404, radar điểm 0–100).
+
 ---
 
 ## 6. Kết Quả Đạt Được & Đóng Góp Của Đề Tài
 
-1. **Hiệu năng & Độ ổn định**: Đạt 100% bài kiểm thử tự động (Unit test, CRUD API, Syntax validation), thời gian phản hồi API trung bình dưới 15ms.
+1. **Hiệu năng & Độ ổn định**: Đạt 100% bài kiểm thử tự động (35 kiểm thử: 8 luồng chính + 27 tính năng bảo mật/CRUD), thời gian phản hồi API trung bình dưới 15ms.
 2. **Trải nghiệm người dùng (UX)**: Giảm thiểu độ trễ thao tác, loại bỏ hoàn toàn các lỗi gián đoạn mạng nhờ bộ Offline Fallback Engine.
 3. **Ý nghĩa thực tiễn**: Cung cấp cho sinh viên một không gian học tập khoa học, giảm thiểu áp lực thi cử và tối ưu hóa thời gian học theo cơ chế sinh học tự nhiên.

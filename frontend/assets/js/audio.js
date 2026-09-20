@@ -28,12 +28,20 @@ class CalmAudioEngine {
   constructor() {
     this.ctx = null;
     this.isPlaying = false;
-    this.currentTrackId = localStorage.getItem('studi_audio_track') || 'ocean';
     this.masterGain = null;
     this.oscillators = [];
     this.noiseNode = null;
-    this.volume = parseFloat(localStorage.getItem('studi_audio_volume') || '0.65');
-    this.spatial = localStorage.getItem('studi_spatial') !== 'off';
+    // Đọc pref trong try/catch: file:// hoặc chặn cookie có thể ném SecurityError
+    let track = null, vol = null, spatial = null;
+    try {
+      track = localStorage.getItem('studi_audio_track');
+      vol = localStorage.getItem('studi_audio_volume');
+      spatial = localStorage.getItem('studi_spatial');
+    } catch {}
+    this.currentTrackId = track || 'ocean';
+    this.volume = parseFloat(vol || '0.65');
+    if (isNaN(this.volume)) this.volume = 0.65;
+    this.spatial = spatial !== 'off';
     this._panners = []; // cặp panner L/R để chỉnh độ rộng vòm
   }
 

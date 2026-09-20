@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
+# Biến môi trường production: tắt trả dev_code trong API response
+ENV OTP_RETURN_DEV_CODE=false
+
 # Copy source code and frontend
 COPY backend/ /app/backend/
 COPY frontend/ /app/frontend/

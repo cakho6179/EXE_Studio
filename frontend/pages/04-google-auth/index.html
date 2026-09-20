@@ -53,7 +53,7 @@
       <span class="text-slate-500 font-normal tracking-wide text-[11px] uppercase">CALM MODE ON</span>
     </div>
 
-    <!-- Right: Quick Settings & Audio status -->
+    <!-- Right: Audio status -->
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm text-xs font-medium text-slate-700">
         <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,21 +61,6 @@
         </svg>
         <span>Sóng biển &amp; Lofi 432Hz</span>
       </div>
-
-      <div class="flex items-center gap-1 px-3 py-2 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm text-xs font-medium text-slate-700 cursor-pointer hover:bg-white/90 transition-colors">
-        <span class="font-semibold text-brand-600">VN</span>
-        <span class="text-slate-300">/</span>
-        <span class="text-slate-500">EN</span>
-        <svg class="w-3.5 h-3.5 text-slate-400 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </div>
-
-      <button class="w-9 h-9 rounded-full bg-white/75 backdrop-blur-md border border-white/60 shadow-sm flex items-center justify-center text-slate-600 hover:text-slate-900 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-        </svg>
-      </button>
     </div>
   </header>
 
@@ -290,9 +275,9 @@
           item.classList.add('opacity-60', 'pointer-events-none');
           item.setAttribute('aria-busy', 'true');
           try {
-            const res = await api.post('/auth/google', { email: accountEmails[idx] || '' });
+            const res = await api.post('/auth/google', { email: accountEmails[idx] || '', id_token: '' });
             if (res.access_token) {
-              api.setToken(res.access_token);
+              api.setAuthPair(res);
               if (res.user) auth.setUser(res.user);
               showCalmToast(`Đăng nhập thành công! Chào bạn ${res.user?.full_name || ''}.`, 'success');
               setTimeout(() => window.location.href = '../10-dashboard/index.html', 500);

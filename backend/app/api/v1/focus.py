@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from datetime import datetime, date, timedelta
 from app.core.database import get_db
+from app.core.timeutils import utc_day_range_vn
 from app.models.entities import User, FocusSession, Task, MicroSubtask
 from app.api.v1.auth import get_current_user
 from app.schemas.all_schemas import FocusSessionCreate, FocusSessionOut
 
 router = APIRouter()
 
-@router.post("/session/complete", response_model=FocusSessionOut)
+@router.post("/session/complete", response_model=FocusSessionOut, status_code=201)
 def record_focus_session(
     session_in: FocusSessionCreate,
     db: Session = Depends(get_db),
@@ -27,20 +27,19 @@ def record_focus_session(
     db.commit()
     db.refresh(session)
 
-    # If linked to a task, update task sprints and complete next subtask
+    # Nếu gắn task: chỉ tự tick subtask kế tiếp khi client yêu cầu (mặc định giữ hành vi cũ)
     if session_in.task_id:
         task = db.query(Task).filter(Task.id == session_in.task_id, Task.user_id == current_user.id).first()
         if task:
-            # Find first uncompleted subtask
-            subtask = db.query(MicroSubtask).filter(
-                MicroSubtask.task_id == task.id,
-                MicroSubtask.is_completed == False
-            ).order_by(MicroSubtask.order_index.asc()).first()
-            if subtask:
-                subtask.is_completed = True
-                db.commit()
+            if session_in.complete_next_subtask:
+                subtask = db.query(MicroSubtask).filter(
+                    MicroSubtask.task_id == task.id,
+                    MicroSubtask.is_completed == False
+                ).order_by(MicroSubtask.order_index.asc()).first()
+                if subtask:
+                    subtask.is_completed = True
+                    db.commit()
 
-            # Recalculate completed count
             completed_count = db.query(MicroSubtask).filter(
                 MicroSubtask.task_id == task.id,
                 MicroSubtask.is_completed == True
@@ -55,14 +54,17 @@ def record_focus_session(
 @router.get("/sessions", response_model=list[FocusSessionOut])
 def list_focus_sessions(
     days: int = Query(default=7, ge=1, le=30),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    since = datetime.combine(date.today() - timedelta(days=days - 1), datetime.min.time())
+    # Ranh giới ngày tính theo giờ Việt Nam (fix lệch UTC)
+    since, _ = utc_day_range_vn(days - 1)
     return db.query(FocusSession).filter(
         FocusSession.user_id == current_user.id,
         FocusSession.created_at >= since,
-    ).order_by(FocusSession.created_at.desc()).limit(100).all()
+    ).order_by(FocusSession.created_at.desc()).offset(offset).limit(limit).all()
 
 
 @router.get("/today-summary")
@@ -70,10 +72,12 @@ def get_today_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    today_start = datetime.combine(date.today(), datetime.min.time())
+    # "Hôm nay" theo lịch Việt Nam (fix lệch UTC cho phiên học nửa đêm)
+    today_start, today_end = utc_day_range_vn(0)
     sessions = db.query(FocusSession).filter(
         FocusSession.user_id == current_user.id,
-        FocusSession.created_at >= today_start
+        FocusSession.created_at >= today_start,
+        FocusSession.created_at < today_end
     ).all()
 
     total_minutes = sum(s.actual_minutes for s in sessions)
@@ -86,11 +90,11 @@ def get_today_summary(
     efficiency = int(total_minutes / planned_total * 100) if planned_total > 0 else 0
 
     # Giờ hôm qua để so sánh
-    yesterday = date.today() - timedelta(days=1)
+    y_start, y_end = utc_day_range_vn(1)
     y_sessions = db.query(FocusSession).filter(
         FocusSession.user_id == current_user.id,
-        FocusSession.created_at >= datetime.combine(yesterday, datetime.min.time()),
-        FocusSession.created_at <= datetime.combine(yesterday, datetime.max.time()),
+        FocusSession.created_at >= y_start,
+        FocusSession.created_at < y_end,
     ).all()
     yesterday_hours = round(sum(s.actual_minutes for s in y_sessions) / 60.0, 1)
 

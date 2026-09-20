@@ -5,6 +5,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Banner khi mở bằng file:// (API/login không chạy ổn định ngoài server)
+  if (window.location.protocol === 'file:' && !document.getElementById('studi-file-banner')) {
+    const bar = document.createElement('div');
+    bar.id = 'studi-file-banner';
+    bar.style.cssText = 'background:#fef3c7;color:#92400e;padding:10px 16px;text-align:center;font-size:13px;font-family:sans-serif;position:relative;z-index:10001;';
+    bar.innerHTML = 'Bạn đang mở file HTML trực tiếp — hãy chạy <b>start_server.bat</b> rồi mở <b>http://localhost:8000/</b> để dùng đầy đủ tính năng.';
+    document.body.prepend(bar);
+  }
+
   const currentPath = window.location.pathname;
   const isLanding = currentPath.includes('01-landing') || currentPath === '/' || (currentPath.endsWith('index.html') && !currentPath.includes('/pages/'));
   const isAuthPage = currentPath.includes('02-login') || currentPath.includes('03-register') || currentPath.includes('04-google') || currentPath.includes('05-forgot') || currentPath.includes('06-verify');

@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Dict, Any, List
 
+from app.core.timeutils import vn_now
+
 class CircadianService:
     # Khung giờ vàng theo tuýp sinh học (thật, không cố định 1 mẫu)
     GOLDEN_RANGES = {
@@ -22,8 +24,9 @@ class CircadianService:
 
     @staticmethod
     def calculate_pulse(chronotype: str = "lark", now: datetime = None) -> Dict[str, Any]:
+        # Mặc định tính theo giờ Việt Nam (trước đây dùng giờ máy -> sai múi giờ khi deploy)
         if now is None:
-            now = datetime.now()
+            now = vn_now()
 
         hour = now.hour + now.minute / 60.0
         ctype = (chronotype or "lark").lower()
@@ -87,26 +90,37 @@ class CircadianService:
 
     @staticmethod
     def get_insights(chronotype: str = "lark") -> List[Dict[str, Any]]:
+        """
+        Gợi ý học thuật theo tuýp sinh học + khung giờ vàng thật từ GOLDEN_RANGES.
+        Confidence là nhãn định tính theo độ vững của khuyến nghị (không phải số giả lập).
+        """
+        ctype = (chronotype or "lark").lower()
+        if ctype not in CircadianService.GOLDEN_RANGES:
+            ctype = "lark"
+        golden = CircadianService.GOLDEN_RANGES[ctype]
+        slot_morning, slot_afternoon = golden[0], golden[1]
+        bedtime = "23:30" if ctype == "owl" else "23:00"
+
         return [
             {
-                "title": "Dời ôn Giải tích & CSDL sang 19:30 tối",
-                "detail": "Theo nhịp sinh học cá nhân, vỏ não trước trán đạt mức ổn định logic cao nhất vào khung giờ 19:30 – 21:00.",
-                "confidence": "96%",
+                "title": f"Đặt phiên học sâu chính vào khung {slot_afternoon}",
+                "detail": f"Theo nhịp sinh học tuýp {ctype}, đây là đỉnh tỉnh thức trong ngày của bạn — ưu tiên môn đòi hỏi tư duy logic trừu tượng.",
+                "confidence": "Cao",
                 "action_label": "Áp dụng lịch",
-                "suggested_time": "19:30"
+                "suggested_time": slot_afternoon.split(" - ")[0],
             },
             {
-                "title": "Chèn quãng nghỉ ngắn 15 phút sau bài Machine Learning",
-                "detail": "Sau 90 phút tập trung cao độ, lượng cortisol tăng nhẹ. 15 phút nghe tiếng sóng 432Hz sẽ tái tạo 100% chú ý.",
-                "confidence": "94%",
+                "title": "Chèn quãng nghỉ ngắn 15 phút sau mỗi 90 phút tập trung",
+                "detail": "Sau 90 phút tập trung cao độ, lượng cortisol tăng nhẹ. 15 phút nghe tiếng sóng 432Hz sẽ tái tạo sự chú ý.",
+                "confidence": "Cao",
                 "action_label": "Thêm vào lịch",
-                "suggested_time": "15:30"
+                "suggested_time": slot_afternoon.split(" - ")[1],
             },
             {
-                "title": "Giới hạn học đêm trước 23:00",
-                "detail": "Tránh thức quá 23:30 để giữ chu kỳ giấc ngủ REM 90 phút đầu tiên, giúp não củng cố trí nhớ bài học.",
-                "confidence": "99%",
+                "title": f"Giới hạn học đêm trước {bedtime}",
+                "detail": "Tránh thức quá nửa đêm để giữ chu kỳ giấc ngủ REM 90 phút đầu tiên, giúp não củng cố trí nhớ bài học.",
+                "confidence": "Rất cao",
                 "action_label": "Đặt nhắc nhở",
-                "suggested_time": "22:45"
-            }
+                "suggested_time": bedtime,
+            },
         ]
