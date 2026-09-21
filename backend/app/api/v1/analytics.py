@@ -4,7 +4,8 @@ from datetime import datetime, date, timedelta
 import hashlib
 from app.core.database import get_db
 from app.core.cache import cached_response
-from app.core.timeutils import VN_UTC_OFFSET
+from app.core.timeutils import VN_UTC_OFFSET, vn_now
+from app.services.circadian_service import CircadianService
 from app.models.entities import User, Task, FocusSession, MoodEntry, MicroSubtask
 from app.api.v1.auth import get_current_user
 
@@ -27,7 +28,7 @@ def get_analytics_dashboard(
 ):
     selected = range_param if range_param in RANGE_BUCKETS else "week"
     n_buckets, bucket_days = RANGE_BUCKETS[selected]
-    today = date.today()
+    today = vn_now().date()
 
     # ==== 1 QUERY DUY NHẤT thay ~40 query lẻ trước đây ====
     # Lấy (thời điểm, phút focus, số xao nhãng) của toàn bộ phiên focus của user.
@@ -50,7 +51,7 @@ def get_analytics_dashboard(
     total_focus_min = 0
     for created_at, minutes, distractions in session_rows:
         vn_dt = created_at + VN_UTC_OFFSET
-        all_vn_hours.append(vn_dt.hour)
+        all_vn_hours.append(vn_dt.hour + vn_dt.minute / 60.0)
         d = vn_dt.date()
         minutes_by_vn_date[d] = minutes_by_vn_date.get(d, 0) + (minutes or 0)
         distr_by_vn_date[d] = distr_by_vn_date.get(d, 0) + (distractions or 0)
@@ -98,9 +99,20 @@ def get_analytics_dashboard(
             else:
                 break
 
-    # 4. Circadian alignment score: phiên rơi vào khung giờ vàng (giờ VN)
+    # 4. Circadian alignment score: phiên rơi vào khung giờ vàng (giờ VN theo tuýp sinh học của user)
+    profile = current_user.profile
+    chronotype = (profile.chronotype if profile else "lark") or "lark"
+    golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
+
     if all_vn_hours:
-        aligned = sum(1 for h in all_vn_hours if (8 <= h < 12) or (14 <= h < 17) or (19 <= h < 22))
+        def _is_hour_aligned(h):
+            for rng in golden_ranges:
+                parts = rng.split(" - ")
+                if len(parts) == 2 and CircadianService._in_range(h, parts[0], parts[1]):
+                    return True
+            return False
+
+        aligned = sum(1 for h in all_vn_hours if _is_hour_aligned(h))
         circadian_score = int((aligned / len(all_vn_hours)) * 100)
     else:
         circadian_score = 0
