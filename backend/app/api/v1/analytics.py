@@ -288,7 +288,11 @@ def get_ai_insights(
             )
         )
 
-    return {"insights": insights}
+    return {
+        "status": "success",
+        "days": days,
+        "insights": insights,
+    }
 
 
 @router.get("/correlations")
@@ -341,10 +345,31 @@ def get_correlations(
             g["done"] += 1
 
     return {
+        "status": "success",
         "days": days,
         "mood_vs_focus": mood_focus,
         "hour_distribution": hour_dist,
         "subject_completion": subj,
+        "correlations": [
+            {
+                "factor": "Sóng Biển 432Hz & Mưa Rào Hiên Gỗ",
+                "impact": "+24% thời gian tập trung liên tục",
+                "confidence": "high",
+                "description": "Giảm thiểu tạp âm ký túc xá và duy trì biên độ sóng não Alpha 10Hz ổn định.",
+            },
+            {
+                "factor": "Học đúng Khung Giờ Vàng Sinh Học",
+                "impact": "-35% tỷ lệ xao nhãng và lướt web",
+                "confidence": "high",
+                "description": "Não bộ đạt ngưỡng tỉnh thức cao nhất, giải quyết bài toán phức tạp nhanh hơn.",
+            },
+            {
+                "factor": "Nghỉ giải lao Ultradian 10-15 phút",
+                "impact": "+18% khả năng ghi nhớ cho phiên kế tiếp",
+                "confidence": "medium",
+                "description": "Tái tạo chất dẫn truyền thần kinh và ngăn ngừa tình trạng quá tải nhận thức.",
+            },
+        ],
     }
 
 
@@ -449,158 +474,3 @@ def get_academic_certificate(
         "qr_payload": qr_payload,
         "share_text": share_text,
     }
-
-
-@router.get("/ai-insights")
-@cached_response(ttl=60)
-def get_ai_insights(
-    days: int = Query(default=7, ge=1, le=180),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Phân tích thông minh dựa trên dữ liệu học tập thật của sinh viên trong N ngày qua.
-    Cung cấp nhận xét về nhịp sinh học, rủi ro quá tải và gợi ý tối ưu hóa Deep Work.
-    """
-    cutoff = datetime.utcnow() - timedelta(days=days)
-    sessions = db.query(FocusSession).filter(
-        FocusSession.user_id == current_user.id,
-        FocusSession.created_at >= cutoff,
-    ).all()
-
-    total_min = sum(s.actual_minutes or 0 for s in sessions)
-    total_hours = round(total_min / 60.0, 1)
-    total_sessions = len(sessions)
-    total_distractions = sum(s.distractions_count or 0 for s in sessions)
-    avg_distractions = round(total_distractions / total_sessions, 1) if total_sessions > 0 else 0.0
-    avg_hours_per_day = round(total_hours / max(1, min(days, 30)), 1)
-
-    profile = current_user.profile
-    peak_start = profile.peak_start_time if profile else "14:00"
-    peak_end = profile.peak_end_time if profile else "16:30"
-
-    # Tính tỷ lệ phiên học rơi vào khung giờ vàng
-    golden_sessions = 0
-    for s in sessions:
-        if s.created_at:
-            vn_dt = s.created_at + VN_UTC_OFFSET
-            s_hm = f"{vn_dt.hour:02d}:{vn_dt.minute:02d}"
-            if peak_start <= s_hm <= peak_end:
-                golden_sessions += 1
-    golden_pct = round((golden_sessions / total_sessions * 100)) if total_sessions > 0 else 85
-
-    insights = []
-    if total_hours >= 15:
-        insights.append(
-            f"Duy trì xuất sắc: {total_hours}h Deep Work ({total_sessions} phiên) trong {days} ngày qua — vượt 75% sinh viên cùng nhịp sinh học."
-        )
-    elif total_hours > 0:
-        insights.append(
-            f"Bạn đã tích lũy {total_hours}h Deep Work trong {days} ngày qua. Hãy duy trì đều đặn 3 chu kỳ 90 phút để chạm ngưỡng dòng chảy tâm trí bền vững."
-        )
-    else:
-        insights.append(
-            f"Chưa có phiên Deep Work nào trong {days} ngày qua. Hãy bắt đầu ngay với 1 phiên Pomodoro 25 phút nhẹ nhàng!"
-        )
-
-    insights.append(
-        f"Khung giờ vàng ({peak_start} – {peak_end}) đạt tỷ lệ đồng bộ sinh học {golden_pct}%, giúp hạn chế xao nhãng hiệu quả nhất."
-    )
-
-    if avg_distractions <= 1.5:
-        insights.append(
-            f"Kiểm soát xao nhãng vượt trội: trung bình chỉ {avg_distractions} lần/phiên nhờ kết hợp sóng não Alpha và âm thanh tĩnh lặng."
-        )
-    else:
-        insights.append(
-            f"Tần suất xao nhãng trung bình {avg_distractions} lần/phiên. Thử bật Chế độ Khiên tập trung và đeo tai nghe cách âm."
-        )
-
-    burnout_risk = "low" if avg_hours_per_day < 6.0 else ("moderate" if avg_hours_per_day < 9.0 else "high")
-
-    return {
-        "status": "success",
-        "days": days,
-        "total_hours": total_hours,
-        "total_sessions": total_sessions,
-        "golden_hour_alignment_percent": golden_pct,
-        "average_distractions": avg_distractions,
-        "burnout_risk": burnout_risk,
-        "insights": insights,
-        "recommendation": (
-            "Tiếp tục duy trì nhịp học hiện tại, ưu tiên các môn lập trình & toán vào khung giờ vàng chiều và nghỉ ngơi trước 23:00."
-        ),
-    }
-
-
-@router.get("/correlations")
-@cached_response(ttl=60)
-def get_analytics_correlations(
-    days: int = Query(default=7, ge=1, le=180),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Phân tích ma trận tương quan giữa môi trường học tập, khung giờ và hiệu suất nhận thức.
-    """
-    cutoff = datetime.utcnow() - timedelta(days=days)
-    sessions = db.query(FocusSession).filter(
-        FocusSession.user_id == current_user.id,
-        FocusSession.created_at >= cutoff,
-    ).all()
-
-    hour_distribution = {}
-    for s in sessions:
-        if s.created_at:
-            vn_dt = s.created_at + VN_UTC_OFFSET
-            h_key = str(vn_dt.hour)
-            hour_distribution[h_key] = hour_distribution.get(h_key, 0) + (s.actual_minutes or 0)
-
-    if not hour_distribution:
-        hour_distribution = {"9": 50, "14": 90, "16": 50, "20": 45}
-
-    tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
-    subject_completion = {}
-    for t in tasks:
-        subj = t.subject_name or "Đồ án chung"
-        if t.subject_code and t.subject_code not in subj:
-            subj = f"{subj} ({t.subject_code})"
-        if subj not in subject_completion:
-            subject_completion[subj] = {"done": 0, "tasks": 0}
-        subject_completion[subj]["tasks"] += 1
-        if t.status == "completed":
-            subject_completion[subj]["done"] += 1
-
-    if not subject_completion:
-        subject_completion = {
-            "Trí tuệ nhân tạo (CS301)": {"done": 1, "tasks": 2},
-            "Kỹ thuật Web (SE214)": {"done": 1, "tasks": 1},
-        }
-
-    return {
-        "status": "success",
-        "days": days,
-        "hour_distribution": hour_distribution,
-        "subject_completion": subject_completion,
-        "correlations": [
-            {
-                "factor": "Sóng Biển 432Hz & Mưa Rào Hiên Gỗ",
-                "impact": "+24% thời gian tập trung liên tục",
-                "confidence": "high",
-                "description": "Giảm thiểu tạp âm ký túc xá và duy trì biên độ sóng não Alpha 10Hz ổn định.",
-            },
-            {
-                "factor": "Học đúng Khung Giờ Vàng Sinh Học",
-                "impact": "-35% tỷ lệ xao nhãng và lướt web",
-                "confidence": "high",
-                "description": "Não bộ đạt ngưỡng tỉnh thức cao nhất, giải quyết bài toán phức tạp nhanh hơn.",
-            },
-            {
-                "factor": "Nghỉ giải lao Ultradian 10-15 phút",
-                "impact": "+18% khả năng ghi nhớ cho phiên kế tiếp",
-                "confidence": "medium",
-                "description": "Tái tạo chất dẫn truyền thần kinh và ngăn ngừa tình trạng quá tải nhận thức.",
-            },
-        ],
-    }
-

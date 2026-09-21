@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -37,9 +38,23 @@ export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [isAllRead, setIsAllRead] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+
+  const notifQ = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => api.get('/notifications/list'),
+    enabled: !!user,
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+
+  const notifications = useMemo(() => {
+    return Array.isArray(notifQ.data?.notifications) ? notifQ.data.notifications : [];
+  }, [notifQ.data]);
+
+  const unreadCount = isAllRead ? 0 : (notifQ.data?.unread_count ?? notifications.length);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -47,17 +62,12 @@ export default function AppShell() {
     setNotifOpen(false);
   }, [location.pathname]);
 
-  const openNotifications = async () => {
+  const openNotifications = () => {
     const next = !notifOpen;
     setNotifOpen(next);
     setProfileOpen(false);
     if (next) {
-      try {
-        const data = await api.get('/notifications/list');
-        setNotifications(data?.notifications || []);
-      } catch (err) {
-        showToast(err.message || 'Không tải được thông báo.', 'error');
-      }
+      notifQ.refetch();
     }
   };
 
@@ -148,12 +158,17 @@ export default function AppShell() {
               onClick={openNotifications}
               aria-label="Thông báo"
               title="Thông báo"
-              className="relative p-2 rounded-full hover:bg-white/80 text-slate-600 transition"
+              className="relative p-2 rounded-full hover:bg-white/80 text-slate-600 transition cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
               </svg>
-              {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />}
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 ring-2 ring-white" />
+                </span>
+              )}
             </button>
 
             <div className="relative">
@@ -266,12 +281,17 @@ export default function AppShell() {
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <span>🔔</span>
                   <span>Thông báo học thuật</span>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700">
+                      {unreadCount}
+                    </span>
+                  )}
                 </h3>
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <button
                     type="button"
                     onClick={() => {
-                      setNotifications([]);
+                      setIsAllRead(true);
                       showToast('Đã đánh dấu đã đọc tất cả thông báo.', 'info');
                     }}
                     className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition cursor-pointer"
@@ -289,13 +309,34 @@ export default function AppShell() {
                   </div>
                 )}
                 {notifications.map((n, i) => (
-                  <div key={i} className="p-3 rounded-2xl border bg-blue-50/70 border-blue-100 flex items-start gap-2.5">
+                  <div
+                    key={i}
+                    onClick={() => {
+                      setNotifOpen(false);
+                      if (n.link) navigate(n.link);
+                    }}
+                    className={`p-3 rounded-2xl border transition-all ${
+                      n.link ? 'cursor-pointer hover:shadow-xs hover:border-blue-300' : ''
+                    } ${
+                      n.tone === 'urgent'
+                        ? 'bg-rose-50/70 border-rose-100 hover:bg-rose-50'
+                        : n.tone === 'success'
+                        ? 'bg-emerald-50/70 border-emerald-100 hover:bg-emerald-50'
+                        : 'bg-blue-50/70 border-blue-100 hover:bg-blue-50'
+                    } flex items-start gap-2.5`}
+                  >
                     <span className="text-base shrink-0">{n.icon || '🔔'}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
                         <p className="font-bold text-slate-800 text-xs truncate">{n.title || ''}</p>
                         {n.time_label && (
-                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full shrink-0">
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                              n.tone === 'urgent'
+                                ? 'text-rose-700 bg-rose-100/80'
+                                : 'text-blue-700 bg-blue-100/80'
+                            }`}
+                          >
                             {n.time_label}
                           </span>
                         )}

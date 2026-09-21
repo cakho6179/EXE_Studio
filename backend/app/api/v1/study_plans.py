@@ -213,10 +213,10 @@ def apply_plan_to_schedule(
         if existing:
             continue
 
-        mins = p.get("minutes", 90)
+        mins = min(max(30, int(p.get("minutes", 90))), 480)
         start_h, start_m = 14, 0
-        end_min_total = start_h * 60 + start_m + mins
-        end_h = (end_min_total // 60) % 24
+        end_min_total = min(start_h * 60 + start_m + mins, 23 * 60 + 30)
+        end_h = end_min_total // 60
         end_m = end_min_total % 60
         start_str = f"{start_h:02d}:{start_m:02d}"
         end_str = f"{end_h:02d}:{end_m:02d}"

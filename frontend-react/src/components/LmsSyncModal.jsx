@@ -27,7 +27,11 @@ export default function LmsSyncModal({ isOpen, onClose, initialProvider = 'canva
       });
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['schedule'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['pulse'] });
       showToast(res.message || 'Đồng bộ bài tập & lịch học thành công!', 'success');
       onClose();
     } catch (err) {

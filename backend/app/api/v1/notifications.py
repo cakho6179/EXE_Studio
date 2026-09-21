@@ -41,6 +41,7 @@ def get_notifications(
             "title": f"Quá hạn: {t.title[:50]}",
             "detail": f"Hạn nộp đã qua ({t.deadline.strftime('%d/%m %H:%M')}). Ưu tiên xử lý ngay.",
             "time_label": "Quá hạn",
+            "link": "/tasks",
         })
     for t in due_soon[:2]:
         dl = _to_naive_utc(t.deadline)
@@ -54,6 +55,7 @@ def get_notifications(
             "title": f"Sắp đến hạn: {t.title[:50]}",
             "detail": f"Hạn {t.deadline.strftime('%d/%m %H:%M')} ({left_txt}). Còn {remaining} micro-sprints chưa xong.",
             "time_label": left_txt,
+            "link": "/tasks",
         })
 
     # 2. Phiên focus hôm nay (ranh giới theo giờ VN)
@@ -67,6 +69,7 @@ def get_notifications(
             "title": f"Đã hoàn thành {today_count} phiên Deep Work hôm nay",
             "detail": "Nhịp tập trung ổn định. Giữ phong độ cho khung giờ vàng tiếp theo.",
             "time_label": "Hôm nay",
+            "link": "/sound",
         })
     else:
         items.append({
@@ -74,6 +77,7 @@ def get_notifications(
             "title": "Chưa có phiên tập trung nào hôm nay",
             "detail": "Bắt đầu 1 phiên Pomodoro 25 phút vào khung giờ bạn tỉnh táo nhất.",
             "time_label": "Gợi ý",
+            "link": "/deepwork?duration=25",
         })
 
     # 3. Sự kiện lịch hôm nay chưa xong (lọc đúng ngày VN, không đếm tồn đọng cũ)
@@ -88,6 +92,7 @@ def get_notifications(
             "title": f"Còn {pending_events} sự kiện trong lịch hôm nay",
             "detail": "Lịch đã được tối ưu theo nhịp sinh học của bạn.",
             "time_label": "Lịch trình",
+            "link": "/schedule",
         })
 
     return {"notifications": items[:6], "unread_count": len(items[:6])}

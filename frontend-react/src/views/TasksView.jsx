@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { api } from '../services/api.js';
 import { useTasks } from '../hooks/useApi.js';
 import LmsSyncModal from '../components/LmsSyncModal.jsx';
@@ -45,7 +46,28 @@ function toLocalInput(iso) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+function getMinDateTimeLocal() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function getRecommendedSlot() {
+  const now = new Date();
+  const h = now.getHours();
+  if (h < 11) {
+    return { label: 'sáng nay (09:00)', time: '09:00', dayOffset: 0 };
+  } else if (h < 16) {
+    return { label: 'chiều nay (14:30)', time: '14:30', dayOffset: 0 };
+  } else if (h < 21) {
+    return { label: 'tối nay (20:00)', time: '20:00', dayOffset: 0 };
+  } else {
+    return { label: 'sáng mai (08:30)', time: '08:30', dayOffset: 1 };
+  }
+}
+
 export default function TasksView() {
+  const { user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -72,6 +94,15 @@ export default function TasksView() {
   const [mTitle, setMTitle] = useState('');
   const [mDesc, setMDesc] = useState('');
   const [mSubject, setMSubject] = useState(SUBJECT_PRESETS[0]);
+  const [customSubjects, setCustomSubjects] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('studi_custom_subjects') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [addingSubject, setAddingSubject] = useState(false);
+  const [newSubjectInput, setNewSubjectInput] = useState('');
   const [mDeadline, setMDeadline] = useState('');
   const [mPriority, setMPriority] = useState('high');
   const [mComplexity, setMComplexity] = useState('simple');
@@ -82,9 +113,16 @@ export default function TasksView() {
   const [mErr, setMErr] = useState('');
   const [mAiPreview, setMAiPreview] = useState(null);
   const [mFiles, setMFiles] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   const tasksQ = useTasks();
   const allTasks = useMemo(() => (Array.isArray(tasksQ.data) ? tasksQ.data : []), [tasksQ.data]);
+
+  const availableSubjects = useMemo(() => {
+    const fromTasks = allTasks.map((t) => (t.subject_code ? `${t.subject_name} (${t.subject_code})` : t.subject_name)).filter(Boolean);
+    const combined = [...SUBJECT_PRESETS, ...fromTasks, ...customSubjects];
+    return Array.from(new Set(combined));
+  }, [allTasks, customSubjects]);
 
   const notesQ = useQuery({ queryKey: ['notes'], queryFn: () => api.get('/notes/') });
   const notes = notesQ.data?.notes || [];
@@ -112,6 +150,10 @@ export default function TasksView() {
     mutationFn: (id) => api.patch(`/tasks/subtasks/${id}/toggle`),
     onSuccess: (updated) => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       showToast(updated?.is_completed ? 'Hoàn thành 1 micro-sprint! Năng lượng duy trì tốt.' : 'Đã chuyển về trạng thái đang làm.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không cập nhật được.', 'error'),
@@ -120,6 +162,7 @@ export default function TasksView() {
     mutationFn: (id) => api.delete(`/tasks/subtasks/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast('Đã xóa micro-sprint.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
@@ -128,9 +171,32 @@ export default function TasksView() {
     mutationFn: (id) => api.delete(`/tasks/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       showToast('Đã xóa nhiệm vụ thành công!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
+  });
+  const toggleTask = useMutation({
+    mutationFn: ({ id, currentStatus }) => {
+      const next = currentStatus === 'completed' ? 'in_progress' : 'completed';
+      return api.patch(`/tasks/${id}`, { status: next });
+    },
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      showToast(
+        updated?.status === 'completed'
+          ? '🎉 Đã hoàn thành nhiệm vụ và các micro-sprints!'
+          : 'Đã mở lại nhiệm vụ.',
+        'success',
+      );
+    },
+    onError: (err) => showToast(err.message || 'Không cập nhật được trạng thái nhiệm vụ.', 'error'),
   });
 
   const addNote = useMutation({
@@ -376,11 +442,56 @@ export default function TasksView() {
     }
   };
   // ---- Modal tạo / sửa ----
+  const handleFilesAdded = async (newFiles) => {
+    const ALLOWED_EXTS = ['.pdf', '.docx', '.zip', '.txt', '.md', '.tex'];
+    const invalid = newFiles.filter((f) => !ALLOWED_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext)));
+    if (invalid.length > 0) {
+      showToast(`Chỉ chấp nhận các định dạng PDF, DOCX, ZIP, TXT, MD, TEX. Đã bỏ qua ${invalid.length} tệp không hợp lệ.`, 'warning');
+    }
+    const valid = newFiles.filter((f) => ALLOWED_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext)));
+    const ok = valid.filter((f) => f.size <= 25 * 1024 * 1024);
+    if (ok.length !== valid.length) {
+      showToast('Có file vượt quá 25MB đã bị bỏ qua.', 'warning');
+    }
+    for (const f of ok) {
+      if (f.name.endsWith('.txt') || f.name.endsWith('.md') || f.name.endsWith('.tex')) {
+        try {
+          const txt = await f.text();
+          if (txt && !mDesc.trim()) {
+            setMDesc(txt.slice(0, 800));
+            showToast(`Đã tự động trích xuất nội dung từ ${f.name} vào mô tả bài tập!`, 'info');
+          }
+        } catch { /* bỏ qua */ }
+      }
+    }
+    setMFiles((prev) => [...prev, ...ok]);
+    if (mAiPreview) setMAiPreview(null);
+  };
+
+  const handleAddNewSubject = () => {
+    const trimmed = newSubjectInput.trim();
+    if (!trimmed) {
+      setAddingSubject(false);
+      return;
+    }
+    if (!customSubjects.includes(trimmed)) {
+      const updated = [...customSubjects, trimmed];
+      setCustomSubjects(updated);
+      try {
+        localStorage.setItem('studi_custom_subjects', JSON.stringify(updated));
+      } catch { /* bỏ qua */ }
+    }
+    setMSubject(trimmed);
+    setNewSubjectInput('');
+    setAddingSubject(false);
+    showToast(`Đã thêm môn học mới: ${trimmed}`, 'success');
+  };
+
   const openCreate = () => {
     setEditing(null);
     setMTitle('');
     setMDesc('');
-    setMSubject(SUBJECT_PRESETS[0]);
+    setMSubject(availableSubjects[0] || SUBJECT_PRESETS[0]);
     setMDeadline('');
     setMPriority('high');
     setMComplexity('simple');
@@ -390,6 +501,8 @@ export default function TasksView() {
     setMAiPreview(null);
     setMFiles([]);
     setMErr('');
+    setAddingSubject(false);
+    setNewSubjectInput('');
     try {
       const raw = localStorage.getItem('studi_task_draft');
       if (raw) {
@@ -404,11 +517,12 @@ export default function TasksView() {
     } catch { /* bỏ qua */ }
     setModalOpen(true);
   };
+
   const openEdit = (t) => {
     setEditing(t);
     setMTitle(t.title || '');
     setMDesc(t.description || '');
-    setMSubject(t.subject_code ? `${t.subject_name || ''} (${t.subject_code})` : (t.subject_name || SUBJECT_PRESETS[0]));
+    setMSubject(t.subject_code ? `${t.subject_name || ''} (${t.subject_code})` : (t.subject_name || availableSubjects[0] || SUBJECT_PRESETS[0]));
     setMDeadline(toLocalInput(t.deadline));
     setMPriority(t.priority || 'high');
     setMComplexity(t.complexity || 'medium');
@@ -416,8 +530,11 @@ export default function TasksView() {
     setMAiPreview(null);
     setMFiles([]);
     setMErr('');
+    setAddingSubject(false);
+    setNewSubjectInput('');
     setModalOpen(true);
   };
+
   useEffect(() => {
     if (!modalOpen) return;
     const onKey = (e) => {
@@ -438,6 +555,8 @@ export default function TasksView() {
           title: `[Bản nháp nhiệm vụ] ${mTitle.trim()}`,
           content: `Hạn chót: ${mDeadline || 'Chưa đặt'} | Mức: ${mPriority} | Độ phức tạp: ${mComplexity}\n${mDesc || ''}`,
           color_tag: 'blue',
+        }).then(() => {
+          qc.invalidateQueries({ queryKey: ['notes'] });
         }).catch(() => null);
       }
       showToast('Đã lưu bản nháp nhiệm vụ (đồng bộ vào tài khoản)!', 'success');
@@ -447,19 +566,26 @@ export default function TasksView() {
   };
 
   const previewAiInModal = async () => {
-    if (mTitle.trim().length < 5) {
-      setMErr('Tên nhiệm vụ quá ngắn (tối thiểu 5 ký tự).');
+    const title = mTitle.trim();
+    if (title.length < 2) {
+      setMErr('Vui lòng nhập tên đề tài/nhiệm vụ (tối thiểu 2 ký tự).');
       return;
     }
     setMSaving(true);
+    setMErr('');
     try {
+      let fullDesc = mDesc.trim();
+      if (mFiles.length > 0) {
+        fullDesc += `\n[Tài liệu đính kèm: ${mFiles.map((f) => f.name).join(', ')}]`;
+      }
       const res = await api.post('/tasks/ai-decompose', {
-        title: mTitle.trim(),
+        title,
+        description: fullDesc,
         subject: shortSubject(mSubject),
         complexity: mComplexity,
       });
       setMAiPreview(res);
-      setMErr('');
+      showToast('AI đã phân tích đề bài và đề xuất lộ trình micro-sprints!', 'success');
     } catch (err) {
       setMErr(err.message || 'AI phân rã thất bại.');
     } finally {
@@ -471,14 +597,14 @@ export default function TasksView() {
     setMErr('');
     const title = mTitle.trim();
     if (!title) { setMErr('Vui lòng nhập tên đề tài/nhiệm vụ.'); return; }
-    if (title.length < 5) { setMErr('Tên nhiệm vụ quá ngắn (tối thiểu 5 ký tự).'); return; }
+    if (title.length < 2) { setMErr('Tên nhiệm vụ quá ngắn (tối thiểu 2 ký tự).'); return; }
     let deadlineIso = null;
     if (mDeadline && typeof mDeadline === 'string' && mDeadline.trim()) {
       const trimmed = mDeadline.trim();
       const picked = new Date(trimmed);
       if (!Number.isNaN(picked.getTime())) {
-        if (picked.getTime() < Date.now() - 60000) {
-          setMErr('Hạn nộp không được ở quá khứ.');
+        if (picked.getTime() < Date.now() - 24 * 3600 * 1000) {
+          setMErr('Hạn nộp không được quá 24 giờ trong quá khứ.');
           return;
         }
         deadlineIso = picked.toISOString();
@@ -495,7 +621,7 @@ export default function TasksView() {
           fd.append('file', f);
           await api.postForm('/advisor/upload', fd);
           uploaded += 1;
-        } catch { /* báo sau */ }
+        } catch { /* tiếp tục */ }
       }
       if (editing) {
         await api.patch(`/tasks/${editing.id}`, {
@@ -507,20 +633,23 @@ export default function TasksView() {
           priority: mPriority,
           complexity: mComplexity,
         });
-        showToast('Đã cập nhật nhiệm vụ!', 'success');
+        showToast('Đã cập nhật nhiệm vụ thành công!', 'success');
       } else {
-        // Tạo mới: AI phân rã + POST task + gán lịch (trước đây nằm nhầm trong if(editing) nên không bao giờ chạy)
         let subtasks = [];
         let summary = mDesc.trim();
-        const detectedSubj = SUBJECT_PRESETS.find((p) =>
+        if (mFiles.length > 0) {
+          const fileNote = `\n[Tài liệu đính kèm: ${mFiles.map((f) => f.name).join(', ')}]`;
+          summary = (summary + fileNote).trim();
+        }
+        const detectedSubj = availableSubjects.find((p) =>
           (title + ' ' + mDesc).toLowerCase().includes(p.toLowerCase().split('(')[0].trim())
         );
-        const effectiveSubj = (mSubject === SUBJECT_PRESETS[0] && detectedSubj) ? detectedSubj : mSubject;
+        const effectiveSubj = (mSubject === availableSubjects[0] && detectedSubj) ? detectedSubj : mSubject;
 
         if (mAiOn) {
           const ai = mAiPreview || await api.post('/tasks/ai-decompose', {
             title,
-            description: mDesc.trim(),
+            description: summary,
             subject: shortSubject(effectiveSubj),
             complexity: mComplexity,
           });
@@ -532,33 +661,45 @@ export default function TasksView() {
             recommended_circadian_window: s.recommended_circadian_window || 'Khung giờ vàng chiều (14:00 - 16:30)',
           }));
         }
+
         const createdTask = await api.post('/tasks/', {
-          title, description: summary || '',
+          title,
+          description: summary || '',
           subject_name: shortSubject(effectiveSubj),
           subject_code: parseSubjectCode(effectiveSubj),
-          deadline: deadlineIso, priority: mPriority, complexity: mComplexity,
+          deadline: deadlineIso,
+          priority: mPriority,
+          complexity: mComplexity,
           subtasks,
         });
 
-        // F07 & F27: Tự động phân bổ micro-sprints vào thời khóa biểu (ScheduleEvent)
+        // Tự động phân bổ micro-sprints vào khung giờ vàng thật
         if (createdTask?.id && subtasks.length > 0 && mAutoScheduleStep1) {
-          const stepsToSchedule = (mComplexity === 'complex' || mComplexity === 'medium') ? Math.min(subtasks.length, 4) : 1;
+          const slot = getRecommendedSlot();
+          const stepsToSchedule = (mComplexity === 'complex' || mComplexity === 'medium') ? Math.min(subtasks.length, 3) : 1;
           for (let i = 0; i < stepsToSchedule; i++) {
             const d = new Date();
-            d.setDate(d.getDate() + i);
+            d.setDate(d.getDate() + slot.dayOffset + i);
             const dateStr = d.toLocaleDateString('en-CA');
+            const dur = subtasks[i].estimated_minutes || 25;
+            const [sh, sm] = slot.time.split(':').map(Number);
+            const endMinTotal = sh * 60 + sm + dur;
+            const eh = Math.floor(endMinTotal / 60) % 24;
+            const em = endMinTotal % 60;
+            const endStr = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
             await api.post('/schedule/events', {
               task_id: createdTask.id,
               title: `Bước ${i + 1}: ${subtasks[i].title}`,
               description: `Micro-sprint ${i + 1} của đồ án ${title}`,
               event_date: dateStr,
-              start_time: '14:30',
-              end_time: '15:00',
+              start_time: slot.time,
+              end_time: endStr,
               event_type: 'deep_work',
               is_circadian_optimized: true,
             }).catch(() => null);
           }
           qc.invalidateQueries({ queryKey: ['timeline'] });
+          qc.invalidateQueries({ queryKey: ['notifications'] });
         }
 
         if (mSyncCalendar) {
@@ -566,13 +707,17 @@ export default function TasksView() {
         }
 
         showToast(
-          (mAiOn ? `Đã phân rã và lưu thành công ${subtasks.length} micro-sprints (đã gán lịch trình & đồng bộ Canvas)!` : 'Đã lưu nhiệm vụ thành công!')
-          + (uploaded ? ` Đã đính kèm ${uploaded} file.` : ''),
+          (mAiOn
+            ? `Đã phân rã và lưu thành công ${subtasks.length} micro-sprints!`
+            : 'Đã lưu nhiệm vụ thành công!')
+          + (uploaded ? ` Đã tải lên ${uploaded} tài liệu.` : ''),
           'success',
         );
         try { localStorage.removeItem('studi_task_draft'); } catch { /* bỏ qua */ }
       }
       qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       setModalOpen(false);
     } catch (err) {
       setMErr(err.message || 'Không tạo được nhiệm vụ.');
@@ -592,7 +737,7 @@ export default function TasksView() {
       {/* Sync bar */}
       <section className="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-medium text-slate-700">Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+          <span className="font-medium text-slate-700">{user?.university ? `${user.university}${user.major ? ` • ${user.major}` : ''}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
           <span className="text-slate-300">/</span>
           <span className="text-slate-800 font-semibold">Quản lý Nhiệm vụ &amp; Đồ án</span>
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100/80 text-blue-700 border border-blue-200">
@@ -870,9 +1015,24 @@ export default function TasksView() {
 
                     <div>
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h2 className={`text-base font-bold text-slate-900 ${isDone ? 'line-through text-slate-500' : ''}`}>{t.title}</h2>
-                          <p className="text-xs text-slate-600 mt-1">{t.description || ''}</p>
+                        <div className="min-w-0 flex items-start gap-3">
+                          <button
+                            type="button"
+                            title={isDone ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu hoàn thành toàn bộ nhiệm vụ'}
+                            onClick={() => toggleTask.mutate({ id: t.id, currentStatus: t.status })}
+                            disabled={toggleTask.isPending}
+                            className={`mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition shrink-0 cursor-pointer ${
+                              isDone
+                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                                : 'border-slate-300 hover:border-blue-500 bg-white text-transparent hover:text-blue-300'
+                            }`}
+                          >
+                            <span className="text-xs font-bold leading-none">✓</span>
+                          </button>
+                          <div className="min-w-0">
+                            <h2 className={`text-base font-bold text-slate-900 ${isDone ? 'line-through text-slate-500' : ''}`}>{t.title}</h2>
+                            <p className="text-xs text-slate-600 mt-1">{t.description || ''}</p>
+                          </div>
                         </div>
                         <div className="text-right shrink-0 ml-4">
                           <span className={`text-2xl font-bold ${pct >= 100 ? 'text-emerald-600' : 'text-blue-600'}`}>{pct}%</span>
@@ -1281,7 +1441,10 @@ export default function TasksView() {
                   </label>
                   <input
                     value={mTitle}
-                    onChange={(e) => setMTitle(e.target.value)}
+                    onChange={(e) => {
+                      setMTitle(e.target.value);
+                      if (mAiPreview) setMAiPreview(null);
+                    }}
                     placeholder="Ví dụ: Tiểu luận Triết học, Báo cáo Machine Learning ResNet18..."
                     className="w-full pl-4 pr-4 py-2.5 text-sm font-medium text-slate-800 bg-white rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all placeholder:text-slate-400 shadow-sm"
                   />
@@ -1297,32 +1460,66 @@ export default function TasksView() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">Môn học &amp; Học phần liên quan</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Môn học &amp; Học phần liên quan</label>
+                    <span className="text-[11px] text-slate-400">Đã chọn: <strong className="text-blue-600">{mSubject}</strong></span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {SUBJECT_PRESETS.map((s) => (
+                    {availableSubjects.map((s) => (
                       <button
                         key={s}
                         type="button"
-                        onClick={() => setMSubject(s)}
+                        onClick={() => {
+                          setMSubject(s);
+                          if (mAiPreview) setMAiPreview(null);
+                        }}
                         className={
                           mSubject === s
-                            ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white shadow-sm'
+                            ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/20'
                             : 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200/80 transition-colors'
                         }
                       >
                         {s}
                       </button>
                     ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const name = (window.prompt('Nhập tên môn học (VD: Vật lý Đại cương (PH101)):') || '').trim();
-                        if (name) setMSubject(name);
-                      }}
-                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-dashed border-slate-300 text-slate-500 hover:text-blue-600 hover:border-blue-400 transition-colors"
-                    >
-                      + Môn mới{!SUBJECT_PRESETS.includes(mSubject) && mSubject ? `: ${mSubject}` : ''}
-                    </button>
+                    {!addingSubject ? (
+                      <button
+                        type="button"
+                        onClick={() => setAddingSubject(true)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-dashed border-slate-300 text-slate-500 hover:text-blue-600 hover:border-blue-400 transition-colors cursor-pointer"
+                      >
+                        + Môn mới
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1.5 bg-white border border-blue-300 rounded-lg p-1 shadow-xs">
+                        <input
+                          type="text"
+                          value={newSubjectInput}
+                          onChange={(e) => setNewSubjectInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); handleAddNewSubject(); }
+                            if (e.key === 'Escape') { setAddingSubject(false); setNewSubjectInput(''); }
+                          }}
+                          placeholder="Tên môn (Mã môn)..."
+                          autoFocus
+                          className="px-2 py-0.5 text-xs text-slate-800 bg-transparent outline-none w-36"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddNewSubject}
+                          className="px-2 py-0.5 rounded bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 cursor-pointer"
+                        >
+                          Lưu
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setAddingSubject(false); setNewSubjectInput(''); }}
+                          className="px-1.5 py-0.5 rounded text-slate-400 hover:text-slate-600 text-[11px] cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
@@ -1331,27 +1528,45 @@ export default function TasksView() {
                     <input
                       type="datetime-local"
                       value={mDeadline}
-                      min={new Date().toISOString().slice(0, 16)}
+                      min={getMinDateTimeLocal()}
                       onChange={(e) => setMDeadline(e.target.value)}
                       className="w-full text-xs font-medium text-slate-800 bg-white rounded-xl border border-slate-200 py-2 px-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                     />
-                    <div className="p-2 rounded-lg bg-emerald-50/80 border border-emerald-200/70 text-[11px] text-emerald-800">
-                      <strong>Gợi ý sinh học:</strong> Nộp trước 22:00 để duy trì chất lượng giấc ngủ sâu và chu kỳ REM tối ưu.
-                    </div>
+                    {(() => {
+                      if (!mDeadline) {
+                        return (
+                          <div className="p-2 rounded-lg bg-emerald-50/80 border border-emerald-200/70 text-[11px] text-emerald-800">
+                            <strong>Gợi ý sinh học:</strong> Nộp trước 22:00 để duy trì chất lượng giấc ngủ sâu và chu kỳ REM tối ưu.
+                          </div>
+                        );
+                      }
+                      const d = new Date(mDeadline);
+                      const hour = d.getHours();
+                      const isPast22 = hour >= 22 || hour < 5;
+                      return isPast22 ? (
+                        <div className="p-2 rounded-lg bg-amber-50/90 border border-amber-200/80 text-[11px] text-amber-800">
+                          <strong>⚠️ Lưu ý sinh học:</strong> Hạn chót {String(hour).padStart(2, '0')}:{String(d.getMinutes()).padStart(2, '0')} rơi vào khung ngủ sâu. Hãy cố gắng nộp bài trước 22:00.
+                        </div>
+                      ) : (
+                        <div className="p-2 rounded-lg bg-emerald-50/80 border border-emerald-200/70 text-[11px] text-emerald-800">
+                          <strong>✅ Nhịp sinh học chuẩn:</strong> Hạn chót hợp lý, không ảnh hưởng chu kỳ giấc ngủ đêm.
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Mức độ ưu tiên</label>
                     <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Mức độ ưu tiên">
                       {[
-                        ['high', 'Ưu tiên cao', 'bg-rose-500'],
-                        ['medium', 'Tiêu chuẩn', 'bg-amber-400'],
-                        ['low', 'Tự học', 'bg-slate-300'],
-                      ].map(([v, label, dot]) => (
+                        ['high', 'Ưu tiên cao', 'bg-rose-500', 'border-rose-400 bg-rose-50/80 text-rose-700'],
+                        ['medium', 'Tiêu chuẩn', 'bg-amber-400', 'border-amber-400 bg-amber-50/80 text-amber-800'],
+                        ['low', 'Tự học', 'bg-slate-400', 'border-slate-400 bg-slate-100 text-slate-800'],
+                      ].map(([v, label, dot, activeCls]) => (
                         <label
                           key={v}
                           className={`cursor-pointer rounded-xl p-2 text-center text-xs transition-all ${
                             mPriority === v
-                              ? 'border-2 border-rose-400 bg-rose-50/80 text-rose-700 font-semibold'
+                              ? `border-2 ${activeCls} font-semibold shadow-xs`
                               : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium'
                           }`}
                         >
@@ -1363,13 +1578,20 @@ export default function TasksView() {
                         </label>
                       ))}
                     </div>
-                    <p className="text-[11px] text-slate-400">Được xếp vào danh sách nhiệm vụ khẩn cấp &lt; 48 giờ.</p>
+                    <p className="text-[11px] text-slate-500 leading-tight">
+                      {mPriority === 'high' && '🔥 Trọng tâm khẩn cấp: Tự động gắn cờ báo động & ưu tiên xếp lịch học sớm nhất.'}
+                      {mPriority === 'medium' && '⚖️ Nhiệm vụ tiêu chuẩn: Phân bổ đều theo tiến độ học kỳ bình thường.'}
+                      {mPriority === 'low' && '🌱 Tự học & nâng cao: Tự do hoàn thành theo khung thời gian linh hoạt.'}
+                    </p>
                   </div>
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Khối lượng ước lượng</label>
                     <select
                       value={mComplexity}
-                      onChange={(e) => setMComplexity(e.target.value)}
+                      onChange={(e) => {
+                        setMComplexity(e.target.value);
+                        if (mAiPreview) setMAiPreview(null);
+                      }}
                       className="w-full text-xs font-medium text-slate-800 bg-white rounded-xl border border-slate-200 py-2 px-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
                     >
                       <option value="complex">Đồ án lớn / Bài báo (5 - 8 Sprints • ~200p)</option>
@@ -1377,7 +1599,12 @@ export default function TasksView() {
                       <option value="simple">Bài tập thực hành Lab ngắn (1 - 2 Sprints • ~50p)</option>
                       <option value="review">Ôn tập đề cương bài thi (Custom)</option>
                     </select>
-                    <p className="text-[11px] text-slate-400">Hệ số giảm áp lực tự động: Chia đều trong 4 ngày.</p>
+                    <p className="text-[11px] text-slate-500 leading-tight">
+                      {mComplexity === 'complex' && '⚡ Phân rã 5 - 8 micro-sprints: Trải đều 4-7 ngày, mỗi phiên Deep Work tối đa 90p.'}
+                      {mComplexity === 'medium' && '⚡ Phân rã 3 - 4 micro-sprints: Chia đều trong 2-4 ngày để giảm tải ngợp.'}
+                      {mComplexity === 'simple' && '⚡ Gọn nhẹ 1 - 2 sprints: Hoàn thành nhanh chóng trong 1-2 ngày.'}
+                      {mComplexity === 'review' && '⚡ Ôn thi củng cố: Phân bổ ngắt quãng (Spaced Repetition) trước kỳ thi.'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1404,24 +1631,77 @@ export default function TasksView() {
                     </label>
                   </div>
                   {mAiOn && (
-                    <div className="mt-3 space-y-2">
-                      <button
-                        type="button"
-                        onClick={previewAiInModal}
-                        disabled={mSaving}
-                        className="px-3 py-1.5 rounded-xl bg-white border border-blue-200 text-blue-700 text-xs font-semibold hover:bg-blue-50 disabled:opacity-60"
-                      >
-                        {mSaving ? 'AI đang phân rã...' : '🪄 Xem trước phân rã AI'}
-                      </button>
+                    <div className="mt-3 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={previewAiInModal}
+                          disabled={mSaving || !mTitle.trim()}
+                          className="px-3.5 py-1.5 rounded-xl bg-white border border-blue-200 text-blue-700 text-xs font-semibold hover:bg-blue-50 disabled:opacity-50 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          {mSaving ? (
+                            <>
+                              <span className="animate-spin inline-block">⏳</span>
+                              <span>AI đang phân tích và bẻ khóa...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>🪄</span>
+                              <span>Xem trước phân rã AI ({mComplexity === 'complex' ? '5-8 sprints' : mComplexity === 'simple' ? '1-2 sprints' : '3-4 sprints'})</span>
+                            </>
+                          )}
+                        </button>
+                        {mAiPreview && (
+                          <button
+                            type="button"
+                            onClick={() => setMAiPreview(null)}
+                            className="text-xs text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                          >
+                            Xóa bản xem trước
+                          </button>
+                        )}
+                      </div>
+
                       {mAiPreview && (
-                        <div className="p-3 rounded-xl bg-white/90 border border-blue-100 text-xs space-y-1.5">
-                          <p className="font-bold text-slate-800">{mAiPreview.task_title}</p>
-                          <ul className="space-y-1">
+                        <div className="p-4 rounded-xl bg-white/95 border border-blue-200 text-xs space-y-2.5 shadow-sm">
+                          <div className="flex items-center justify-between border-b border-blue-100 pb-2">
+                            <div>
+                              <span className="font-bold text-slate-800">{mAiPreview.task_title}</span>
+                              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold">
+                                {mAiPreview.subtasks?.length || 0} micro-sprints
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-blue-700 font-semibold">
+                              ⏱ Tổng ~{mAiPreview.total_estimated_minutes || (mAiPreview.subtasks || []).length * 25} phút
+                            </span>
+                          </div>
+
+                          {mAiPreview.summary_advice && (
+                            <p className="text-slate-600 bg-blue-50/60 p-2 rounded-lg italic text-[11px]">
+                              💡 {mAiPreview.summary_advice}
+                            </p>
+                          )}
+
+                          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                             {(mAiPreview.subtasks || []).map((s, i) => (
-                              <li key={i} className="text-slate-700">• {s.title} <span className="text-slate-400">({s.estimated_minutes || 25}p)</span></li>
+                              <div key={i} className="flex items-start justify-between gap-2 p-1.5 rounded-lg bg-slate-50 hover:bg-blue-50/50 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[10px] shrink-0">
+                                    {i + 1}
+                                  </span>
+                                  <span className="text-slate-800 font-medium">{s.title}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0 text-[10px]">
+                                  <span className="px-1.5 py-0.5 rounded bg-slate-200/80 text-slate-700 font-medium">
+                                    {s.estimated_minutes || 25}p ({s.pomodoro_count || 1}🍅)
+                                  </span>
+                                  <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                                    {s.recommended_circadian_window || 'Khung giờ chiều'}
+                                  </span>
+                                </div>
+                              </div>
                             ))}
-                          </ul>
-                          <p className="text-[11px] text-blue-700 font-medium">⏱ Tổng ~{mAiPreview.total_estimated_minutes || (mAiPreview.subtasks || []).length * 25} phút</p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1435,7 +1715,7 @@ export default function TasksView() {
                         onChange={(e) => setMAutoScheduleStep1(e.target.checked)}
                         className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
                       />
-                      <span>Tự động xếp <strong>Bước 1</strong> vào <strong>Khung giờ vàng Alpha chiều nay (14:30)</strong></span>
+                      <span>Tự động xếp <strong>Bước 1</strong> vào <strong>Khung giờ vàng {getRecommendedSlot().label}</strong></span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
                       <input
@@ -1454,34 +1734,47 @@ export default function TasksView() {
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
                   Tài liệu đính kèm &amp; Đề bài PDF (AI tự đọc rubric)
                 </label>
-                <label className="border-2 border-dashed border-sky-200 hover:border-blue-400 rounded-xl p-4 text-center bg-sky-50/30 hover:bg-sky-50/60 transition-all cursor-pointer block">
-                  <div className="flex flex-col items-center justify-center gap-1.5">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">⬆️</div>
-                    <div className="text-xs text-slate-600">
-                      <span className="font-semibold text-blue-600">Nhấp để tải file lên</span> hoặc kéo thả đề cương, rubric bài tập vào đây
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    if (e.dataTransfer?.files) {
+                      handleFilesAdded(Array.from(e.dataTransfer.files));
+                    }
+                  }}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center transition-all ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50/80 scale-[0.99]'
+                      : 'border-sky-200 hover:border-blue-400 bg-sky-50/30 hover:bg-sky-50/60'
+                  }`}
+                >
+                  <label className="cursor-pointer block">
+                    <div className="flex flex-col items-center justify-center gap-1.5">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                        {isDragging ? '📥' : '⬆️'}
+                      </div>
+                      <div className="text-xs text-slate-600">
+                        <span className="font-semibold text-blue-600">Nhấp để tải file lên</span> hoặc kéo thả đề cương, rubric bài tập vào đây
+                      </div>
+                      <p className="text-[11px] text-slate-400">Hỗ trợ PDF, DOCX, ZIP, TXT, MD, TEX (Tối đa 25MB • Tự động đọc nội dung text)</p>
                     </div>
-                    <p className="text-[11px] text-slate-400">Hỗ trợ PDF, DOCX, ZIP, TXT, MD (Tối đa 25MB)</p>
-                  </div>
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.docx,.tex,.txt,.md"
-                    className="hidden"
-                    onChange={(e) => {
-                      const ALLOWED_EXTS = ['.pdf', '.docx', '.zip', '.txt', '.md'];
-                      const list = Array.from(e.target.files || []);
-                      const invalid = list.filter((f) => !ALLOWED_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext)));
-                      if (invalid.length > 0) {
-                        showToast(`Chỉ chấp nhận các định dạng PDF, DOCX, ZIP, TXT, MD. Bỏ qua ${invalid.length} tệp không hợp lệ.`, 'warning');
-                      }
-                      const validExts = list.filter((f) => ALLOWED_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext)));
-                      const ok = validExts.filter((f) => f.size <= 25 * 1024 * 1024);
-                      if (ok.length !== validExts.length) showToast('Có file vượt quá 25MB đã bị bỏ qua.', 'warning');
-                      setMFiles((prev) => [...prev, ...ok]);
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,.docx,.zip,.txt,.md,.tex"
+                      className="hidden"
+                      onChange={(e) => {
+                        handleFilesAdded(Array.from(e.target.files || []));
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
                 {mFiles.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {mFiles.map((f, i) => (

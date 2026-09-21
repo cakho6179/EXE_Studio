@@ -369,6 +369,7 @@ def verify_otp(payload: VerifyOtpRequest, db: Session = Depends(get_db)):
     if user:
         user.is_email_verified = True
         db.commit()
+        invalidate_user_by_id(user.id)
         tokens = _token_pair(user)
         res["access_token"] = tokens["access_token"]
         res["refresh_token"] = tokens["refresh_token"]
@@ -406,6 +407,7 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     user.is_email_verified = True
     record.is_used = True
     db.commit()
+    invalidate_user_by_id(user.id)
     return {"status": "success", "message": "Đặt lại mật khẩu thành công! Hãy đăng nhập lại."}
 
 @router.get("/profile")
@@ -501,3 +503,29 @@ def update_profile(
             "preferred_study_style": profile.preferred_study_style
         }
     }
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Đổi mật khẩu cho sinh viên đang đăng nhập."""
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không chính xác.")
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu mới phải có ít nhất 6 ký tự.")
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    invalidate_user_by_id(current_user.id)
+    return {
+        "status": "success",
+        "message": "Đã đổi mật khẩu thành công! Hãy bảo quản mật khẩu mới cẩn thận.",
+    }
+

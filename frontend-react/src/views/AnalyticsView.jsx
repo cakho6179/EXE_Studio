@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { usePulse, useTasks } from '../hooks/useApi.js';
 import LmsSyncModal from '../components/LmsSyncModal.jsx';
 
@@ -16,7 +17,9 @@ function levelColor(v) {
 }
 
 export default function AnalyticsView() {
+  const { user } = useAuth();
   const { showToast } = useToast();
+  const qc = useQueryClient();
   const [showLmsModal, setShowLmsModal] = useState(false);
   const [certModal, setCertModal] = useState(null);
   const [certLoading, setCertLoading] = useState(false);
@@ -241,11 +244,14 @@ export default function AnalyticsView() {
   async function autoSchedule() {
     try {
       const res = await api.post('/schedule/auto-balance', {});
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
+      qc.invalidateQueries({ queryKey: ['analytics-insights'] });
+      qc.invalidateQueries({ queryKey: ['analytics-correlations'] });
       showToast(res.message || 'Đã tối ưu lịch vào khung giờ vàng.', 'success');
     } catch (e) { showToast(e.message || 'Không tối ưu được.', 'error'); }
   }
-
-  const qc = useQueryClient();
 
   async function saveMood(mood) {
     try {
@@ -264,9 +270,7 @@ export default function AnalyticsView() {
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 pt-2">
             <div className="flex flex-col gap-1 max-w-3xl">
               <div className="flex items-center gap-1 text-slate-500 text-xs">
-                <span>Học kỳ I / Năm 3</span>
-                <span className="text-slate-200">•</span>
-                <span>ĐHQG TP.HCM</span>
+                <span>{user?.university ? `${user.university}${user.major ? ` • ${user.major}` : ''}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
                 <span className="text-slate-200">•</span>
                 <span className="text-brand-700 font-semibold">Phân tích Hiệu suất &amp; Kỹ năng</span>
               </div>

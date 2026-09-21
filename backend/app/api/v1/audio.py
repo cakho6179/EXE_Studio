@@ -11,37 +11,30 @@ router = APIRouter()
 
 @router.get("/tracks")
 def get_sound_tracks():
+    # Id khớp engine CalmAudioEngine (frontend-react/src/assets/js/audio.js)
     return [
         {
-            "id": "track_1",
-            "title": "Sóng Biển Hải Đăng & Mưa Rơi",
+            "id": "ocean",
+            "title": "Sóng Biển Hải Đăng 432Hz",
             "frequency": "432Hz Alpha Tune",
             "category": "nature_alpha",
             "description": "Âm thanh kích hoạt sóng não Alpha 10Hz thư thái, hỗ trợ học tập liên tục không mỏi mắt",
             "is_default": True
         },
         {
-            "id": "track_2",
-            "title": "Rừng Thông Sương Mù Đà Lạt",
+            "id": "rain",
+            "title": "Mưa Rào Hải Đăng",
+            "frequency": "432Hz Rain",
+            "category": "nature_alpha",
+            "description": "Tiếng mưa rơi êm dịu, giảm lo âu học thuật",
+            "is_default": False
+        },
+        {
+            "id": "binaural",
+            "title": "Sóng Alpha 528Hz",
             "frequency": "528Hz Solfeggio",
-            "category": "forest",
-            "description": "Tiếng thông reo dịu nhẹ tái tạo năng lượng tinh thần",
-            "is_default": False
-        },
-        {
-            "id": "track_3",
-            "title": "Giai Điệu Lo-Fi Học Bài Đêm",
-            "frequency": "Chill Beats 80BPM",
-            "category": "lofi",
-            "description": "Giai điệu thư thái êm dịu, không lời, duy trì trạng thái Deep Flow",
-            "is_default": False
-        },
-        {
-            "id": "track_4",
-            "title": "Quán Cafe Thư Viện Tĩnh Lặng",
-            "frequency": "Binaural Theta 6Hz",
-            "category": "cafe",
-            "description": "Âm thanh nền xao xuyến nhẹ kích thích khả năng liên tưởng sáng tạo",
+            "category": "binaural",
+            "description": "Tần số Solfeggio tái tạo năng lượng tinh thần",
             "is_default": False
         }
     ]
@@ -98,12 +91,20 @@ def save_preset(
         raise HTTPException(status_code=400, detail="Track chưa được hỗ trợ synth offline.")
     if not (0 <= preset_in.volume <= 1):
         raise HTTPException(status_code=400, detail="Âm lượng phải từ 0 đến 1.")
+    # Chỉ giữ kênh engine có thật, ép về 0-1 (chặn key rác như 'lofi-missing')
+    clean_levels = {}
+    for k, v in (preset_in.levels or {}).items():
+        if k in ALLOWED_PRESET_TRACKS:
+            try:
+                clean_levels[k] = max(0.0, min(1.0, float(v)))
+            except (TypeError, ValueError):
+                pass
     preset = AudioPreset(
         user_id=current_user.id,
         name=name[:100],
         track=preset_in.track,
         volume=preset_in.volume,
-        levels_json=json.dumps(preset_in.levels or {}),
+        levels_json=json.dumps(clean_levels),
         spatial_on=preset_in.spatial_on,
     )
     db.add(preset)

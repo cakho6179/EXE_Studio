@@ -240,7 +240,7 @@ class AIDeconstructRequest(BaseModel):
     description: Optional[str] = None
     subject: Optional[str] = None
     deadline: Optional[str] = None
-    complexity: Optional[str] = "Đồ án lớn / Bài báo (5 - 8 Sprints)"
+    complexity: Optional[str] = "medium"
 
 class AISubtaskItem(BaseModel):
     title: str

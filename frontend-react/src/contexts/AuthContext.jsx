@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { api, getStoredUser, isTokenExpired } from '../services/api.js';
 
@@ -156,24 +156,17 @@ export function useAuth() {
 /** Route guard: chưa login -> /login; login nhưng chưa setup 7, 8, 9 -> /onboarding */
 export function RequireAuth({ children }) {
   const { ready, isLoggedIn, user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!ready) return;
-    if (!isLoggedIn) {
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    const isOnboarded = user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
-    if (!isOnboarded && location.pathname !== '/onboarding') {
-      navigate('/onboarding', { replace: true });
-    }
-  }, [ready, isLoggedIn, user, location.pathname, navigate]);
-
   if (!ready) return null;
-  if (!isLoggedIn) return null;
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const isOnboarded = user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
+  if (!isOnboarded && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
   return children;
 }
 
@@ -185,13 +178,5 @@ export function RedirectIfAuth({ children }) {
 
   const isOnboarded = user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
   const target = isOnboarded ? '/dashboard' : '/onboarding';
-  return <NavigateToTarget target={target} />;
-}
-
-function NavigateToTarget({ target }) {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate(target, { replace: true });
-  }, [navigate, target]);
-  return null;
+  return <Navigate to={target} replace />;
 }

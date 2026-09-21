@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { api } from '../services/api.js';
 import { useTasks, useTimeline } from '../hooks/useApi.js';
 import LmsSyncModal from '../components/LmsSyncModal.jsx';
@@ -26,8 +27,9 @@ const TYPE_LABEL = { deep_work: 'DEEP WORK', class: 'LỚP HỌC', self_study: '
 
 const isoOf = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const todayIso = () => isoOf(new Date());
-function weekDays() {
+function weekDays(offsetWeeks = 0) {
   const now = new Date();
+  now.setDate(now.getDate() + offsetWeeks * 7);
   const monday = new Date(now);
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
   return Array.from({ length: 7 }, (_, i) => {
@@ -38,12 +40,15 @@ function weekDays() {
 }
 
 export default function ScheduleView() {
+  const { user } = useAuth();
   const { showToast } = useToast();
   const { isPlaying, track, togglePlay, sleepMinutes, setSleepTimer } = useAudio();
   const qc = useQueryClient();
   const navigate = useNavigate();
 
   const [view, setView] = useState('week');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(todayIso());
   const [showAdd, setShowAdd] = useState(false);
   const [showLmsModal, setShowLmsModal] = useState(false);
   const [form, setForm] = useState({
@@ -85,13 +90,17 @@ export default function ScheduleView() {
 
   const toggleEvent = useMutation({
     mutationFn: (id) => api.patch(`/schedule/events/${id}/toggle`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['timeline'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
     onError: (err) => showToast(err.message || 'Không cập nhật được.', 'error'),
   });
   const deleteEvent = useMutation({
     mutationFn: (id) => api.delete(`/schedule/events/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast('Đã xóa sự kiện thời khóa biểu.', 'success');
     },
     onError: (err) => showToast(err.message || 'Lỗi.', 'error'),
@@ -109,6 +118,7 @@ export default function ScheduleView() {
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       setShowAdd(false);
       setForm({ title: '', description: '', task_id: '', date: todayIso(), start: '14:00', end: '15:30', type: 'deep_work' });
       showToast('Đã thêm phiên học!', 'success');
@@ -128,7 +138,7 @@ export default function ScheduleView() {
 
   const [markingDone, setMarkingDone] = useState(false);
 
-  const days = useMemo(() => weekDays(), []);
+  const days = useMemo(() => weekDays(weekOffset), [weekOffset]);
   const dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
   const today = todayIso();
   const evDay = (ev) => ev.event_date || today;
@@ -137,7 +147,7 @@ export default function ScheduleView() {
 
   const nowHM = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
   const live = events.find((e) => evDay(e) === today && e.start_time <= nowHM && nowHM < e.end_time && !e.is_completed);
-  const dayEvents = events.filter((e) => evDay(e) === today).sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const dayEvents = events.filter((e) => evDay(e) === (selectedDay || today)).sort((a, b) => a.start_time.localeCompare(b.start_time));
   // Ưu tiên sự kiện HÔM NAY chưa hết giờ; hết thì lấy sự kiện tương lai gần nhất (trước đây lẫn ngày khác vào)
   const upcomingToday = [...events].filter((e) => !e.is_completed && evDay(e) === today && e.end_time > nowHM).sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
   const upcomingNext = [...events].filter((e) => !e.is_completed && evDay(e) > today).sort((a, b) => `${evDay(a)}${a.start_time}`.localeCompare(`${evDay(b)}${b.start_time}`))[0];
@@ -195,7 +205,7 @@ export default function ScheduleView() {
         <div className="flex flex-wrap items-center gap-2 min-w-0">
           <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
             <span className="text-blue-600 text-base">🏫</span>
-            <span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+            <span>{user?.university ? `${user.university}${user.major ? ` • ${user.major}` : ''}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
             <span className="text-slate-300">/</span>
             <span className="text-slate-800 font-semibold truncate">Lịch trình Sinh học thông minh Tuần {weekNum} ({fmtD(days[0])} - {fmtD(days[6])}/{days[6].getFullYear()})</span>
           </div>
@@ -364,6 +374,33 @@ export default function ScheduleView() {
                     {live && <span className="ml-2 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold uppercase animate-pulse">🔴 {live.title.slice(0, 30)}</span>}
                   </h2>
                   <p className="text-xs text-slate-500">Phân bổ bài học theo mức nhịp năng lượng não bộ</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <button
+                      type="button"
+                      title="Tuần trước"
+                      onClick={() => setWeekOffset((o) => o - 1)}
+                      className="px-2.5 py-0.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-slate-600 transition cursor-pointer"
+                    >
+                      ← Tuần trước
+                    </button>
+                    {weekOffset !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setWeekOffset(0)}
+                        className="px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200 transition cursor-pointer"
+                      >
+                        Tuần này
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      title="Tuần sau"
+                      onClick={() => setWeekOffset((o) => o + 1)}
+                      className="px-2.5 py-0.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-slate-600 transition cursor-pointer"
+                    >
+                      Tuần sau →
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -643,8 +680,35 @@ export default function ScheduleView() {
 
             {view === 'day' && (
               <div className="mt-4 space-y-3">
-                <h3 className="text-sm font-bold text-slate-800">Hôm nay ({dayEvents.length} sự kiện)</h3>
-                {dayEvents.length === 0 && <p className="text-xs text-slate-500">Chưa có sự kiện nào hôm nay.</p>}
+                {/* Bộ chọn ngày trong tuần */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                  {days.map((d) => {
+                    const iso = isoOf(d);
+                    const isSel = iso === (selectedDay || today);
+                    const isToday = iso === today;
+                    return (
+                      <button
+                        key={iso}
+                        type="button"
+                        onClick={() => setSelectedDay(iso)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                          isSel
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : isToday
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {dayNames[days.indexOf(d)]} ({String(d.getDate()).padStart(2, '0')}/{String(d.getMonth() + 1).padStart(2, '0')})
+                        {isToday ? ' • Hôm nay' : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+                <h3 className="text-sm font-bold text-slate-800">
+                  {selectedDay === today ? 'Hôm nay' : `Ngày ${selectedDay}`} ({dayEvents.length} sự kiện)
+                </h3>
+                {dayEvents.length === 0 && <p className="text-xs text-slate-500">Chưa có sự kiện nào cho ngày này.</p>}
                 {dayEvents.map((ev) => (
                   <div key={ev.id} className={`flex items-center gap-3 p-3 rounded-2xl border ${ev.is_completed ? 'bg-white/60 border-slate-100' : 'bg-white/90 border-slate-200/70'}`}>
                     <button

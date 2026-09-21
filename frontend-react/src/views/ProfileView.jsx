@@ -13,6 +13,8 @@ export default function ProfileView() {
   const { togglePlay, isPlaying } = useAudio();
   const qc = useQueryClient();
   const [form, setForm] = useState(null);
+  const [pwdForm, setPwdForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
+  const [changingPwd, setChangingPwd] = useState(false);
 
   const profileQ = useQuery({
     queryKey: ['profile'],
@@ -54,6 +56,9 @@ export default function ProfileView() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['profile'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       if (res?.profile) {
         saveUser({
@@ -69,6 +74,35 @@ export default function ProfileView() {
     },
     onError: (err) => showToast(err.message || 'Không lưu được.', 'error'),
   });
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!pwdForm.current_password) {
+      showToast('Vui lòng nhập mật khẩu hiện tại.', 'warning');
+      return;
+    }
+    if (!pwdForm.new_password || pwdForm.new_password.length < 6) {
+      showToast('Mật khẩu mới phải có ít nhất 6 ký tự.', 'warning');
+      return;
+    }
+    if (pwdForm.new_password !== pwdForm.confirm_password) {
+      showToast('Xác nhận mật khẩu mới không khớp.', 'warning');
+      return;
+    }
+    setChangingPwd(true);
+    try {
+      const res = await api.post('/auth/change-password', {
+        current_password: pwdForm.current_password,
+        new_password: pwdForm.new_password,
+      });
+      showToast(res.message || 'Đã đổi mật khẩu thành công!', 'success');
+      setPwdForm({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (err) {
+      showToast(err.message || 'Không đổi được mật khẩu.', 'error');
+    } finally {
+      setChangingPwd(false);
+    }
+  };
 
   const tasks = Array.isArray(tasksQ.data) ? tasksQ.data : [];
   const sessions = Array.isArray(sessionsQ.data) ? sessionsQ.data : [];
@@ -232,6 +266,57 @@ export default function ProfileView() {
             </div>
           </form>
         )}
+      </section>
+
+      <section className="glass-card rounded-3xl p-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">Bảo mật &amp; Đổi mật khẩu</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Cập nhật mật khẩu định kỳ để bảo vệ tài khoản và dữ liệu học tập cá nhân</p>
+          </div>
+          <span className="text-xl">🔒</span>
+        </div>
+        <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold text-slate-700 mt-4">
+          <label>
+            Mật khẩu hiện tại <span className="text-rose-500">*</span>
+            <input
+              type="password"
+              value={pwdForm.current_password}
+              onChange={(e) => setPwdForm({ ...pwdForm, current_password: e.target.value })}
+              placeholder="••••••••"
+              className={inputCls}
+            />
+          </label>
+          <label>
+            Mật khẩu mới (≥ 6 ký tự) <span className="text-rose-500">*</span>
+            <input
+              type="password"
+              value={pwdForm.new_password}
+              onChange={(e) => setPwdForm({ ...pwdForm, new_password: e.target.value })}
+              placeholder="••••••••"
+              className={inputCls}
+            />
+          </label>
+          <label>
+            Xác nhận mật khẩu mới <span className="text-rose-500">*</span>
+            <input
+              type="password"
+              value={pwdForm.confirm_password}
+              onChange={(e) => setPwdForm({ ...pwdForm, confirm_password: e.target.value })}
+              placeholder="••••••••"
+              className={inputCls}
+            />
+          </label>
+          <div className="sm:col-span-3 flex justify-end pt-1">
+            <button
+              type="submit"
+              disabled={changingPwd}
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black disabled:opacity-60 text-white text-xs font-bold transition shadow-sm cursor-pointer"
+            >
+              {changingPwd ? 'Đang cập nhật…' : 'Cập nhật mật khẩu'}
+            </button>
+          </div>
+        </form>
       </section>
     </div>
   );

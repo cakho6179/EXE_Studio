@@ -56,26 +56,47 @@ class AIService:
         return None
 
     @staticmethod
-    async def decompose_task(title: str, description: Optional[str] = "", subject: Optional[str] = "", deadline: Optional[str] = "") -> Dict[str, Any]:
+    async def decompose_task(
+        title: str,
+        description: Optional[str] = "",
+        subject: Optional[str] = "",
+        deadline: Optional[str] = "",
+        complexity: Optional[str] = "medium"
+    ) -> Dict[str, Any]:
         """
-        Decomposes a major academic assignment into 4-6 micro-sprints of 25-minute Pomodoros,
-        calibrated with circadian energy windows.
+        Decomposes an academic assignment into calibrated micro-sprints of 25-minute Pomodoros,
+        calibrated with task complexity and circadian energy windows.
         """
+        comp_clean = (complexity or "medium").lower()
+        if "simple" in comp_clean:
+            sprint_target = "1-2 micro-sprints ngắn (tổng 25-50 phút)"
+            max_fallback = 2
+        elif "complex" in comp_clean:
+            sprint_target = "5-8 micro-sprints chi tiết (tổng 125-200 phút)"
+            max_fallback = 6
+        elif "review" in comp_clean:
+            sprint_target = "3-4 micro-sprints ôn tập trọng tâm (tổng 75-100 phút)"
+            max_fallback = 4
+        else:
+            sprint_target = "3-4 micro-sprints vừa sức (tổng 75-100 phút)"
+            max_fallback = 4
+
         prompt = f"""
 Bạn là AI Task Deconstructor v3.2 thuộc hệ sinh thái học tập Stuđiô AI (Calm Workspace) dành cho sinh viên đại học Việt Nam.
-Nhiệm vụ của bạn: Phân tích sâu bài tập / đồ án sau và chia nhỏ thành 4-6 micro-sprints (mỗi sprint 25-45 phút tương ứng các phiên Pomodoro) để sinh viên không bị quá tải, trì hoãn hoặc kiệt sức:
+Nhiệm vụ của bạn: Phân tích sâu bài tập / đồ án sau và chia nhỏ thành {sprint_target} (mỗi sprint 25-35 phút tương ứng các phiên Pomodoro) để sinh viên không bị quá tải, trì hoãn hoặc kiệt sức:
 
 - Tên bài tập: {title}
 - Môn học: {subject or 'Chuyên ngành'}
-- Chi tiết yêu cầu: {description or 'Không có chi tiết thêm'}
+- Chi tiết yêu cầu / Rubric: {description or 'Không có chi tiết thêm'}
 - Hạn nộp: {deadline or 'Trong tuần này'}
+- Quy mô / Độ phức tạp: {comp_clean} ({sprint_target})
 
 YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đúng cấu trúc sau (không kèm văn bản giải thích hay markdown codeblock):
 {{
   "task_title": "{title}",
   "summary_advice": "Lời khuyên ngắn gọn, điềm tĩnh, tạo động lực theo triết lý Calm Tech",
   "circadian_tip": "Gợi ý khung giờ vàng sinh học (Alpha/Peak Energy) phù hợp nhất cho dạng bài tập này",
-  "total_estimated_minutes": 125,
+  "total_estimated_minutes": 100,
   "subtasks": [
     {{
       "title": "Tên bước nhỏ 1",
@@ -112,6 +133,7 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
                             st["recommended_circadian_window"] = "Khung giờ vàng chiều (14:00 - 16:30)"
                         if "cognitive_load" not in st:
                             st["cognitive_load"] = "high"
+                    parsed["total_estimated_minutes"] = sum(s.get("estimated_minutes", 25) for s in parsed.get("subtasks", []))
                     parsed["ai_source"] = "gemini"
                     return parsed
             except Exception as parse_err:
@@ -121,125 +143,128 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
         # Gắn ai_source để frontend hiển thị trung thực (key chết -> heuristic).
         title_lower = title.lower()
         if "machine learning" in title_lower or "ai" in title_lower or "ảnh" in title_lower or "mô hình" in title_lower or "deep learning" in title_lower:
+            subs = [
+                {
+                    "title": "Tiền xử lý dữ liệu ảnh mẫu & Data Augmentation",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ sáng (09:00 - 10:30)",
+                    "cognitive_load": "medium"
+                },
+                {
+                    "title": "Xây dựng pipeline huấn luyện mô hình & Fine-tuning",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ vàng chiều (14:00 - 15:30)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Trích xuất ma trận nhầm lẫn (Confusion Matrix) & Biểu đồ Loss",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ vàng chiều (15:30 - 16:30)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Viết phần bàn luận kết quả thực nghiệm chuẩn học thuật",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
+                    "cognitive_load": "medium"
+                },
+                {
+                    "title": "Soát lỗi trích dẫn tài liệu tham khảo IEEE & Xuất bản PDF",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ tối (20:30 - 21:00)",
+                    "cognitive_load": "light"
+                }
+            ][:max_fallback]
             return {
                 "task_title": title,
                 "ai_source": "heuristic",
                 "summary_advice": "Chia nhỏ bài toán mô hình học máy thành các module độc lập giúp bạn kiểm soát lỗi và không bị áp lực thời hạn.",
                 "circadian_tip": "Thực hiện huấn luyện và tinh chỉnh siêu tham số vào khung giờ vàng 14:00 - 16:30 khi não bộ tư duy logic sắc bén nhất.",
-                "total_estimated_minutes": 125,
-                "subtasks": [
-                    {
-                        "title": "Tiền xử lý dữ liệu ảnh mẫu & Data Augmentation",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ sáng (09:00 - 10:30)",
-                        "cognitive_load": "medium"
-                    },
-                    {
-                        "title": "Xây dựng pipeline huấn luyện mô hình & Fine-tuning",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ vàng chiều (14:00 - 15:30)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Trích xuất ma trận nhầm lẫn (Confusion Matrix) & Biểu đồ Loss",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ vàng chiều (15:30 - 16:30)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Viết phần bàn luận kết quả thực nghiệm chuẩn học thuật",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
-                        "cognitive_load": "medium"
-                    },
-                    {
-                        "title": "Soát lỗi trích dẫn tài liệu tham khảo IEEE & Xuất bản PDF",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ tối (20:30 - 21:00)",
-                        "cognitive_load": "light"
-                    }
-                ]
+                "total_estimated_minutes": sum(s["estimated_minutes"] for s in subs),
+                "subtasks": subs
             }
         elif "cơ sở dữ liệu" in title_lower or "database" in title_lower or "sql" in title_lower:
+            subs = [
+                {
+                    "title": "Vẽ lược đồ thực thể quan hệ ERD và chuẩn hóa dạng 3NF",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ sáng (09:30 - 10:30)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Viết DDL tạo bảng, khóa chính, khóa ngoại và ràng buộc toàn vẹn",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ chiều (14:00 - 15:00)",
+                    "cognitive_load": "medium"
+                },
+                {
+                    "title": "Soạn tập dữ liệu giả lập (Mock Data) và viết 5 câu truy vấn tối ưu",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ chiều (15:00 - 16:00)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Đo lường thời gian thực thi EXPLAIN ANALYZE và tạo Index",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
+                    "cognitive_load": "medium"
+                }
+            ][:max_fallback]
             return {
                 "task_title": title,
                 "ai_source": "heuristic",
                 "summary_advice": "Tập trung thiết kế ERD chuẩn hóa trước khi bắt tay viết câu lệnh SQL để tránh sửa đổi lược đồ nhiều lần.",
                 "circadian_tip": "Viết truy vấn phức tạp và tối ưu hóa index vào đầu giờ sáng hoặc đầu giờ chiều.",
-                "total_estimated_minutes": 100,
-                "subtasks": [
-                    {
-                        "title": "Vẽ lược đồ thực thể quan hệ ERD và chuẩn hóa dạng 3NF",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ sáng (09:30 - 10:30)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Viết DDL tạo bảng, khóa chính, khóa ngoại và ràng buộc toàn vẹn",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ chiều (14:00 - 15:00)",
-                        "cognitive_load": "medium"
-                    },
-                    {
-                        "title": "Soạn tập dữ liệu giả lập (Mock Data) và viết 5 câu truy vấn tối ưu",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ chiều (15:00 - 16:00)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Đo lường thời gian thực thi EXPLAIN ANALYZE và tạo Index",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
-                        "cognitive_load": "medium"
-                    }
-                ]
+                "total_estimated_minutes": sum(s["estimated_minutes"] for s in subs),
+                "subtasks": subs
             }
         else:
+            subs = [
+                {
+                    "title": f"Nghiên cứu tài liệu tham khảo & Thu thập tư liệu cho: {title[:35]}",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ sáng (09:00 - 10:00)",
+                    "cognitive_load": "medium"
+                },
+                {
+                    "title": "Xây dựng dàn ý chi tiết và phân công các mục nội dung",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ vàng chiều (14:00 - 15:00)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Viết nội dung cốt lõi và hoàn thiện các luận điểm chính",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ vàng chiều (15:00 - 16:00)",
+                    "cognitive_load": "high"
+                },
+                {
+                    "title": "Rà soát định dạng bài nộp, kiểm tra quy chuẩn và nộp bài",
+                    "estimated_minutes": 25,
+                    "pomodoro_count": 1,
+                    "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
+                    "cognitive_load": "light"
+                }
+            ][:max_fallback]
             return {
                 "task_title": title,
                 "ai_source": "heuristic",
                 "summary_advice": "Khởi đầu bằng việc đọc kỹ đề cương và lập khung sườn chi tiết sẽ giúp bạn tiết kiệm 50% thời gian triển khai.",
                 "circadian_tip": "Thực hiện bước đọc và nghiên cứu tài liệu vào khung giờ Alpha sáng sớm hoặc đầu giờ tối.",
-                "total_estimated_minutes": 100,
-                "subtasks": [
-                    {
-                        "title": f"Nghiên cứu tài liệu tham khảo & Thu thập tư liệu cho: {title[:35]}",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ sáng (09:00 - 10:00)",
-                        "cognitive_load": "medium"
-                    },
-                    {
-                        "title": "Xây dựng dàn ý chi tiết và phân công các mục nội dung",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ vàng chiều (14:00 - 15:00)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Viết nội dung cốt lõi và hoàn thiện các luận điểm chính",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ vàng chiều (15:00 - 16:00)",
-                        "cognitive_load": "high"
-                    },
-                    {
-                        "title": "Rà soát định dạng bài nộp, kiểm tra quy chuẩn và nộp bài",
-                        "estimated_minutes": 25,
-                        "pomodoro_count": 1,
-                        "recommended_circadian_window": "Khung giờ tối (19:30 - 20:30)",
-                        "cognitive_load": "light"
-                    }
-                ]
+                "total_estimated_minutes": sum(s["estimated_minutes"] for s in subs),
+                "subtasks": subs
             }
 
     @staticmethod

@@ -268,7 +268,9 @@ export default function DeepWorkView() {
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });
       qc.invalidateQueries({ queryKey: ['focus-sessions'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['analytics'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast(res.message || '🎉 Đã hoàn tất phiên Deep Work & cập nhật tiến độ! Chuyển về Tổng quan sau 1.5s...', 'success');
       setTimeout(() => {
@@ -346,7 +348,10 @@ export default function DeepWorkView() {
   async function toggleSubtask(sub) {
     try {
       await api.patch(`/tasks/subtasks/${sub.id}/toggle`);
-      tasksQ.refetch();
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
     } catch (err) { showToast(err.message || 'Lỗi.', 'error'); }
   }
 

@@ -239,7 +239,7 @@ export default function SoundView() {
       <section className="flex flex-wrap items-center justify-between gap-3 text-xs bg-white/75 backdrop-blur-md p-2.5 px-4 rounded-2xl border border-white/60 shadow-xs">
         <div className="flex items-center gap-2 text-slate-600 font-medium">
           <span className="text-slate-500">📖</span>
-          <span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+          <span>{user?.university ? `${user.university}${user.major ? ` • ${user.major}` : ''}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
           <span className="text-slate-400">/</span>
           <span className="text-slate-900 font-semibold">Không gian Âm thanh Tĩnh lặng 432Hz &amp; Tự nhiên</span>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -80,6 +80,7 @@ export default function DashboardView() {
     mutationFn: (id) => api.patch(`/schedule/events/${id}/toggle`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast('Đã cập nhật trạng thái sự kiện thời khóa biểu!', 'success');
     },
     onError: (err) => showToast(err.message, 'error'),
@@ -106,6 +107,10 @@ export default function DashboardView() {
         showToast(next === 'completed' ? 'Đã hoàn thành nhiệm vụ!' : 'Đã mở lại nhiệm vụ.', 'success');
       }
       qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
     } catch (err) {
       showToast(err.message || 'Không cập nhật được.', 'error');
     } finally {
@@ -119,6 +124,8 @@ export default function DashboardView() {
       const res = await api.post('/schedule/auto-balance', {});
       showToast(res.message || 'Đã thích ứng lịch theo nhịp sinh học!', 'success');
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     } catch (err) {
       showToast(err.message || 'Không thích ứng được.', 'error');
     } finally {
@@ -149,6 +156,7 @@ export default function DashboardView() {
         showToast(res.message || 'Đã áp dụng vào lịch!', 'success');
       }
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     } catch (err) {
       showToast(err.message || 'Không thực hiện được.', 'error');
     } finally {

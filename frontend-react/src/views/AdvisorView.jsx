@@ -70,6 +70,8 @@ export default function AdvisorView() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [showLmsModal, setShowLmsModal] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
   const recRef = useRef(null);
   const listRef = useRef(null);
   const fileRef = useRef(null);
@@ -196,15 +198,20 @@ export default function AdvisorView() {
     } catch (err) { showToast(err.message || 'Không tạo được phiên.', 'error'); }
   }
 
-  async function renameSession(id, currentTitle) {
-    const newTitle = window.prompt('Đổi tên phiên thảo luận:', currentTitle || '');
-    if (!newTitle || !newTitle.trim() || newTitle.trim() === currentTitle) return;
+  async function saveSessionRename(id) {
+    const trimmed = editingTitle.trim();
+    if (!trimmed) {
+      setEditingSessionId(null);
+      return;
+    }
     try {
-      await api.patch(`/advisor/sessions/${encodeURIComponent(id)}`, { title: newTitle.trim() });
+      await api.patch(`/advisor/sessions/${encodeURIComponent(id)}`, { title: trimmed });
       showToast('Đã đổi tên phiên.', 'success');
       sessionsQ.refetch();
     } catch (err) {
       showToast(err.message || 'Không đổi tên được phiên.', 'error');
+    } finally {
+      setEditingSessionId(null);
     }
   }
 
@@ -418,7 +425,7 @@ ${docs.length > 0 ? docs.map((d) => `- [[${d.filename}]] (${d.size_kb} KB)`).joi
     <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-5 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs pb-3">
         <div className="flex items-center space-x-2 text-slate-600 font-medium">
-          <span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+          <span>{user?.university ? `${user.university} • ${user.major || 'Đại học'}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
           <span className="text-slate-300">/</span>
           <span className="text-slate-900 font-semibold flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />

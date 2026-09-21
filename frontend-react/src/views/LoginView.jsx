@@ -53,6 +53,13 @@ export default function LoginView() {
         /* bỏ qua */
       }
 
+      const isVerified = res?.user?.is_email_verified;
+      if (isVerified === false) {
+        showToast('Tài khoản chưa xác minh email. Vui lòng nhập mã OTP để tiếp tục.', 'warning');
+        navigate(`/verify?email=${encodeURIComponent(identity)}`, { replace: true });
+        return;
+      }
+
       const isOnboarded = res?.user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
       showToast('Đăng nhập thành công! Đang chuyển vào không gian học tập...', 'success');
       navigate(isOnboarded ? '/dashboard' : '/onboarding', { replace: true });

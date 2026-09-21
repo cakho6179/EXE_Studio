@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { api } from '../services/api.js';
 import { useTasks, useTimeline } from '../hooks/useApi.js';
 import LmsSyncModal from '../components/LmsSyncModal.jsx';
@@ -31,6 +32,7 @@ function weekDays() {
 }
 
 export default function PlannerView() {
+  const { user } = useAuth();
   const { showToast } = useToast();
   const { isPlaying, track, togglePlay, sleepMinutes, setSleepTimer } = useAudio();
   const qc = useQueryClient();
@@ -106,6 +108,8 @@ export default function PlannerView() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['study-plans'] });
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       showToast(res?.message || 'Đã áp dụng lộ trình vào lịch!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không áp dụng được.', 'error'),
@@ -114,6 +118,9 @@ export default function PlannerView() {
     mutationFn: () => api.post('/schedule/auto-balance', {}),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       showToast(res?.message || 'Thuật toán AI đã tự động tối ưu lịch trình!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không tối ưu được lịch. Thử lại sau.', 'error'),
@@ -178,7 +185,7 @@ export default function PlannerView() {
         <div className="flex flex-wrap items-center gap-2 min-w-0">
           <div className="flex items-center gap-2 text-slate-500 text-xs font-medium">
             <span className="text-blue-600 text-base">🏫</span>
-            <span>Học kỳ I / Năm 3 • ĐHQG TP.HCM</span>
+            <span>{user?.university ? `${user.university}${user.major ? ` • ${user.major}` : ''}` : 'Học kỳ I / Năm 3 • ĐHQG TP.HCM'}</span>
             <span className="text-slate-300">/</span>
             <span className="text-slate-800 font-semibold truncate">{weekLabel}</span>
           </div>

@@ -235,6 +235,80 @@ def main():
           r_bal2.status_code == 200 and r_bal2.json().get("balanced_count") == 0 and "tối ưu hoàn hảo" in r_bal2.json().get("message", ""),
           r_bal2.text[:120])
 
+    # 7m. Sửa nhanh ghi chú inline (PATCH /api/v1/notes/{id})
+    r_note_edit = client.patch(f"/api/v1/notes/{nid}", json={"title": "Note Fresh Updated", "content": "Nội dung cập nhật"}, headers=uh)
+    check("7m. Sửa nhanh ghi chú inline (PATCH /api/v1/notes/{id})",
+          r_note_edit.status_code == 200 and r_note_edit.json().get("title") == "Note Fresh Updated",
+          r_note_edit.text[:120])
+
+    # 7n. Báo cáo phân tích AI Insights (GET /api/v1/analytics/ai-insights)
+    r_insights = client.get("/api/v1/analytics/ai-insights?days=7", headers=uh)
+    check("7n. Báo cáo phân tích AI Insights (GET /api/v1/analytics/ai-insights)",
+          r_insights.status_code == 200 and r_insights.json().get("status") == "success" and len(r_insights.json().get("insights", [])) >= 1,
+          r_insights.text[:120])
+
+    # 7o. Ma trận tương quan phân bổ thời gian (GET /api/v1/analytics/correlations)
+    r_corr = client.get("/api/v1/analytics/correlations?days=7", headers=uh)
+    check("7o. Ma trận tương quan phân bổ thời gian (GET /api/v1/analytics/correlations)",
+          r_corr.status_code == 200 and r_corr.json().get("status") == "success" and isinstance(r_corr.json().get("hour_distribution"), dict),
+          r_corr.text[:120])
+
+    # 7p. An toàn khóa ngoại khi xóa task (DELETE /api/v1/tasks/{id} unlinking FK)
+    r_task_fk = client.post("/api/v1/tasks/", json={"title": "Task Khóa Ngoại", "priority": "high"}, headers=uh)
+    t_fk_id = r_task_fk.json()["id"]
+    r_ev_fk = client.post("/api/v1/schedule/events", json={"title": "Event Khóa Ngoại", "task_id": t_fk_id, "start_time": "16:00", "end_time": "17:00"}, headers=uh)
+    ev_fk_id = r_ev_fk.json()["id"]
+    r_del_task = client.delete(f"/api/v1/tasks/{t_fk_id}", headers=uh)
+    check("7p. An toàn khóa ngoại khi xóa task (DELETE /api/v1/tasks/{id} gỡ FK an toàn)",
+          r_del_task.status_code == 200 and client.get(f"/api/v1/schedule/events/{ev_fk_id}", headers=uh).json().get("task_id") is None,
+          r_del_task.text[:120])
+    client.delete(f"/api/v1/schedule/events/{ev_fk_id}", headers=uh)
+
+    # 7q. Hoàn thành task mẹ tự động hoàn thành các micro-subtasks (PATCH /api/v1/tasks/{id})
+    r_task_with_subs = client.post("/api/v1/tasks/", json={
+        "title": "Đồ án Kiến trúc Máy tính",
+        "priority": "high",
+        "subtasks": [{"title": "Bước 1: Thiết kế ALU"}, {"title": "Bước 2: Viết testbench"}]
+    }, headers=uh)
+    t_subs_id = r_task_with_subs.json()["id"]
+    # Mark task completed
+    r_comp = client.patch(f"/api/v1/tasks/{t_subs_id}", json={"status": "completed"}, headers=uh)
+    comp_json = r_comp.json()
+    all_subs_done = all(s.get("is_completed") is True for s in comp_json.get("subtasks", []))
+    check("7q. Hoàn thành task mẹ tự động hoàn thành các micro-subtasks",
+          r_comp.status_code == 200 and comp_json.get("status") == "completed" and all_subs_done and comp_json.get("completed_sprints") == 2,
+          f"status={comp_json.get('status')}, subs={comp_json.get('subtasks')}")
+    # Reopen task in_progress
+    r_reopen = client.patch(f"/api/v1/tasks/{t_subs_id}", json={"status": "in_progress"}, headers=uh)
+    reopen_json = r_reopen.json()
+    all_subs_open = all(s.get("is_completed") is False for s in reopen_json.get("subtasks", []))
+    check("7r. Mở lại task mẹ chuyển subtasks về in_progress",
+          r_reopen.status_code == 200 and reopen_json.get("status") == "in_progress" and all_subs_open,
+          f"status={reopen_json.get('status')}")
+    # 7s. Notifications chứa link điều hướng tương tác
+    r_notif = client.get("/api/v1/notifications/list", headers=uh)
+    notifs = r_notif.json().get("notifications", [])
+    has_links = len(notifs) > 0 and any("link" in n and n["link"].startswith("/") for n in notifs)
+    check("7s. Thông báo kèm đường dẫn link tương tác", r_notif.status_code == 200 and has_links, f"notifs={notifs[:2]}")
+
+    # 7t. AI Deconstruct tôn trọng tham số complexity
+    r_decomp = client.post("/api/v1/tasks/ai-decompose", json={"title": "Lab 1 SQL Query Optimization", "complexity": "simple"}, headers=uh)
+    decomp_json = r_decomp.json() if r_decomp.status_code == 200 else {}
+    subs = decomp_json.get("subtasks", [])
+    check("7t. AI Deconstruct tôn trọng complexity simple (1-2 sprints)",
+          r_decomp.status_code == 200 and 1 <= len(subs) <= 2 and decomp_json.get("total_estimated_minutes") > 0,
+          f"status={r_decomp.status_code}, subs_count={len(subs)}")
+
+    # 7u. Đổi mật khẩu tài khoản
+    r_wrong_pwd = client.post("/api/v1/auth/change-password", json={"current_password": "saimatkhau", "new_password": "newpass123"}, headers=uh)
+    r_short_pwd = client.post("/api/v1/auth/change-password", json={"current_password": "moikhoe123", "new_password": "123"}, headers=uh)
+    r_ok_pwd = client.post("/api/v1/auth/change-password", json={"current_password": "moikhoe123", "new_password": "newpass456"}, headers=uh)
+    r_relogin_old = client.post("/api/v1/auth/login", json={"email": email, "password": "moikhoe123"})
+    r_relogin_new = client.post("/api/v1/auth/login", json={"email": email, "password": "newpass456"})
+    check("7u. Đổi mật khẩu tài khoản an toàn (POST /auth/change-password)",
+          r_wrong_pwd.status_code == 400 and r_short_pwd.status_code == 400 and r_ok_pwd.status_code == 200 and r_relogin_old.status_code == 400 and r_relogin_new.status_code == 200,
+          f"wrong={r_wrong_pwd.status_code}, ok={r_ok_pwd.status_code}, relogin_new={r_relogin_new.status_code}")
+
     client.delete(f"/api/v1/tasks/{tid}", headers=uh)
     client.delete(f"/api/v1/schedule/events/{evid}", headers=uh)
     client.delete(f"/api/v1/notes/{nid}", headers=uh)

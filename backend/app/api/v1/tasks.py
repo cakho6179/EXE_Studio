@@ -147,6 +147,13 @@ def update_task(
             from datetime import timezone
             data["deadline"] = data["deadline"].astimezone(timezone.utc).replace(tzinfo=None)
 
+    if "status" in data:
+        new_status = data["status"]
+        if new_status == "completed":
+            db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).update({"is_completed": True})
+        elif new_status == "in_progress" and task.status == "completed":
+            db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).update({"is_completed": False})
+
     for field, value in data.items():
         setattr(task, field, value)
 
@@ -229,7 +236,8 @@ async def ai_decompose_task(
         title=payload.title,
         description=payload.description,
         subject=payload.subject,
-        deadline=payload.deadline
+        deadline=payload.deadline,
+        complexity=payload.complexity or "medium"
     )
     return result
 
