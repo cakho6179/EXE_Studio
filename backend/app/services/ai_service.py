@@ -112,15 +112,18 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
                             st["recommended_circadian_window"] = "Khung giờ vàng chiều (14:00 - 16:30)"
                         if "cognitive_load" not in st:
                             st["cognitive_load"] = "high"
+                    parsed["ai_source"] = "gemini"
                     return parsed
             except Exception as parse_err:
                 print(f"[AIService] Failed to parse JSON from Gemini: {parse_err}, raw text: {raw_text[:200]}")
 
         # 2. Intelligent Academic Heuristic Fallback (Ensures 100% Uptime)
+        # Gắn ai_source để frontend hiển thị trung thực (key chết -> heuristic).
         title_lower = title.lower()
         if "machine learning" in title_lower or "ai" in title_lower or "ảnh" in title_lower or "mô hình" in title_lower or "deep learning" in title_lower:
             return {
                 "task_title": title,
+                "ai_source": "heuristic",
                 "summary_advice": "Chia nhỏ bài toán mô hình học máy thành các module độc lập giúp bạn kiểm soát lỗi và không bị áp lực thời hạn.",
                 "circadian_tip": "Thực hiện huấn luyện và tinh chỉnh siêu tham số vào khung giờ vàng 14:00 - 16:30 khi não bộ tư duy logic sắc bén nhất.",
                 "total_estimated_minutes": 125,
@@ -165,6 +168,7 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
         elif "cơ sở dữ liệu" in title_lower or "database" in title_lower or "sql" in title_lower:
             return {
                 "task_title": title,
+                "ai_source": "heuristic",
                 "summary_advice": "Tập trung thiết kế ERD chuẩn hóa trước khi bắt tay viết câu lệnh SQL để tránh sửa đổi lược đồ nhiều lần.",
                 "circadian_tip": "Viết truy vấn phức tạp và tối ưu hóa index vào đầu giờ sáng hoặc đầu giờ chiều.",
                 "total_estimated_minutes": 100,
@@ -202,6 +206,7 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
         else:
             return {
                 "task_title": title,
+                "ai_source": "heuristic",
                 "summary_advice": "Khởi đầu bằng việc đọc kỹ đề cương và lập khung sườn chi tiết sẽ giúp bạn tiết kiệm 50% thời gian triển khai.",
                 "circadian_tip": "Thực hiện bước đọc và nghiên cứu tài liệu vào khung giờ Alpha sáng sớm hoặc đầu giờ tối.",
                 "total_estimated_minutes": 100,

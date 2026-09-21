@@ -36,12 +36,6 @@ function weekDays() {
     return d;
   });
 }
-function slotIdx(timeStr) {
-  for (let i = 0; i < SLOTS.length; i++) {
-    if (timeStr >= SLOTS[i].from && timeStr < SLOTS[i].to) return i;
-  }
-  return -1;
-}
 
 export default function ScheduleView() {
   const { showToast } = useToast();
@@ -124,7 +118,9 @@ export default function ScheduleView() {
   const autoBalance = useMutation({
     mutationFn: () => api.post('/schedule/auto-balance', {}),
     onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: ['timeline'] });
+      ['timeline', 'tasks', 'focus-sessions', 'analytics-dashboard', 'pulse', 'notifications'].forEach((k) =>
+        qc.invalidateQueries({ queryKey: [k] }),
+      );
       showToast(res?.message || 'Thuật toán AI đã tự động tối ưu lịch trình!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không tối ưu được lịch. Thử lại sau.', 'error'),
@@ -142,7 +138,10 @@ export default function ScheduleView() {
   const nowHM = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
   const live = events.find((e) => evDay(e) === today && e.start_time <= nowHM && nowHM < e.end_time && !e.is_completed);
   const dayEvents = events.filter((e) => evDay(e) === today).sort((a, b) => a.start_time.localeCompare(b.start_time));
-  const upcoming = [...events].filter((e) => !e.is_completed && e.end_time > nowHM).sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
+  // Ưu tiên sự kiện HÔM NAY chưa hết giờ; hết thì lấy sự kiện tương lai gần nhất (trước đây lẫn ngày khác vào)
+  const upcomingToday = [...events].filter((e) => !e.is_completed && evDay(e) === today && e.end_time > nowHM).sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
+  const upcomingNext = [...events].filter((e) => !e.is_completed && evDay(e) > today).sort((a, b) => `${evDay(a)}${a.start_time}`.localeCompare(`${evDay(b)}${b.start_time}`))[0];
+  const upcoming = upcomingToday || upcomingNext;
 
   const handleMarkDone = async () => {
     const targetEvent = live || upcoming;
@@ -159,9 +158,11 @@ export default function ScheduleView() {
         notes: targetEvent?.title ? `Hoàn thành từ Lịch trình: ${targetEvent.title}` : 'Phiên tập trung Lịch trình',
       });
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['focus-sessions'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
-      qc.invalidateQueries({ queryKey: ['circadian-pulse'] });
+      qc.invalidateQueries({ queryKey: ['pulse'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast(
         targetEvent?.title
           ? `✓ Đã hoàn tất phiên "${targetEvent.title}"!`
@@ -406,6 +407,7 @@ export default function ScheduleView() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (!form.title.trim()) { showToast('Nhập tên phiên học.', 'warning'); return; }
+                  if (form.end <= form.start) { showToast('Giờ kết thúc phải sau giờ bắt đầu.', 'warning'); return; }
                   createEvent.mutate();
                 }}
                 className="space-y-3 mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200"
@@ -516,10 +518,50 @@ export default function ScheduleView() {
                         if (slot.band) {
                           return (
                             <div key={si} className="grid grid-cols-8 gap-1.5 py-2 items-stretch min-h-[50px] bg-amber-50/20">
-                              <div className="text-[11px] text-amber-700 font-medium flex items-center justify-center">{slot.label}</div>
-                              <div className="col-span-7 p-2 rounded-xl bg-amber-50/60 text-amber-800 text-[11px] font-medium border border-amber-100 flex items-center px-4">
-                                🧘 {slot.band}
-                              </div>
+                              <div className="text-[11px] text-amber-700 font-medium flex items-center justify-center" title={slot.band}>🧘</div>
+                              {days.map((d) => {
+                                const iso = isoOf(d);
+                                const bandEvents = events.filter((e) => evDay(e) === iso && e.start_time >= slot.from && e.start_time < slot.to);
+                                if (bandEvents.length === 0) {
+                                  return (
+                                    <div key={iso} className="p-2 rounded-xl bg-amber-50/60 text-amber-800/70 text-[10px] border border-amber-100/70 hidden lg:flex items-center px-3 truncate">
+                                      Calm Break
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div key={iso} className="flex flex-col gap-1 w-full">
+                                    {bandEvents.map((ev) => (
+                                      <div
+                                        key={ev.id}
+                                        className={`group/ev relative p-1.5 rounded-xl text-[10px] flex flex-col justify-center leading-tight transition ${TYPE_STYLE[ev.event_type] || TYPE_STYLE.self_study} ${ev.is_completed ? 'opacity-60 line-through' : ''}`}
+                                      >
+                                        <button
+                                          type="button"
+                                          title={`${ev.title} (bấm để ${ev.is_completed ? 'bỏ tick' : 'đánh dấu xong'})`}
+                                          onClick={() => toggleEvent.mutate(ev.id)}
+                                          className="w-full text-center truncate cursor-pointer hover:opacity-85"
+                                        >
+                                          <span className="truncate block">{ev.title.length > 20 ? `${ev.title.slice(0, 18)}…` : ev.title}</span>
+                                          <span className="text-[9px] opacity-80 block">{ev.start_time} - {ev.end_time}</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Xóa sự kiện này"
+                                          aria-label="Xóa sự kiện"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (window.confirm(`Xóa sự kiện "${ev.title}"?`)) deleteEvent.mutate(ev.id);
+                                          }}
+                                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-slate-900/80 hover:bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover/ev:opacity-100 transition shadow-sm cursor-pointer z-10"
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              })}
                             </div>
                           );
                         }
@@ -531,8 +573,8 @@ export default function ScheduleView() {
                             </div>
                             {days.map((d) => {
                               const iso = isoOf(d);
-                              const ev = events.find((e) => evDay(e) === iso && e.start_time >= slot.from && e.start_time < slot.to);
-                              if (!ev) {
+                              const slotEvents = events.filter((e) => evDay(e) === iso && e.start_time >= slot.from && e.start_time < slot.to);
+                              if (slotEvents.length === 0) {
                                 return (
                                   <button
                                     key={iso}
@@ -558,16 +600,36 @@ export default function ScheduleView() {
                                 );
                               }
                               return (
-                                <button
-                                  key={ev.id}
-                                  type="button"
-                                  title={`${ev.title} (bấm để ${ev.is_completed ? 'bỏ tick' : 'đánh dấu xong'})`}
-                                  onClick={() => toggleEvent.mutate(ev.id)}
-                                  className={`p-1.5 rounded-xl text-[10px] flex flex-col justify-center text-center leading-tight transition hover:opacity-80 ${TYPE_STYLE[ev.event_type] || TYPE_STYLE.self_study} ${ev.is_completed ? 'opacity-60 line-through' : ''}`}
-                                >
-                                  <span className="truncate">{ev.title.length > 22 ? `${ev.title.slice(0, 22)}…` : ev.title}</span>
-                                  <span className="text-[9px] opacity-80">{ev.start_time}</span>
-                                </button>
+                                <div key={iso} className="flex flex-col gap-1 w-full">
+                                  {slotEvents.map((ev) => (
+                                    <div
+                                      key={ev.id}
+                                      className={`group/ev relative p-1.5 rounded-xl text-[10px] flex flex-col justify-center leading-tight transition ${TYPE_STYLE[ev.event_type] || TYPE_STYLE.self_study} ${ev.is_completed ? 'opacity-60 line-through' : ''}`}
+                                    >
+                                      <button
+                                        type="button"
+                                        title={`${ev.title} (bấm để ${ev.is_completed ? 'bỏ tick' : 'đánh dấu xong'})`}
+                                        onClick={() => toggleEvent.mutate(ev.id)}
+                                        className="w-full text-center truncate cursor-pointer hover:opacity-85"
+                                      >
+                                        <span className="truncate block">{ev.title.length > 20 ? `${ev.title.slice(0, 18)}…` : ev.title}</span>
+                                        <span className="text-[9px] opacity-80 block">{ev.start_time} - {ev.end_time}</span>
+                                      </button>
+                                      <button
+                                        type="button"
+                                        title="Xóa sự kiện này"
+                                        aria-label="Xóa sự kiện"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (window.confirm(`Xóa sự kiện "${ev.title}"?`)) deleteEvent.mutate(ev.id);
+                                        }}
+                                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-slate-900/80 hover:bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover/ev:opacity-100 transition shadow-sm cursor-pointer z-10"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
                               );
                             })}
                           </div>
@@ -668,7 +730,10 @@ export default function ScheduleView() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => navigate('/deepwork?duration=25')}
+                onClick={() => {
+                  const cur = live || upcoming;
+                  navigate(cur ? `/deepwork?duration=25&title=${encodeURIComponent(cur.title)}${cur.task_id ? `&taskId=${cur.task_id}` : ''}` : '/deepwork?duration=25');
+                }}
                 className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5 active:scale-95"
               >
                 <span>▶</span>
@@ -739,7 +804,10 @@ export default function ScheduleView() {
             </div>
             <button
               type="button"
-              onClick={() => navigate('/deepwork?duration=50')}
+              onClick={() => {
+                const cur = topTask || live || upcoming;
+                navigate(cur ? `/deepwork?duration=50&title=${encodeURIComponent(cur.title)}${cur.id ? `&taskId=${cur.id}` : ''}` : '/deepwork?duration=50');
+              }}
               className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-sm flex items-center justify-center gap-2 active:scale-95"
             >
               <span>🎯</span>

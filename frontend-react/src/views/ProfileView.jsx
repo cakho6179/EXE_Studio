@@ -53,8 +53,19 @@ export default function ProfileView() {
       }),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['profile'] });
-      if (res?.profile?.full_name || res?.full_name) saveUser({ ...(user || {}), full_name: res.profile?.full_name || res.full_name });
-      showToast('Đã lưu hồ sơ!', 'success');
+      qc.invalidateQueries({ queryKey: ['pulse'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      if (res?.profile) {
+        saveUser({
+          ...(user || {}),
+          full_name: res.profile.full_name || form.full_name,
+          university: res.profile.university || form.university,
+          major: res.profile.major || form.major,
+          academic_year: res.profile.academic_year || form.academic_year,
+          ...res.profile,
+        });
+      }
+      showToast('Đã lưu hồ sơ sinh học & thông tin cá nhân!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không lưu được.', 'error'),
   });

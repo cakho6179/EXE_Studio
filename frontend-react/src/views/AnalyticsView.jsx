@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { usePulse, useTasks } from '../hooks/useApi.js';
@@ -245,9 +245,14 @@ export default function AnalyticsView() {
     } catch (e) { showToast(e.message || 'Không tối ưu được.', 'error'); }
   }
 
+  const qc = useQueryClient();
+
   async function saveMood(mood) {
     try {
       await api.post('/moods/', { mood, note: null });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
+      qc.invalidateQueries({ queryKey: ['analytics-insights'] });
+      qc.invalidateQueries({ queryKey: ['analytics-correlations'] });
       showToast('Đã lưu cảm xúc vào nhật ký hệ thống!', 'success');
     } catch (err) { showToast(err.message || 'Không lưu được cảm xúc.', 'error'); }
   }

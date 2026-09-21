@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import User, Note
 from app.api.v1.auth import get_current_user
 
@@ -14,7 +15,13 @@ class NoteCreate(BaseModel):
     content: Optional[str] = None
 
 
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+
+
 @router.get("/")
+@cached_response(ttl=30)
 def list_notes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -44,6 +51,27 @@ def create_note(
     db.commit()
     db.refresh(note)
     return {"status": "success", "id": note.id, "title": note.title}
+
+
+@router.patch("/{note_id}")
+def update_note(
+    note_id: str,
+    note_in: NoteUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Không tìm thấy ghi chú.")
+    if note_in.title is not None:
+        title = note_in.title.strip()
+        if title:
+            note.title = title[:255]
+    if note_in.content is not None:
+        note.content = note_in.content
+    db.commit()
+    db.refresh(note)
+    return {"status": "success", "id": note.id, "title": note.title, "content": note.content}
 
 
 @router.delete("/{note_id}")

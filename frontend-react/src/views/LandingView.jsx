@@ -61,6 +61,11 @@ export default function LandingView() {
     }
   }
 
+  // Nút "Bắt đầu bản Miễn Phí": đã login -> vào app, chưa -> sang đăng ký
+  function goRegister() {
+    navigate(isLoggedIn ? '/dashboard' : '/register');
+  }
+
   async function goDeepWork() {
     if (!isLoggedIn) {
       try {
@@ -437,9 +442,8 @@ export default function LandingView() {
                   </ul>
                 </div>
                 <button
-                  onClick={oneTouch}
-                  disabled={guestLoading}
-                  className="w-full py-3 px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors text-xs disabled:opacity-60"
+                  onClick={goRegister}
+                  className="w-full py-3 px-4 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors text-xs"
                   type="button"
                 >
                   Bắt đầu bản Miễn Phí

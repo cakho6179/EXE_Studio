@@ -101,6 +101,15 @@ export default function PlannerView() {
     },
     onError: (err) => showToast(err.message || 'Lỗi.', 'error'),
   });
+  const applyPlan = useMutation({
+    mutationFn: (id) => api.post(`/study-plans/${id}/apply-to-schedule`, {}),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['study-plans'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      showToast(res?.message || 'Đã áp dụng lộ trình vào lịch!', 'success');
+    },
+    onError: (err) => showToast(err.message || 'Không áp dụng được.', 'error'),
+  });
   const autoBalance = useMutation({
     mutationFn: () => api.post('/schedule/auto-balance', {}),
     onSuccess: (res) => {
@@ -152,10 +161,11 @@ export default function PlannerView() {
     ['Hoàn thành / ít ưu tiên', tasks.filter((t) => t.status === 'completed' || (!isUrgent(t) && t.priority !== 'high')), false],
   ];
 
+  const todayIso = new Date().toLocaleDateString('en-CA');
   const upcoming = [...events]
     .filter((e) => {
       const hm = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
-      return !e.is_completed && e.end_time > hm;
+      return !e.is_completed && (!e.event_date || e.event_date === todayIso) && e.end_time > hm;
     })
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
 
@@ -360,10 +370,10 @@ export default function PlannerView() {
             </div>
             {planTab === 'plans' && (
               <div className="mt-4 space-y-4">
-                <form
+                  <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!form.title.trim()) { showToast('Nhập tên kế hoạch.', 'warning'); return; }
+                    if (form.title.trim().length < 2) { showToast('Tên kế hoạch ít nhất 2 ký tự.', 'warning'); return; }
                     createPlan.mutate();
                   }}
                   className="grid sm:grid-cols-[1fr_160px_150px_90px_auto] gap-2 p-3 rounded-2xl bg-slate-50 border"
@@ -371,7 +381,7 @@ export default function PlannerView() {
                   <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Tên kế hoạch (VD: Ôn Giải tích 2)" className="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
                   <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Môn học" className="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
                   <input type="date" value={form.examDate} onChange={(e) => setForm({ ...form, examDate: e.target.value })} className="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
-                  <input type="number" min={1} max={12} value={form.hoursPerDay} onChange={(e) => setForm({ ...form, hoursPerDay: e.target.value })} title="Giờ học mỗi ngày" className="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
+                  <input type="number" min={0.5} max={16} step={0.5} value={form.hoursPerDay} onChange={(e) => setForm({ ...form, hoursPerDay: e.target.value })} title="Giờ học mỗi ngày (0.5–16)" className="px-3 py-2 rounded-xl border border-slate-200 text-xs" />
                   <button type="submit" disabled={createPlan.isPending} className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold disabled:opacity-60">Tạo</button>
                 </form>
                 {plansQ.isPending && <p className="text-xs text-slate-500">Đang tải…</p>}
@@ -404,6 +414,35 @@ export default function PlannerView() {
                         </div>
                       )}
                       {p.summary && <p className="mt-2 text-xs text-slate-500 leading-relaxed">{p.summary}</p>}
+                      {Array.isArray(p.phases) && p.phases.length > 0 && (
+                        <details className="mt-2 text-xs">
+                          <summary className="cursor-pointer text-blue-600 font-semibold">
+                            Lộ trình {p.phases.length} ngày — xem chi tiết
+                          </summary>
+                          <ul className="mt-1.5 space-y-1 max-h-40 overflow-y-auto pr-1">
+                            {p.phases.slice(0, 14).map((ph, i) => (
+                              <li key={i} className="flex items-center gap-2 text-slate-600">
+                                <span className="shrink-0 font-mono text-[10px] text-slate-400">{ph.date?.slice(5) || `N${i + 1}`}</span>
+                                <span className="truncate">{ph.focus || ph.stage}</span>
+                                <span className="ml-auto shrink-0 text-[10px] text-slate-400">{ph.minutes}p</span>
+                              </li>
+                            ))}
+                            {p.phases.length > 14 && <li className="text-slate-400 text-[11px]">…và {p.phases.length - 14} ngày nữa</li>}
+                          </ul>
+                        </details>
+                      )}
+                      <div className="mt-2 flex gap-2">
+                        {Array.isArray(p.phases) && p.phases.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => applyPlan.mutate(p.id)}
+                            disabled={applyPlan.isPending}
+                            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-[11px] font-semibold transition"
+                          >
+                            Áp dụng vào lịch
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -428,7 +467,7 @@ export default function PlannerView() {
                 </label>
                 <label className="text-xs text-slate-600 font-semibold">
                   Giờ học mỗi ngày
-                  <input type="number" min={1} max={12} value={genForm.hoursPerDay} onChange={(e) => setGenForm({ ...genForm, hoursPerDay: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-normal" />
+                  <input type="number" min={0.5} max={16} step={0.5} value={genForm.hoursPerDay} onChange={(e) => setGenForm({ ...genForm, hoursPerDay: e.target.value })} className="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-normal" />
                 </label>
                 <label className="text-xs text-slate-600 font-semibold">
                   Mức độ

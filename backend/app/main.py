@@ -124,6 +124,34 @@ import sys
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
+# Sau mọi request ghi thành công -> bump cache version của user để GET sau tươi ngay.
+# (DB Neon xa, RTT ~250ms: cache GET 45s + bump-on-write cho cảm giác tức thì.)
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.core.cache import bump
+from app.core.security import decode_access_token
+
+
+class _BumpCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        try:
+            if (
+                request.method in ("POST", "PATCH", "PUT", "DELETE")
+                and request.url.path.startswith(settings.API_V1_STR)
+                and 200 <= response.status_code < 300
+            ):
+                auth = request.headers.get("authorization", "")
+                if auth.startswith("Bearer "):
+                    uid = decode_access_token(auth[7:].strip())
+                    if uid:
+                        bump(uid)
+        except Exception:
+            pass
+        return response
+
+
+app.add_middleware(_BumpCacheMiddleware)
+
 # Seed Initial Demo Data
 def _seed_schedule_events(db, user):
     """Lịch trình mẫu persist trong DB (thay mock frontend). Idempotent."""

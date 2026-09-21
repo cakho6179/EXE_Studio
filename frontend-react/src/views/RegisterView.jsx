@@ -79,6 +79,7 @@ export default function RegisterView() {
 
       try {
         localStorage.removeItem('studi_recovery_email');
+        localStorage.removeItem('studi_onboarded');
         localStorage.setItem('studi_otp_sent_at', String(Date.now()));
         sessionStorage.setItem('studi_verify_email', trimmedEmail);
         sessionStorage.setItem('studi_pending_auth', JSON.stringify(regResult));

@@ -373,10 +373,10 @@ ${docs.length > 0 ? docs.map((d) => `- [[${d.filename}]] (${d.size_kb} KB)`).joi
   async function handleUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const allowed = ['pdf', 'docx', 'doc', 'tex', 'txt', 'md', 'zip', 'rar'];
+    const allowed = ['pdf', 'docx', 'tex', 'txt', 'md'];
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     if (!allowed.includes(ext)) {
-      showToast(`Định dạng .${ext} không được hỗ trợ. Hãy chọn file PDF, Word, LaTeX, Markdown hoặc ZIP.`, 'warning');
+      showToast(`Định dạng .${ext} không được hỗ trợ. Hãy chọn file tài liệu PDF, Word (.docx), LaTeX (.tex) hoặc Markdown (.md, .txt).`, 'warning');
       e.target.value = '';
       return;
     }
@@ -394,6 +394,17 @@ ${docs.length > 0 ? docs.map((d) => `- [[${d.filename}]] (${d.size_kb} KB)`).joi
       showToast(res.message || 'Đã nạp tài liệu vào bộ nhớ AI!', 'success');
     } catch (err) { showToast(err.message || 'Tải file thất bại.', 'error'); }
     finally { e.target.value = ''; }
+  }
+
+  async function handleDeleteDoc(id, name) {
+    if (!window.confirm(`Xóa tài liệu "${name}" khỏi bộ nhớ AI?`)) return;
+    try {
+      await api.delete(`/advisor/documents/${encodeURIComponent(id)}`);
+      knowledgeQ.refetch();
+      showToast(`Đã xóa tài liệu "${name}".`, 'success');
+    } catch (err) {
+      showToast(err.message || 'Không xóa được tài liệu.', 'error');
+    }
   }
 
   const allTasks = useMemo(() => (Array.isArray(tasksQ.data) ? tasksQ.data : []), [tasksQ.data]);
@@ -492,12 +503,23 @@ ${docs.length > 0 ? docs.map((d) => `- [[${d.filename}]] (${d.size_kb} KB)`).joi
               {knowledgeQ.isLoading && <div className="p-2.5 text-center text-slate-400">Đang tải tài liệu...</div>}
               {!knowledgeQ.isLoading && docs.length === 0 && <div className="p-2.5 text-center text-slate-400">Chưa có tài liệu nào. Bấm “Nạp thêm” bên dưới.</div>}
               {docs.map((d) => (
-                <div key={d.id} className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between" title={`${d.filename} (${d.size_kb}KB)`}>
-                  <div className="flex items-center space-x-2 truncate">
-                    <span className="text-sm">{docIcon(d.filename)}</span>
+                <div key={d.id} className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between group" title={`${d.filename} (${d.size_kb}KB)`}>
+                  <div className="flex items-center space-x-2 truncate min-w-0 pr-1">
+                    <span className="text-sm shrink-0">{docIcon(d.filename)}</span>
                     <span className="font-medium text-slate-700 truncate">{d.filename}</span>
                   </div>
-                  <span className="text-[10px] text-emerald-600">✔</span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] text-emerald-600">✔</span>
+                    <button
+                      type="button"
+                      title="Xóa tài liệu khỏi bộ nhớ AI"
+                      aria-label={`Xóa tài liệu ${d.filename}`}
+                      onClick={() => handleDeleteDoc(d.id, d.filename)}
+                      className="p-1 text-slate-300 hover:text-rose-600 rounded transition opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

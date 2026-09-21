@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.core.timeutils import vn_now, vn_day_start_utc, vn_today_iso
 from app.models.entities import User, Task, MicroSubtask, FocusSession, ScheduleEvent
 from app.api.v1.auth import get_current_user
@@ -10,6 +11,7 @@ router = APIRouter()
 
 
 @router.get("/list")
+@cached_response(ttl=30)
 def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

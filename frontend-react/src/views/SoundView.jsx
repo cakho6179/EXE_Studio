@@ -545,7 +545,35 @@ export default function SoundView() {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button type="button" onClick={() => applyPreset(p)} className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition">Dùng</button>
-                        <button type="button" aria-label="Xóa preset" onClick={async () => { if (!window.confirm('Xóa preset này?')) return; try { await api.delete(`/audio/presets/${p.id}`); presetsQ.refetch(); } catch (err) { showToast(err.message || 'Không xóa được.', 'error'); } }} className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition">✕</button>
+                        <button
+                          type="button"
+                          aria-label="Xóa preset"
+                          onClick={async () => {
+                            if (!window.confirm('Xóa preset này?')) return;
+                            if (String(p.id).startsWith('local_')) {
+                              try {
+                                const list = JSON.parse(localStorage.getItem('studi_local_presets') || '[]');
+                                const updated = list.filter((item) => item.id !== p.id);
+                                localStorage.setItem('studi_local_presets', JSON.stringify(updated));
+                                setMixTick((x) => x + 1);
+                                showToast('Đã xóa preset.', 'success');
+                              } catch {
+                                showToast('Không xóa được preset.', 'error');
+                              }
+                              return;
+                            }
+                            try {
+                              await api.delete(`/audio/presets/${p.id}`);
+                              presetsQ.refetch();
+                              showToast('Đã xóa preset.', 'success');
+                            } catch (err) {
+                              showToast(err.message || 'Không xóa được.', 'error');
+                            }
+                          }}
+                          className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition"
+                        >
+                          ✕
+                        </button>
                       </div>
                     </div>
                   ))}

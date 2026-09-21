@@ -62,6 +62,8 @@ export default function TasksView() {
 
   // Notes
   const [noteText, setNoteText] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editingNoteText, setEditingNoteText] = useState('');
   const [showLmsModal, setShowLmsModal] = useState(false);
 
   // Modal tạo / sửa (port 12-task-modal)
@@ -146,6 +148,16 @@ export default function TasksView() {
     mutationFn: (id) => api.delete(`/notes/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notes'] }),
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
+  });
+  const updateNote = useMutation({
+    mutationFn: ({ id, title, content }) => api.patch(`/notes/${id}`, { title, content }),
+    onSuccess: () => {
+      setEditingNoteId(null);
+      setEditingNoteText('');
+      qc.invalidateQueries({ queryKey: ['notes'] });
+      showToast('Đã cập nhật ghi chú thành công!', 'success');
+    },
+    onError: (err) => showToast(err.message || 'Không cập nhật được.', 'error'),
   });
 
   // ---- lọc / tìm / sắp xếp ----
@@ -272,16 +284,16 @@ export default function TasksView() {
       }
     }
     const matchedSubj = SUBJECT_PRESETS.find((p) =>
-      aiText.toLowerCase().includes(p.name.toLowerCase()) ||
-      aiText.toLowerCase().includes(p.code.toLowerCase()),
+      aiText.toLowerCase().includes(p.toLowerCase().split('(')[0].trim()) ||
+      aiText.toLowerCase().includes(parseSubjectCode(p).toLowerCase()),
     ) || SUBJECT_PRESETS[0];
 
     try {
       const created = await api.post('/tasks/', {
         title: aiResult.task_title || aiText.trim(),
         description: aiResult.summary_advice || '',
-        subject_name: aiResult.subject_name || matchedSubj.name,
-        subject_code: aiResult.subject_code || matchedSubj.code,
+        subject_name: aiResult.subject_name || shortSubject(matchedSubj),
+        subject_code: aiResult.subject_code || parseSubjectCode(matchedSubj),
         priority: aiResult.priority || 'high',
         complexity: aiResult.complexity || 'complex',
         deadline: deadlineIso,
@@ -298,7 +310,7 @@ export default function TasksView() {
         for (let i = 0; i < Math.min(aiResult.subtasks.length, 4); i++) {
           const d = new Date();
           d.setDate(d.getDate() + i);
-          const dateStr = d.toISOString().slice(0, 10);
+          const dateStr = d.toLocaleDateString('en-CA');
           await api.post('/schedule/events', {
             task_id: created.id,
             title: `Bước ${i + 1}: ${aiResult.subtasks[i].title}`,
@@ -322,6 +334,47 @@ export default function TasksView() {
     }
   };
 
+  // ---- Lưu mỗi micro-sprint thành 1 nhiệm vụ nhỏ riêng ----
+  const [splitSaving, setSplitSaving] = useState(false);
+  const saveAiSplit = async () => {
+    const subs = aiResult?.subtasks || [];
+    if (!subs.length || splitSaving) return;
+    const matchedSubj = SUBJECT_PRESETS.find((p) =>
+      aiText.toLowerCase().includes(p.toLowerCase().split('(')[0].trim()) ||
+      aiText.toLowerCase().includes(parseSubjectCode(p).toLowerCase()),
+    ) || SUBJECT_PRESETS[0];
+    setSplitSaving(true);
+    let done = 0;
+    try {
+      for (const s of subs) {
+        await api.post('/tasks/', {
+          title: s.title,
+          description: `Micro-sprint tách từ: ${aiResult.task_title || aiText.trim()}`,
+          subject_name: aiResult.subject_name || shortSubject(matchedSubj),
+          subject_code: aiResult.subject_code || parseSubjectCode(matchedSubj),
+          priority: aiResult.priority || 'medium',
+          complexity: 'simple',
+          deadline: null,
+          subtasks: [{
+            title: s.title,
+            estimated_minutes: s.estimated_minutes || 25,
+            pomodoro_count: s.pomodoro_count || 1,
+            recommended_circadian_window: s.recommended_circadian_window || 'Khung giờ vàng chiều (14:00 - 16:30)',
+          }],
+        });
+        done += 1;
+      }
+      showToast(`Đã lưu ${done} nhiệm vụ nhỏ!`, 'success');
+      setAiResult(null);
+      setAiText('');
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    } catch (err) {
+      showToast(done > 0 ? `Đã lưu ${done}/${subs.length} task, lỗi ở task tiếp theo: ${err.message}` : (err.message || 'Không lưu được.'), done > 0 ? 'warning' : 'error');
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    } finally {
+      setSplitSaving(false);
+    }
+  };
   // ---- Modal tạo / sửa ----
   const openCreate = () => {
     setEditing(null);
@@ -455,6 +508,8 @@ export default function TasksView() {
           complexity: mComplexity,
         });
         showToast('Đã cập nhật nhiệm vụ!', 'success');
+      } else {
+        // Tạo mới: AI phân rã + POST task + gán lịch (trước đây nằm nhầm trong if(editing) nên không bao giờ chạy)
         let subtasks = [];
         let summary = mDesc.trim();
         const detectedSubj = SUBJECT_PRESETS.find((p) =>
@@ -491,7 +546,7 @@ export default function TasksView() {
           for (let i = 0; i < stepsToSchedule; i++) {
             const d = new Date();
             d.setDate(d.getDate() + i);
-            const dateStr = d.toISOString().slice(0, 10);
+            const dateStr = d.toLocaleDateString('en-CA');
             await api.post('/schedule/events', {
               task_id: createdTask.id,
               title: `Bước ${i + 1}: ${subtasks[i].title}`,
@@ -998,7 +1053,14 @@ export default function TasksView() {
               {aiResult && (
                 <div className="space-y-2" aria-live="polite">
                   <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1.5">
-                    <p className="font-bold text-slate-800">{aiResult.task_title}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-bold text-slate-800">{aiResult.task_title}</p>
+                      {aiResult.ai_source === 'gemini' ? (
+                        <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">✨ AI Gemini</span>
+                      ) : (
+                        <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold" title="API key Gemini chưa có/không dùng được nên dùng gợi ý mẫu">📌 Gợi ý mẫu</span>
+                      )}
+                    </div>
                     {aiResult.summary_advice && <p className="text-slate-600">{aiResult.summary_advice}</p>}
                     <ul className="space-y-1 pt-1">
                       {(aiResult.subtasks || []).map((s, i) => (
@@ -1014,9 +1076,18 @@ export default function TasksView() {
                     <button
                       type="button"
                       onClick={saveAiTask}
-                      className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition"
+                      disabled={splitSaving}
+                      className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold text-xs rounded-xl transition"
                     >
-                      Lưu thành nhiệm vụ
+                      Lưu thành 1 nhiệm vụ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveAiSplit}
+                      disabled={splitSaving}
+                      className="w-full py-2 bg-white hover:bg-blue-50 disabled:opacity-60 text-blue-700 font-semibold text-xs rounded-xl border border-blue-200 transition"
+                    >
+                      {splitSaving ? 'Đang lưu từng task…' : `Tách thành ${(aiResult.subtasks || []).length} task nhỏ`}
                     </button>
                   </div>
                 </div>
@@ -1033,24 +1104,80 @@ export default function TasksView() {
               {notesQ.isPending && <div className="p-2.5 text-center text-slate-400">Đang tải ghi chú...</div>}
               {!notesQ.isPending && notes.length === 0 && <div className="p-2.5 text-center text-slate-400">Chưa có ghi chú nào.</div>}
               {notes.map((n) => (
-                <div key={n.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/60 border border-slate-200/60">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span>📝</span>
-                    <span className="text-slate-700 font-medium truncate" title={n.title}>{n.title}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] text-slate-400">
-                      {n.created_at ? new Date(n.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : ''}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Xóa ghi chú"
-                      onClick={() => delNote.mutate(n.id)}
-                      className="text-slate-300 hover:text-rose-600 transition"
-                    >
-                      ✕
-                    </button>
-                  </div>
+                <div key={n.id} className="p-2.5 rounded-xl bg-white/60 border border-slate-200/60">
+                  {editingNoteId === n.id ? (
+                    <div className="flex items-center gap-1.5 w-full">
+                      <input
+                        type="text"
+                        value={editingNoteText}
+                        onChange={(e) => setEditingNoteText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const val = editingNoteText.trim();
+                            if (val) updateNote.mutate({ id: n.id, title: val, content: val });
+                          } else if (e.key === 'Escape') {
+                            setEditingNoteId(null);
+                          }
+                        }}
+                        className="flex-1 px-2.5 py-1 rounded-lg border border-blue-400 bg-white text-xs outline-none shadow-inner"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        title="Lưu"
+                        aria-label="Lưu thay đổi ghi chú"
+                        onClick={() => {
+                          const val = editingNoteText.trim();
+                          if (val) updateNote.mutate({ id: n.id, title: val, content: val });
+                        }}
+                        className="p-1 text-emerald-600 hover:text-emerald-700 font-bold text-xs cursor-pointer"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        title="Hủy"
+                        aria-label="Hủy sửa ghi chú"
+                        onClick={() => setEditingNoteId(null)}
+                        className="p-1 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span>📝</span>
+                        <span className="text-slate-700 font-medium truncate" title={n.title}>{n.title}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] text-slate-400">
+                          {n.created_at ? new Date(n.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : ''}
+                        </span>
+                        <button
+                          type="button"
+                          aria-label="Sửa ghi chú"
+                          title="Sửa ghi chú"
+                          onClick={() => {
+                            setEditingNoteId(n.id);
+                            setEditingNoteText(n.title);
+                          }}
+                          className="text-slate-300 hover:text-blue-600 transition cursor-pointer"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Xóa ghi chú"
+                          title="Xóa ghi chú"
+                          onClick={() => delNote.mutate(n.id)}
+                          className="text-slate-300 hover:text-rose-600 transition cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1338,7 +1465,7 @@ export default function TasksView() {
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.docx,.zip,.txt,.md"
+                    accept=".pdf,.docx,.tex,.txt,.md"
                     className="hidden"
                     onChange={(e) => {
                       const ALLOWED_EXTS = ['.pdf', '.docx', '.zip', '.txt', '.md'];

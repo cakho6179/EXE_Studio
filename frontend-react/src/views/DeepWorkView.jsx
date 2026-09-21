@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
@@ -68,10 +68,12 @@ export default function DeepWorkView() {
   const { showToast } = useToast();
   const { switchTrack, togglePlay, engine } = useAudio();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [params] = useSearchParams();
   const paramTaskId = params.get('taskId') || '';
-  const paramTitle = params.get('title') || '';
-  const paramDuration = params.get('duration') ? parseInt(params.get('duration')) : null;
+  const paramTitle = (params.get('title') || '').slice(0, 120);
+  const rawDuration = parseInt(params.get('duration') || '', 10);
+  const paramDuration = Number.isFinite(rawDuration) ? Math.min(240, Math.max(5, rawDuration)) : null;
   const paramSound = params.get('sound') || '';
   const paramMode = params.get('mode') || '';
 
@@ -185,8 +187,10 @@ export default function DeepWorkView() {
       setTm((p) => ({ ...p, phaseIdx: nextIdx, remaining: next.minutes * 60 }));
       if (next.kind === 'break') {
         engine()?.stopAll();
+        try { engine()?.playChime?.(); } catch {}
         showToast(`Hết chặng tập trung. Nghỉ ${next.minutes} phút: đứng dậy, uống nước, nhìn xa.`, 'info');
       } else {
+        try { engine()?.playChime?.(); } catch {}
         showToast(`Hết giờ nghỉ. Vào chặng tập trung ${next.minutes} phút!`, 'success');
         ensureAudio();
       }
@@ -243,6 +247,7 @@ export default function DeepWorkView() {
     completedRef.current = true;
     setRunning(false);
     try { engine()?.stopAll(); } catch { /* bỏ qua */ }
+    try { engine()?.playChime?.(); } catch { /* bỏ qua */ }
     try { localStorage.removeItem(PERSIST_KEY); } catch { /* bỏ qua */ }
     const plannedMin = tm.legs.filter((l) => l.kind === 'focus').reduce((a, l) => a + l.minutes, 0) || duration;
     const actualMin = Math.max(1, Math.round(tm.focusElapsed / 60));
@@ -259,6 +264,12 @@ export default function DeepWorkView() {
         complete_next_subtask: completeNext,
       });
       tasksQ.refetch();
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['pulse'] });
+      qc.invalidateQueries({ queryKey: ['focus-sessions'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast(res.message || '🎉 Đã hoàn tất phiên Deep Work & cập nhật tiến độ! Chuyển về Tổng quan sau 1.5s...', 'success');
       setTimeout(() => {
         navigate('/dashboard');
@@ -309,17 +320,26 @@ export default function DeepWorkView() {
   async function handleSchedule() {
     const t = title.trim() || 'Phiên học tập trung sâu';
     try {
+      // Ngày LOCAL (không dùng toISOString UTC — trước 07:00 VN sẽ lệch sang hôm qua)
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const dur = duration || 50;
+      const endTotalMin = 14 * 60 + dur;
+      const endH = Math.floor(endTotalMin / 60);
+      const endM = endTotalMin % 60;
+      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
       await api.post('/schedule/events', {
         task_id: taskId || null,
         title: `Học sâu: ${t.slice(0, 80)}`,
-        description: `Phiên ${duration}p • Âm ${SOUND_LABEL[sound] || sound}`,
-        event_date: new Date().toISOString().slice(0, 10),
+        description: `Phiên ${dur}p • Âm ${SOUND_LABEL[sound] || sound}`,
+        event_date: dateStr,
         start_time: '14:00',
-        end_time: '15:30',
+        end_time: endTimeStr,
         event_type: 'deep_work',
         is_circadian_optimized: true,
       });
-      showToast('Đã gán phiên học vào Lịch Sinh học (14:00-15:30).', 'success');
+      qc.invalidateQueries({ queryKey: ['timeline'] });
+      showToast(`Đã gán phiên học vào Lịch Sinh học (14:00 - ${endTimeStr}).`, 'success');
     } catch (e) { showToast(e.message || 'Không gán được lịch.', 'error'); }
   }
 

@@ -191,17 +191,32 @@ export default function AppShell() {
                   </div>
                   <div className="space-y-1 py-1 text-xs">
                     <Link
-                      to="/analytics"
+                      to="/profile"
+                      onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-medium"
                     >
-                      Thống kê giờ học &amp; Chuỗi ngày
+                      <span>👤</span>
+                      <span>Hồ sơ sinh học &amp; Cá nhân</span>
                     </Link>
                     <Link
-                      to="/login"
+                      to="/analytics"
+                      onClick={() => setProfileOpen(false)}
                       className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-medium"
                     >
-                      Đổi tài khoản / Đăng nhập lại
+                      <span>📈</span>
+                      <span>Thống kê giờ học &amp; Chuỗi ngày</span>
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setConfirmLogout(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-medium cursor-pointer text-left"
+                    >
+                      <span>🔄</span>
+                      <span>Đổi tài khoản / Đăng nhập lại</span>
+                    </button>
                   </div>
                   <div className="pt-2 border-t border-slate-100 mt-1">
                     <button
@@ -217,6 +232,18 @@ export default function AppShell() {
             </div>
           </div>
         </div>
+
+        {/* Backdrop đóng dropdown khi bấm ra ngoài */}
+        {(profileOpen || notifOpen) && (
+          <div
+            className="fixed inset-0 z-30 bg-transparent"
+            onClick={() => {
+              setProfileOpen(false);
+              setNotifOpen(false);
+            }}
+            aria-hidden="true"
+          />
+        )}
 
         {menuOpen && (
           <nav className="md:hidden mt-2 p-3 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-lg grid grid-cols-2 gap-2">
@@ -235,17 +262,45 @@ export default function AppShell() {
         {notifOpen && (
           <div className="absolute top-full left-0 right-0 z-50 p-3">
             <div className="max-w-md ml-auto bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl p-4">
-              <h3 className="text-sm font-bold text-slate-900 mb-2">Thông báo học thuật</h3>
+              <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span>🔔</span>
+                  <span>Thông báo học thuật</span>
+                </h3>
+                {notifications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotifications([]);
+                      showToast('Đã đánh dấu đã đọc tất cả thông báo.', 'info');
+                    }}
+                    className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition cursor-pointer"
+                  >
+                    Đã đọc tất cả
+                  </button>
+                )}
+              </div>
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {notifications.length === 0 && (
-                  <p className="text-xs text-slate-500">Chưa có thông báo nào.</p>
+                  <div className="py-6 text-center text-xs text-slate-500 space-y-1">
+                    <p className="text-base">✨</p>
+                    <p className="font-semibold text-slate-700">Không có thông báo mới.</p>
+                    <p className="text-[11px] text-slate-400">Bạn đã cập nhật hết mọi lịch học và nhiệm vụ!</p>
+                  </div>
                 )}
                 {notifications.map((n, i) => (
                   <div key={i} className="p-3 rounded-2xl border bg-blue-50/70 border-blue-100 flex items-start gap-2.5">
                     <span className="text-base shrink-0">{n.icon || '🔔'}</span>
-                    <div className="flex-1">
-                      <p className="font-bold text-slate-800 text-xs">{n.title || ''}</p>
-                      <p className="text-slate-600 mt-0.5 text-[11px]">{n.detail || ''}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className="font-bold text-slate-800 text-xs truncate">{n.title || ''}</p>
+                        {n.time_label && (
+                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full shrink-0">
+                            {n.time_label}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-600 mt-0.5 text-[11px] leading-relaxed">{n.detail || ''}</p>
                     </div>
                   </div>
                 ))}

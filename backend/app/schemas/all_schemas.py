@@ -255,6 +255,7 @@ class AIDeconstructResponse(BaseModel):
     circadian_tip: str
     total_estimated_minutes: int
     subtasks: List[AISubtaskItem]
+    ai_source: str = "heuristic"  # gemini | heuristic (key chết/hết quota -> heuristic)
 
 
 # ---- Task update & schedule event update ----

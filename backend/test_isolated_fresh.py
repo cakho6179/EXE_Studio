@@ -107,6 +107,7 @@ def main():
     r = client.post("/api/v1/advisor/upload",
                     files={"file": ("fresh.txt", "hello fresh db".encode(), "text/plain")}, headers=uh)
     check("4e. Upload doc", r.status_code == 200, r.text[:150])
+    doc_id = r.json().get("id")
     check("4f. Documents list có file", any(
         d["filename"] == "fresh.txt"
         for d in client.get("/api/v1/advisor/documents", headers=uh).json()["documents"]))
@@ -196,6 +197,43 @@ def main():
     check("7g. Hoàn tất onboarding đánh dấu is_onboarded=True (POST /onboarding/complete)",
           r.status_code == 200 and client.get("/api/v1/auth/me", headers=uh).json().get("is_onboarded") is True,
           r.text[:120])
+
+    # 7h. Xóa tài liệu khỏi bộ nhớ AI (DELETE /advisor/documents/{doc_id})
+    if 'doc_id' in locals():
+        r = client.delete(f"/api/v1/advisor/documents/{doc_id}", headers=uh)
+        check("7h. Xóa tài liệu khỏi bộ nhớ AI (DELETE /advisor/documents/{id})",
+              r.status_code == 200 and r.json().get("status") == "success",
+              r.text[:120])
+
+    # 7i. Tạo và áp dụng kế hoạch học tập AI vào lịch (POST /study-plans/{id}/apply-to-schedule)
+    r = client.post("/api/v1/study-plans/generate", json={"subject": "Hệ điều hành", "hours_per_day": 2, "level": "medium"}, headers=uh)
+    plan_id = r.json().get("plan", {}).get("id")
+    r_apply = client.post(f"/api/v1/study-plans/{plan_id}/apply-to-schedule", headers=uh)
+    check("7i. Áp dụng chặng kế hoạch học tập AI vào thời khóa biểu (POST /study-plans/{id}/apply-to-schedule)",
+          r_apply.status_code == 200 and r_apply.json().get("added_count", 0) > 0,
+          r_apply.text[:120])
+    client.delete(f"/api/v1/study-plans/{plan_id}", headers=uh)
+
+    # 7j. Đánh dấu hoàn thành task không có subtask (PATCH /tasks/{id})
+    r_task_nosub = client.post("/api/v1/tasks/", json={"title": "Đọc tài liệu ôn tập", "subject_name": "Triết học", "subtasks": []}, headers=uh)
+    t_nosub_id = r_task_nosub.json().get("id")
+    r_patch = client.patch(f"/api/v1/tasks/{t_nosub_id}", json={"status": "completed"}, headers=uh)
+    check("7j. Đánh dấu hoàn thành task không có subtask được giữ nguyên status=completed",
+          r_patch.status_code == 200 and r_patch.json().get("status") == "completed",
+          r_patch.text[:120])
+    client.delete(f"/api/v1/tasks/{t_nosub_id}", headers=uh)
+
+    # 7k. Tự động cân bằng lịch sinh học AI (POST /schedule/auto-balance)
+    r_bal = client.post("/api/v1/schedule/auto-balance", json={}, headers=uh)
+    check("7k. Thuật toán cân bằng lịch sinh học AI (POST /schedule/auto-balance)",
+          r_bal.status_code == 200 and r_bal.json().get("status") == "success",
+          r_bal.text[:120])
+
+    # 7l. Cân bằng lại khi đã tối ưu trả thông báo hoàn hảo
+    r_bal2 = client.post("/api/v1/schedule/auto-balance", json={}, headers=uh)
+    check("7l. Cân bằng lại khi đã tối ưu trả thông điệp hoàn hảo (balanced_count=0)",
+          r_bal2.status_code == 200 and r_bal2.json().get("balanced_count") == 0 and "tối ưu hoàn hảo" in r_bal2.json().get("message", ""),
+          r_bal2.text[:120])
 
     client.delete(f"/api/v1/tasks/{tid}", headers=uh)
     client.delete(f"/api/v1/schedule/events/{evid}", headers=uh)

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.core.timeutils import vn_day_start_utc
 from app.models.entities import User, MoodEntry
 from app.api.v1.auth import get_current_user
@@ -34,6 +35,7 @@ def save_mood(
 
 
 @router.get("/today")
+@cached_response(ttl=30)
 def get_today_mood(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

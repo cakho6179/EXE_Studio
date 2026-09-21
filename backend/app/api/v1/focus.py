@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.core.timeutils import utc_day_range_vn
 from app.models.entities import User, FocusSession, Task, MicroSubtask
 from app.api.v1.auth import get_current_user
@@ -64,6 +65,7 @@ def record_focus_session(
     return session
 
 @router.get("/sessions", response_model=list[FocusSessionOut])
+@cached_response(ttl=60)
 def list_focus_sessions(
     days: int = Query(default=7, ge=1, le=180),
     limit: int = Query(default=100, ge=1, le=500),
@@ -80,6 +82,7 @@ def list_focus_sessions(
 
 
 @router.get("/today-summary")
+@cached_response(ttl=30)
 def get_today_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

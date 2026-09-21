@@ -5,6 +5,7 @@ from typing import Optional
 import re
 import secrets
 from app.core.database import get_db
+from app.core.cache import cached_response, cache_user, get_cached_user, invalidate_user_by_id
 from app.core.security import (
     hash_password, verify_password, create_access_token, create_refresh_token,
     decode_access_token, decode_refresh_token,
@@ -69,6 +70,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Cache user theo token 45s (đỡ 1 RTT Neon ~750ms mỗi request).
+    # Object detached đã load đủ columns + profile -> merge(load=False) không tốn SELECT.
+    cached = get_cached_user(token)
+    if cached is not None:
+        try:
+            return db.merge(cached, load=False)
+        except Exception:
+            pass
+
     user = db.query(User).options(joinedload(User.profile)).filter(User.id == user_id).first()
     if not user:
         # Token hợp lệ nhưng user không tồn tại -> phiên không còn giá trị -> 401 (không phải 404)
@@ -77,6 +87,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             detail="Tài khoản không còn tồn tại. Vui lòng đăng nhập lại.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    cache_user(token, user)
     return user
 
 @router.post("/register", response_model=TokenResponse)
@@ -291,6 +302,7 @@ def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     return _token_pair(user)
 
 @router.get("/me", response_model=UserOut)
+@cached_response(ttl=60)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
@@ -397,6 +409,7 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     return {"status": "success", "message": "Đặt lại mật khẩu thành công! Hãy đăng nhập lại."}
 
 @router.get("/profile")
+@cached_response(ttl=60)
 def get_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -466,6 +479,8 @@ def update_profile(
     db.commit()
     db.refresh(current_user)
     db.refresh(profile)
+    # Hồ sơ vừa đổi -> xóa cache user để request sau đọc tươi
+    invalidate_user_by_id(current_user.id)
 
     return {
         "status": "success",

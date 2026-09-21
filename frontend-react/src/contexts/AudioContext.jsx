@@ -71,6 +71,12 @@ export function AudioProvider({ children }) {
     sync();
   }, [sync]);
 
+  const prevTrack = useCallback(() => {
+    engineRef.current?.prevTrack();
+    if (engineRef.current && !engineRef.current.isPlaying) engineRef.current.playCurrentTrack();
+    sync();
+  }, [sync]);
+
   const setVolume = useCallback(
     (v) => {
       engineRef.current?.setVolume(v);
@@ -98,11 +104,12 @@ export function AudioProvider({ children }) {
       togglePlay,
       switchTrack,
       nextTrack,
+      prevTrack,
       setVolume,
       setSleepTimer,
       engine: () => engineRef.current,
     }),
-    [ready, isPlaying, track, volume, sleepMinutes, togglePlay, switchTrack, nextTrack, setVolume, setSleepTimer],
+    [ready, isPlaying, track, volume, sleepMinutes, togglePlay, switchTrack, nextTrack, prevTrack, setVolume, setSleepTimer],
   );
 
   return <AudioCtx.Provider value={value}>{children}</AudioCtx.Provider>;

@@ -41,7 +41,7 @@ export default function LoginView() {
 
     setLoading(true);
     try {
-      await login(identity, password);
+      const res = await login(identity, password);
 
       try {
         if (rememberMe) {
@@ -53,8 +53,9 @@ export default function LoginView() {
         /* bỏ qua */
       }
 
+      const isOnboarded = res?.user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
       showToast('Đăng nhập thành công! Đang chuyển vào không gian học tập...', 'success');
-      navigate('/dashboard', { replace: true });
+      navigate(isOnboarded ? '/dashboard' : '/onboarding', { replace: true });
     } catch (err) {
       const msg = err?.message || 'Email hoặc mật khẩu không chính xác.';
       setError(msg);

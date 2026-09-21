@@ -230,13 +230,13 @@ export default function OnboardingView() {
             <div className="inline-flex items-center space-x-1.5 bg-blue-50/90 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200/60 mb-2 tracking-wide uppercase">
               <span>Stuđiô AI</span>
               <span>•</span>
-              <span>Thiết Lập 07, 08, 09</span>
+              <span>Thiết lập ban đầu</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               Cá nhân hóa không gian học tập
             </h1>
             <p className="text-slate-600 text-xs sm:text-sm mt-1 max-w-lg leading-relaxed">
-              Thiết lập lĩnh vực, mục tiêu học tập hằng ngày và nhịp sinh học theo chuẩn 07, 08, 09 trước khi vào Trang chủ.
+              Thiết lập lĩnh vực, mục tiêu học tập hằng ngày và nhịp sinh học trước khi vào Trang chủ.
             </p>
           </div>
 

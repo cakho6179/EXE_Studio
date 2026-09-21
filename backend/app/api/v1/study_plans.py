@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import StudyPlan, User
 from app.api.v1.auth import get_current_user
 
@@ -56,6 +57,7 @@ def _out(p: StudyPlan) -> dict:
 
 
 @router.get("/", response_model=list)
+@cached_response(ttl=30)
 def list_plans(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     plans = (
         db.query(StudyPlan)

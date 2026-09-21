@@ -16,10 +16,10 @@ export default function VerifyView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Chỉ điều hướng về dashboard nếu user đã đăng nhập VÀ đã hoàn tất thiết lập onboarding
+  // Chỉ điều hướng về dashboard nếu user đã đăng nhập, đã xác minh email VÀ đã hoàn tất thiết lập onboarding
   useEffect(() => {
     const isOnboarded = user?.is_onboarded || localStorage.getItem('studi_onboarded') === 'true';
-    if (isLoggedIn && isOnboarded) {
+    if (isLoggedIn && isOnboarded && user?.is_email_verified) {
       navigate('/dashboard', { replace: true });
     }
   }, [isLoggedIn, user, navigate]);

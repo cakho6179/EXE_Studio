@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import datetime
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import User, Task, MicroSubtask, ScheduleEvent, FocusSession
 from app.api.v1.auth import get_current_user
 from app.services.ai_service import AIService
@@ -51,6 +52,7 @@ def _recalc_task_progress(db: Session, task: Task) -> None:
 
 
 @router.get("/", response_model=List[TaskOut])
+@cached_response(ttl=30)
 def get_tasks(
     status: Optional[str] = None,
     priority: Optional[str] = None,
@@ -162,6 +164,9 @@ def delete_task(
     current_user: User = Depends(get_current_user)
 ):
     task = _get_owned_task(db, task_id, current_user)
+    # Gỡ liên kết task_id ở các sự kiện lịch và phiên focus trước khi xóa task để bảo vệ toàn vẹn khóa ngoại trên PostgreSQL
+    db.query(ScheduleEvent).filter(ScheduleEvent.task_id == task.id).update({"task_id": None})
+    db.query(FocusSession).filter(FocusSession.task_id == task.id).update({"task_id": None})
     db.delete(task)
     db.commit()
     return {"message": "Đã xóa nhiệm vụ thành công."}

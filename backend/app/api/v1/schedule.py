@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from typing import List, Optional
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import User, ScheduleEvent, Task, MicroSubtask
 from app.api.v1.auth import get_current_user
 from app.core.timeutils import vn_today_iso
@@ -46,7 +47,14 @@ def _normalize_event_time(t: str) -> str:
     raise HTTPException(status_code=400, detail="Giờ phải có định dạng HH:MM (ví dụ 14:00 hoặc 09:30).")
 
 
+def _ensure_same_day_range(st: str, et: str) -> None:
+    # Lịch trong ngày: giờ kết thúc phải sau giờ bắt đầu (tránh event 10:00->09:00 vỡ grid tuần)
+    if et <= st:
+        raise HTTPException(status_code=400, detail="Giờ kết thúc phải sau giờ bắt đầu trong cùng ngày.")
+
+
 @router.get("/timeline", response_model=List[ScheduleEventOut])
+@cached_response(ttl=30)
 def get_today_timeline(
     date_from: Optional[str] = Query(None, description="YYYY-MM-DD"),
     date_to: Optional[str] = Query(None, description="YYYY-MM-DD"),
@@ -70,6 +78,9 @@ def create_event(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    st = _normalize_event_time(event_in.start_time)
+    et = _normalize_event_time(event_in.end_time)
+    _ensure_same_day_range(st, et)
     event = ScheduleEvent(
         user_id=current_user.id,
         task_id=event_in.task_id,
@@ -77,8 +88,8 @@ def create_event(
         description=event_in.description,
         # Mặc định sự kiện không rõ ngày -> gán hôm nay theo giờ Việt Nam
         event_date=event_in.event_date or vn_today_iso(),
-        start_time=_normalize_event_time(event_in.start_time),
-        end_time=_normalize_event_time(event_in.end_time),
+        start_time=st,
+        end_time=et,
         event_type=event_in.event_type,
         is_circadian_optimized=event_in.is_circadian_optimized
     )
@@ -101,6 +112,7 @@ def update_event(
     for key in ("start_time", "end_time"):
         if key in data and data[key] is not None:
             data[key] = _normalize_event_time(data[key])
+    _ensure_same_day_range(data.get("start_time", event.start_time), data.get("end_time", event.end_time))
     for field, value in data.items():
         setattr(event, field, value)
     db.commit()
@@ -196,16 +208,29 @@ def auto_balance_schedule(
                 )
                 db.add(new_ev)
                 balanced_count += 1
+            elif not existing.is_circadian_optimized or existing.start_time != st or existing.end_time != et:
+                existing.start_time = st
+                existing.end_time = et
+                existing.event_date = day_iso
+                existing.is_circadian_optimized = True
+                existing.description = f"{note} • Tập trung hoàn thành sprint môn {task.subject_name}"
+                balanced_count += 1
 
     db.commit()
     events = db.query(ScheduleEvent).filter(
         ScheduleEvent.user_id == current_user.id
-    ).order_by(ScheduleEvent.start_time.asc()).all()
+    ).order_by(ScheduleEvent.event_date.asc(), ScheduleEvent.start_time.asc()).all()
+
+    if balanced_count > 0:
+        msg = f"Thuật toán AI đã tự động tối ưu và sắp xếp {balanced_count} phiên học sâu vào khung giờ vàng ({chronotype})."
+    else:
+        msg = f"Lịch trình học sâu hiện tại của bạn đã được tối ưu hoàn hảo vào các khung giờ vàng theo nhịp sinh học ({chronotype})."
 
     return {
         "status": "success",
-        "message": f"Thuật toán AI đã tự động tối ưu và sắp xếp {balanced_count} phiên học sâu vào khung giờ vàng ({chronotype}).",
-        "events_count": len(events)
+        "message": msg,
+        "events_count": len(events),
+        "balanced_count": balanced_count
     }
 
 

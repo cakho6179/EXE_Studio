@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, Dict
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import User, AudioPreset
 from app.api.v1.auth import get_current_user
 
@@ -58,6 +59,7 @@ ALLOWED_PRESET_TRACKS = {"ocean", "rain", "binaural"}
 
 
 @router.get("/presets")
+@cached_response(ttl=60)
 def list_presets(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

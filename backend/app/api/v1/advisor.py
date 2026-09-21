@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from pydantic import BaseModel
 from app.core.database import get_db
+from app.core.cache import cached_response
 from app.models.entities import User, UserProfile, Task, ChatSession, ChatMessage
 from app.api.v1.auth import get_current_user
 from app.services.ai_service import AIService
@@ -83,6 +84,7 @@ async def chat_with_advisor(
 
 
 @router.get("/sessions", response_model=List[ChatSessionOut])
+@cached_response(ttl=30)
 def list_sessions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -278,3 +280,31 @@ def list_documents(
             for d in docs
         ]
     }
+
+
+@router.delete("/documents/{doc_id}")
+def delete_document(
+    doc_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.entities import Document
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.user_id == current_user.id
+    ).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài liệu.")
+
+    if doc.stored_name:
+        upload_dir = Path(__file__).resolve().parent.parent.parent.parent / "uploads"
+        target_file = upload_dir / doc.stored_name
+        if target_file.exists():
+            try:
+                target_file.unlink()
+            except Exception:
+                pass
+
+    db.delete(doc)
+    db.commit()
+    return {"status": "success", "message": "Đã xóa tài liệu khỏi bộ nhớ AI."}

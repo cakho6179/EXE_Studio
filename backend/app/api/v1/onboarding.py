@@ -25,8 +25,32 @@ CHRONO_MAP = {
 
 FOCUS_HOURS_MAP = {"short": 3.0, "medium": 5.0, "long": 7.0}
 STYLE_MAP = {"short": "pomodoro", "medium": "pomodoro_50", "long": "ultradian_90"}
+# Map giá trị intensity của wizard React (relaxed/balanced/deep/sprint)
+INTENSITY_STYLE_MAP = {"relaxed": "pomodoro", "balanced": "pomodoro_50", "deep": "deep_work", "sprint": "sprint"}
+# Map slot buổi của wizard -> khung đỉnh năng lượng
+SLOT_PEAK_MAP = {
+    "morning": ("08:30", "11:30"),
+    "afternoon": ("14:00", "16:30"),
+    "night": ("20:00", "22:30"),
+}
 BED_MAP = {"lark": "22:30", "intermediate": "23:00", "owl": "00:00"}
 WAKE_MAP = {"lark": "05:30", "intermediate": "06:30", "owl": "07:30"}
+
+
+def _pick_num(answers: dict, *keys) -> Optional[float]:
+    for k in keys:
+        v = answers.get(k)
+        if isinstance(v, (int, float)) and v > 0:
+            return float(v)
+        if isinstance(v, str):
+            m = v.strip().replace(",", ".")
+            num = "".join(ch for ch in m if ch.isdigit() or ch == ".").strip(".")
+            try:
+                if num and float(num) > 0:
+                    return float(num)
+            except ValueError:
+                pass
+    return None
 
 
 def _pick(answers: dict, *keys) -> Optional[str]:
@@ -69,14 +93,29 @@ def complete_onboarding(
     if focus_raw in FOCUS_HOURS_MAP:
         profile.target_daily_focus_hours = FOCUS_HOURS_MAP[focus_raw]
         profile.preferred_study_style = STYLE_MAP[focus_raw]
+    else:
+        # Wizard React gửi số giờ trực tiếp (focus_hours/target_hours/daily_goal "4.5h")
+        hours = _pick_num(answers, "focus_hours", "target_hours", "daily_goal", "target_daily_focus_hours")
+        if hours:
+            profile.target_daily_focus_hours = min(16.0, max(0.5, hours))
 
     style = _pick(answers, "preferred_study_style", "study_style")
     if style:
         profile.preferred_study_style = style[:50]
+    else:
+        intensity = (_pick(answers, "intensity") or "").lower()
+        if intensity in INTENSITY_STYLE_MAP:
+            profile.preferred_study_style = INTENSITY_STYLE_MAP[intensity]
+
+    slot = (_pick(answers, "circadian_slot", "slot") or "").lower()
+    if slot in SLOT_PEAK_MAP:
+        profile.peak_start_time, profile.peak_end_time = SLOT_PEAK_MAP[slot]
 
     goal = _pick(answers, "goal")
     current_user.is_onboarded = True
     db.commit()
+    from app.core.cache import invalidate_user_by_id
+    invalidate_user_by_id(current_user.id)
 
     return {
         "status": "success",

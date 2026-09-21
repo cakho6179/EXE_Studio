@@ -85,21 +85,31 @@ export default function DashboardView() {
     onError: (err) => showToast(err.message, 'error'),
   });
 
-  const toggleDashboardTask = async (taskId, checked) => {
+  const [togglingId, setTogglingId] = useState(null);
+
+  const toggleDashboardTask = async (task) => {
+    // Dùng cache tasks sẵn có (không GET lại), tick 1 micro-sprint;
+    // task không có subtask nào -> đảo thẳng status (trước đây toast sai + đứng im).
+    if (!task || togglingId) return;
+    setTogglingId(task.id);
     try {
-      const list = await api.get('/tasks/');
-      const task = (Array.isArray(list) ? list : []).find((t) => t.id === taskId);
-      const subs = task?.subtasks || [];
-      const target = checked ? subs.find((s) => !s.is_completed) : [...subs].reverse().find((s) => s.is_completed);
-      if (!target) {
-        showToast(checked ? 'Nhiệm vụ này đã hoàn thành hết micro-sprints.' : 'Không có gì để bỏ tick.', 'info');
-        return;
+      const subs = task.subtasks || [];
+      const target = task.status === 'completed'
+        ? [...subs].reverse().find((s) => s.is_completed)
+        : subs.find((s) => !s.is_completed);
+      if (target) {
+        const updated = await api.patch(`/tasks/subtasks/${target.id}/toggle`);
+        showToast(updated.is_completed ? 'Đã hoàn thành 1 micro-sprint!' : 'Đã bỏ tick 1 micro-sprint.', 'success');
+      } else {
+        const next = task.status === 'completed' ? 'in_progress' : 'completed';
+        await api.patch(`/tasks/${task.id}`, { status: next });
+        showToast(next === 'completed' ? 'Đã hoàn thành nhiệm vụ!' : 'Đã mở lại nhiệm vụ.', 'success');
       }
-      const updated = await api.patch(`/tasks/subtasks/${target.id}/toggle`);
-      showToast(updated.is_completed ? 'Đã hoàn thành 1 micro-sprint!' : 'Đã bỏ tick 1 micro-sprint.', 'success');
       qc.invalidateQueries({ queryKey: ['tasks'] });
     } catch (err) {
       showToast(err.message || 'Không cập nhật được.', 'error');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -127,7 +137,7 @@ export default function DashboardView() {
         await api.post('/schedule/events', {
           title: `Nhắc nhở: ${ins.title}`,
           description: ins.detail || '',
-          event_date: new Date().toISOString().slice(0, 10),
+          event_date: new Date().toLocaleDateString('en-CA'),
           start_time: ins.suggested_time || '19:30',
           end_time: `${String(endH).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`,
           event_type: 'self_study',
@@ -154,17 +164,26 @@ export default function DashboardView() {
   };
 
   const prevTrack = () => {
-    const keys = Object.keys((typeof window !== 'undefined' && window.CALM_TRACKS) || { ocean: 1, rain: 1, binaural: 1 });
-    const cur = keys.indexOf(audio.track?.id);
-    audio.switchTrack(keys[(cur - 1 + keys.length) % keys.length]);
+    if (audio.prevTrack) {
+      audio.prevTrack();
+    } else {
+      const keys = Object.keys((typeof window !== 'undefined' && window.CALM_TRACKS) || { ocean: 1, rain: 1, binaural: 1 });
+      const cur = keys.indexOf(audio.track?.id);
+      audio.switchTrack(keys[(cur - 1 + keys.length) % keys.length]);
+    }
   };
 
   const scrollToSchedule = () => {
     document.getElementById('schedule')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const todayIso = new Date().toLocaleDateString('en-CA');
+  const todayEvents = useMemo(() => {
+    return events.filter((e) => !e.event_date || e.event_date === todayIso);
+  }, [events, todayIso]);
+
   const nowHM = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
-  const upcoming = events
+  const upcoming = todayEvents
     .filter((e) => !e.is_completed && e.end_time > nowHM)
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
 
@@ -334,13 +353,13 @@ export default function DashboardView() {
                   <span className="animate-spin inline-block w-5 h-5 border-2 border-blue-200 border-t-blue-600 rounded-full" />
                   <p className="text-xs text-slate-500 mt-2">Đang tải thời khóa biểu...</p>
                 </div>
-              ) : events.length === 0 ? (
+              ) : todayEvents.length === 0 ? (
                 <div className="p-4 rounded-2xl bg-white/70 border border-slate-200/70 text-center space-y-1.5">
                   <p className="text-xs font-bold text-slate-800">Lịch hôm nay trống.</p>
                   <p className="text-[11px] text-slate-500">Bấm &quot;Tự động thích ứng&quot; hoặc sang Lịch trình để AI xếp phiên học vào khung giờ vàng.</p>
                 </div>
               ) : (
-                events.slice(0, 5).map((ev) => {
+                todayEvents.slice(0, 5).map((ev) => {
                   const isDone = ev.is_completed;
                   const isDeep = ev.event_type === 'deep_work';
                   return (
@@ -424,7 +443,7 @@ export default function DashboardView() {
                       <div key={t.id} className="p-4 rounded-2xl bg-white/70 border border-slate-200/70 hover:shadow-sm transition space-y-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3">
-                            <input type="checkbox" checked={isDone} onChange={(e) => toggleDashboardTask(t.id, e.target.checked)} className="mt-1 rounded text-blue-600 focus:ring-blue-400 border-slate-300 w-4 h-4 cursor-pointer" />
+                            <input type="checkbox" checked={isDone} disabled={togglingId === t.id} onChange={() => toggleDashboardTask(t)} className="mt-1 rounded text-blue-600 focus:ring-blue-400 border-slate-300 w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-wait" />
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h3 className={`text-sm font-bold text-slate-800 ${isDone ? 'line-through text-slate-400' : ''}`}>{t.title}</h3>
@@ -646,7 +665,7 @@ export default function DashboardView() {
                 <p className="text-xs text-slate-500">{upcoming.start_time} - {upcoming.end_time}{upcoming.description ? ` • ${upcoming.description}` : ''}</p>
                 <button
                   type="button"
-                  onClick={() => navigate('/deepwork')}
+                  onClick={() => navigate(upcoming ? `/deepwork?title=${encodeURIComponent(upcoming.title)}${upcoming.task_id ? `&taskId=${upcoming.task_id}` : ''}` : '/deepwork')}
                   className="mt-3 w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold hover:shadow-lg transition"
                 >
                   Vào phiên học ngay
@@ -680,7 +699,11 @@ export default function DashboardView() {
             <button type="button" onClick={() => navigate('/sound')} className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 transition">
               ⚙️ Cài đặt âm thanh
             </button>
-            <button type="button" onClick={() => navigate('/deepwork')} className="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-sm shadow-blue-500/20 transition flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => navigate(upcoming ? `/deepwork?title=${encodeURIComponent(upcoming.title)}${upcoming.task_id ? `&taskId=${upcoming.task_id}` : ''}` : '/deepwork')}
+              className="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-sm shadow-blue-500/20 transition flex items-center gap-1"
+            >
               <span>Bắt đầu Pomodoro</span><span>🍅</span>
             </button>
           </div>

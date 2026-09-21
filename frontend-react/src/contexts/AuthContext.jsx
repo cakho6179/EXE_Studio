@@ -1,13 +1,38 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { api, getStoredUser, isTokenExpired } from '../services/api.js';
 
 const AuthContext = createContext(null);
 
+// Key localStorage theo user — phải xóa khi đổi tài khoản, nếu không user mới thấy data cache của user cũ.
+const USER_SCOPED_KEYS = [
+  'studi_onboarded',
+  'studi_pending_auth',
+  'studi_verify_email',
+  'studi_recovery_email',
+  'studi_demo_otp',
+  'studi_otp_sent_at',
+  'studi_task_draft',
+];
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [user, setUser] = useState(() => getStoredUser());
   const [ready, setReady] = useState(false);
+
+  const clearUserData = useCallback(() => {
+    try {
+      qc.clear(); // Xóa toàn bộ cache React Query (tasks/timeline/pulse...) của user cũ
+      USER_SCOPED_KEYS.forEach((k) => localStorage.removeItem(k));
+      sessionStorage.removeItem('studi_pending_auth');
+      sessionStorage.removeItem('studi_verify_email');
+      sessionStorage.removeItem('studi_demo_otp');
+    } catch {
+      /* bỏ qua */
+    }
+  }, [qc]);
 
   const saveUser = useCallback((u) => {
     setUser(u);
@@ -28,11 +53,12 @@ export function AuthProvider({ children }) {
         /* Bỏ qua lỗi network khi logout */
       } finally {
         api.removeToken();
+        clearUserData();
         saveUser(null);
         if (redirect) navigate('/login', { replace: true });
       }
     },
-    [navigate, saveUser],
+    [navigate, saveUser, clearUserData],
   );
 
   // Hết phiên ở bất kỳ request nào -> đăng xuất + về login
@@ -66,21 +92,23 @@ export function AuthProvider({ children }) {
     async (email, password) => {
       const result = await api.post('/auth/login', { email, password });
       if (!result?.access_token) throw new Error('Email hoặc mật khẩu không chính xác.');
+      clearUserData(); // Xóa cache user cũ trước khi nhận phiên mới
       api.setAuthPair(result);
       if (result.user) saveUser(result.user);
       return result;
     },
-    [saveUser],
+    [saveUser, clearUserData],
   );
 
   const activateAuth = useCallback(
     (authPair) => {
       if (authPair?.access_token) {
+        clearUserData();
         api.setAuthPair(authPair);
         if (authPair.user) saveUser(authPair.user);
       }
     },
-    [saveUser],
+    [saveUser, clearUserData],
   );
 
   const register = useCallback(

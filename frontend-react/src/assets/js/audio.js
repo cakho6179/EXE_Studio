@@ -304,6 +304,30 @@ class CalmAudioEngine {
     this.updateUIState();
   }
 
+  playChime() {
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      const now = this.ctx.currentTime;
+      const freqs = [528, 660];
+      freqs.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.08);
+        gain.gain.setValueAtTime(0.18 * this.volume, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 1.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 1.8);
+      });
+    } catch {}
+  }
+
   togglePlay() {
     if (this.isPlaying) {
       this.stopAll();
@@ -334,6 +358,13 @@ class CalmAudioEngine {
     const currentIdx = keys.indexOf(this.currentTrackId);
     const nextIdx = (currentIdx + 1) % keys.length;
     this.switchTrack(keys[nextIdx]);
+  }
+
+  prevTrack() {
+    const keys = Object.keys(CALM_TRACKS);
+    const currentIdx = keys.indexOf(this.currentTrackId);
+    const prevIdx = (currentIdx - 1 + keys.length) % keys.length;
+    this.switchTrack(keys[prevIdx]);
   }
 
   setVolume(val) {
