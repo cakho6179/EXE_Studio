@@ -1,5 +1,6 @@
 # Stuđiô AI — multi-stage: build React SPA (Node) + runtime Python (FastAPI).
-# Không cần commit frontend-react/dist: dist được build ngay trong Docker.
+# Frontend chuan: 1 nguon assets (frontend/assets) + build xuat vao frontend/app.
+# Khong can commit build output: dist/app duoc build ngay trong Docker.
 
 # ---- Stage 1: build frontend React ----
 FROM node:20-slim AS frontend-build
@@ -7,6 +8,8 @@ WORKDIR /build
 COPY frontend-react/package.json frontend-react/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend-react/ ./
+# Assets chuan + thu muc dich build (ngoai /build, dung chung cho stage 2)
+COPY frontend/ /frontend/
 RUN npm run build
 
 # ---- Stage 2: runtime Python ----
@@ -29,10 +32,10 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # Biến môi trường production: tắt trả dev_code trong API response
 ENV OTP_RETURN_DEV_CODE=false
 
-# Copy source code, built React SPA (từ stage 1), and legacy assets
+# Copy source code, built React SPA (từ stage 1 -> frontend/app chuan), and legacy assets
 COPY backend/ /app/backend/
 COPY frontend/ /app/frontend/
-COPY --from=frontend-build /build/dist/ /app/frontend-react/dist/
+COPY --from=frontend-build /frontend/app/ /app/frontend/app/
 
 # Expose server port
 EXPOSE 8000

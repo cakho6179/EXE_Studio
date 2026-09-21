@@ -101,7 +101,7 @@ def get_analytics_dashboard(
 
     # 4. Circadian alignment score: phiên rơi vào khung giờ vàng (giờ VN theo tuýp sinh học của user)
     profile = current_user.profile
-    chronotype = (profile.chronotype if profile else "lark") or "lark"
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
     golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
 
     if all_vn_hours:
@@ -370,7 +370,7 @@ def get_correlations(
     sessions_with_time = [s for s in sessions if s.created_at]
     if sessions_with_time:
         profile = current_user.profile
-        chronotype = (profile.chronotype if profile else "lark") or "lark"
+        chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
         golden = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
 
         def _in_golden(s) -> bool:

@@ -92,9 +92,10 @@ def create_task(
         user_id=current_user.id,
         title=task_in.title,
         description=task_in.description,
-        # Không gán môn cứng: task không rõ môn về nhóm "Chung" thay vì đếm nhầm vào môn AI ở analytics
+        # Không gán môn cứng: task không rõ môn về nhóm "Chung" thay vì đếm nhầm vào môn AI ở analytics.
+        # Lưu chuỗi rỗng thay vì None để tránh ORM default cột bên dưới đè giá trị.
         subject_name=(task_in.subject_name or "Chung").strip() or "Chung",
-        subject_code=(task_in.subject_code or "").strip() or None,
+        subject_code=(task_in.subject_code or "").strip() or "",
         deadline=dl,
         priority=task_in.priority or "high",
         complexity=task_in.complexity or "medium",

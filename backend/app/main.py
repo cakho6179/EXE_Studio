@@ -405,14 +405,22 @@ app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding"
 
 # Mount Frontend static files
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
+# Frontend chuan: build React xuat vao frontend/app (uu tien so 1),
+# fallback frontend-react/dist cu khi dev quen doi outDir
 react_dist = Path(__file__).resolve().parent.parent.parent / "frontend-react" / "dist"
+unified_app = frontend_dir / "app"
+for _cand in (unified_app, react_dist):
+    if _cand.exists() and (_cand / "assets").exists():
+        react_dist = _cand
+        break
 legacy_pages = Path(__file__).resolve().parent.parent.parent / "temp" / "pages-backup" / "pages"
 
-# Ưu tiên assets từ React bundle đã build, nếu chưa build thì dùng assets cũ
-if react_dist.exists() and (react_dist / "assets").exists():
-    app.mount("/assets", StaticFiles(directory=str(react_dist / "assets")), name="react_assets")
-elif frontend_dir.exists():
+# Ưu tiên assets chuẩn từ frontend/assets (1 nguồn duy nhất cho cả dev lẫn prod);
+# bundle hash trong frontend/app/assets/* phục vụ qua mount /app bên dưới.
+if frontend_dir.exists() and (frontend_dir / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(frontend_dir / "assets")), name="assets")
+elif react_dist.exists() and (react_dist / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(react_dist / "assets")), name="react_assets")
 
 if frontend_dir.exists():
     app.mount("/legacy-assets", StaticFiles(directory=str(frontend_dir / "assets")), name="legacy_assets")

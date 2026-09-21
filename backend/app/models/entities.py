@@ -55,8 +55,9 @@ class Task(Base):
     user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    subject_name = Column(String(255), default="Trí tuệ nhân tạo")
-    subject_code = Column(String(50), default="CS301")
+    # Không gán default môn cứng — app layer quyết định ("Chung" khi user không chọn môn)
+    subject_name = Column(String(255), nullable=True)
+    subject_code = Column(String(50), nullable=True)
     deadline = Column(DateTime, nullable=True)
     priority = Column(String(50), default="high") # high, medium, low
     complexity = Column(String(50), default="medium")
