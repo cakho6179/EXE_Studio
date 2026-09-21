@@ -11,7 +11,6 @@ export function AudioProvider({ children }) {
   const [track, setTrack] = useState({ id: 'ocean', title: 'Sóng Biển 432Hz', subtitle: '' });
   const [volume, setVolumeState] = useState(0.65);
   const [sleepMinutes, setSleepMinutes] = useState(0);
-  const [sleepMinutes, setSleepMinutes] = useState(0);
 
   useEffect(() => {
     let cancelled = false;

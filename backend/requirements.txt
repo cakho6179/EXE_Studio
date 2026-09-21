@@ -1,3 +1,7 @@
+# Stuđiô AI — Backend dependencies
+# Cài đặt: pip install -r requirements.txt
+# Python 3.11+ khuyến nghị (đang chạy 3.13 OK).
+
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 sqlalchemy>=2.0.30
@@ -7,9 +11,8 @@ PyJWT>=2.8.0
 python-multipart>=0.0.9
 httpx>=0.27.0
 python-dotenv>=1.0.1
-# Trích xuất text giáo trình cho AI Advisor
+# Trích xuất text giáo trình cho AI Advisor (lazy import, thiếu vẫn chạy)
 pypdf>=4.0.0
 python-docx>=1.1.0
-# Driver kết nối cơ sở dữ liệu PostgreSQL khi deploy server thật
+# Driver PostgreSQL (Neon) khi DATABASE_URL là postgres; SQLite local không cần
 psycopg2-binary>=2.9.9
-

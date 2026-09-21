@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.core.database import get_db
-from app.core.timeutils import vn_now, vn_day_start_utc
+from app.core.timeutils import vn_now, vn_day_start_utc, vn_today_iso
 from app.models.entities import User, Task, MicroSubtask, FocusSession, ScheduleEvent
 from app.api.v1.auth import get_current_user
 
@@ -41,7 +41,8 @@ def get_notifications(
             "time_label": "Quá hạn",
         })
     for t in due_soon[:2]:
-        days_left = max(0, (t.deadline - now).days)
+        dl = _to_naive_utc(t.deadline)
+        days_left = max(0, (dl - now).days)
         left_txt = "hôm nay" if days_left == 0 else f"còn {days_left} ngày"
         remaining = db.query(MicroSubtask).filter(
             MicroSubtask.task_id == t.id, MicroSubtask.is_completed == False
@@ -73,9 +74,11 @@ def get_notifications(
             "time_label": "Gợi ý",
         })
 
-    # 3. Sự kiện lịch hôm nay chưa xong
+    # 3. Sự kiện lịch hôm nay chưa xong (lọc đúng ngày VN, không đếm tồn đọng cũ)
     pending_events = db.query(ScheduleEvent).filter(
-        ScheduleEvent.user_id == current_user.id, ScheduleEvent.is_completed == False
+        ScheduleEvent.user_id == current_user.id,
+        ScheduleEvent.is_completed == False,
+        ScheduleEvent.event_date >= vn_today_iso(),
     ).count()
     if pending_events:
         items.append({

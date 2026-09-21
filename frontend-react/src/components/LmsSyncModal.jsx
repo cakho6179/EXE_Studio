@@ -171,6 +171,9 @@ export default function LmsSyncModal({ isOpen, onClose, initialProvider = 'canva
             )}
           </button>
         </div>
+        <p className="text-[10px] text-slate-400 text-center">
+          Bản hiện tại nhập bộ bài tập mẫu demo theo từng nguồn (chưa kết nối OAuth LMS thật).
+        </p>
       </div>
     </div>
   );

@@ -74,20 +74,29 @@ EXE_Of_Chau/
 
 ## 3. Hướng Dẫn Khởi Chạy
 
+### Yêu cầu môi trường
+- Python 3.11+ (backend FastAPI), Node.js 20.19+ hoặc 22.12+ (frontend Vite 8).
+
 ### Cách 1: Chạy 1-Click (Tiện lợi nhất)
 Chỉ cần nhấp đúp vào file:
-👉 `start_server.bat`
+👉 `start_server.bat` (tự mở backend :8000 + frontend :5173)
 
-Trình duyệt sẽ tự động mở trang web tại địa chỉ: `http://localhost:8000`
+Trình duyệt sẽ tự động mở app React tại: `http://localhost:5173/`
 
-### Cách 2: Chạy Bằng Dòng Lệnh
-1. Mở PowerShell hoặc Terminal:
+### Cách 2: Chạy Bằng Dòng Lệnh (máy mới, lần đầu)
 ```bash
 cd backend
+pip install -r requirements.txt
+copy .env.example .env   # điền SECRET_KEY / GEMINI_API_KEY
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+cd ..\frontend-react
+npm install
+npm run dev
 ```
-2. Mở trình duyệt truy cập:
-- **Ứng dụng Stuđiô AI:** [http://localhost:8000](http://localhost:8000)
+Mở trình duyệt truy cập:
+- **Ứng dụng Stuđiô AI (React):** [http://localhost:5173/](http://localhost:5173/)
+- **Bản build production:** `npm run build` rồi mở [http://localhost:8000/app/](http://localhost:8000/app/)
 - **Tài liệu API Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---

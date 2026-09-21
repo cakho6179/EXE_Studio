@@ -37,6 +37,15 @@ def _get_owned_event(db: Session, event_id: str, user: User) -> ScheduleEvent:
     return event
 
 
+def _normalize_event_time(t: str) -> str:
+    parts = (t or "").strip().split(":")
+    if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+        h, m = int(parts[0]), int(parts[1])
+        if 0 <= h <= 23 and 0 <= m <= 59:
+            return f"{h:02d}:{m:02d}"
+    raise HTTPException(status_code=400, detail="Giờ phải có định dạng HH:MM (ví dụ 14:00 hoặc 09:30).")
+
+
 @router.get("/timeline", response_model=List[ScheduleEventOut])
 def get_today_timeline(
     date_from: Optional[str] = Query(None, description="YYYY-MM-DD"),
@@ -61,17 +70,6 @@ def create_event(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    def _normalize_time(t: str) -> str:
-        parts = (t or "").strip().split(":")
-        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
-            h, m = int(parts[0]), int(parts[1])
-            if 0 <= h <= 23 and 0 <= m <= 59:
-                return f"{h:02d}:{m:02d}"
-        raise HTTPException(status_code=400, detail="Giờ phải có định dạng HH:MM (ví dụ 14:00 hoặc 09:30).")
-
-    st = _normalize_time(event_in.start_time)
-    et = _normalize_time(event_in.end_time)
-
     event = ScheduleEvent(
         user_id=current_user.id,
         task_id=event_in.task_id,
@@ -79,8 +77,8 @@ def create_event(
         description=event_in.description,
         # Mặc định sự kiện không rõ ngày -> gán hôm nay theo giờ Việt Nam
         event_date=event_in.event_date or vn_today_iso(),
-        start_time=st,
-        end_time=et,
+        start_time=_normalize_event_time(event_in.start_time),
+        end_time=_normalize_event_time(event_in.end_time),
         event_type=event_in.event_type,
         is_circadian_optimized=event_in.is_circadian_optimized
     )
@@ -99,7 +97,11 @@ def update_event(
 ):
     """Sửa sự kiện: dời giờ, đổi tên, đánh dấu hoàn thành..."""
     event = _get_owned_event(db, event_id, current_user)
-    for field, value in event_in.model_dump(exclude_unset=True).items():
+    data = event_in.model_dump(exclude_unset=True)
+    for key in ("start_time", "end_time"):
+        if key in data and data[key] is not None:
+            data[key] = _normalize_event_time(data[key])
+    for field, value in data.items():
         setattr(event, field, value)
     db.commit()
     db.refresh(event)
@@ -421,7 +423,8 @@ def sync_lms_canvas(
         "status": "success",
         "provider": req_provider,
         "provider_name": provider_name,
-        "message": f"Đồng bộ thành công! Đã nhập {imported_tasks} bài tập và phân bổ lịch thi từ {provider_name}.",
+        "demo": True,
+        "message": f"Đồng bộ thành công! Đã nhập {imported_tasks} bài tập mẫu demo và phân bổ lịch thi từ {provider_name}.",
         "imported_count": imported_tasks,
     }
 
