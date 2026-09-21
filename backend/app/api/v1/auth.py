@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timedelta
 from typing import Optional
 import re
@@ -44,6 +44,11 @@ def _token_pair(user: User) -> dict:
             "full_name": user.full_name,
             "university": user.university,
             "major": user.major,
+            "academic_year": user.academic_year,
+            "student_id": getattr(user, "student_id", None),
+            "avatar_url": getattr(user, "avatar_url", None),
+            "is_email_verified": getattr(user, "is_email_verified", False),
+            "is_onboarded": getattr(user, "is_onboarded", False),
         },
     }
 
@@ -64,7 +69,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).options(joinedload(User.profile)).filter(User.id == user_id).first()
     if not user:
         # Token hợp lệ nhưng user không tồn tại -> phiên không còn giá trị -> 401 (không phải 404)
         raise HTTPException(
@@ -77,6 +82,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @router.post("/register", response_model=TokenResponse)
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
     email = _normalize_email(user_in.email)
+    if not login_limiter.allow(f"register:{email}", LOGIN_LIMIT, LOGIN_WINDOW):
+        raise HTTPException(status_code=429, detail="Bạn đã thử đăng ký quá nhiều lần. Vui lòng thử lại sau 5 phút.")
     if not EMAIL_RE.match(email):
         raise HTTPException(status_code=400, detail="Email chưa đúng định dạng.")
     if len(user_in.password) < 8:
@@ -95,7 +102,8 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
         full_name=full_name,
         university=user_in.university,
         major=user_in.major,
-        academic_year=user_in.academic_year
+        academic_year=user_in.academic_year,
+        is_onboarded=False,
     )
     db.add(user)
     db.commit()
@@ -111,7 +119,16 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.add(profile)
     db.commit()
 
-    return _token_pair(user)
+    # Sinh OTP xác minh email cho tài khoản mới
+    code = f"{secrets.randbelow(900000) + 100000}"
+    db.add(OtpCode(email=email, code=code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
+    db.commit()
+    send_otp_email(email, code)
+
+    res = _token_pair(user)
+    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+        res["dev_code"] = code
+    return res
 
 @router.post("/login", response_model=TokenResponse)
 def login(login_in: UserLogin, db: Session = Depends(get_db)):
@@ -137,10 +154,43 @@ def refresh_tokens(payload: RefreshRequest, db: Session = Depends(get_db)):
     user_id = decode_refresh_token(payload.refresh_token or "")
     if not user_id:
         raise HTTPException(status_code=401, detail="Refresh token không hợp lệ. Vui lòng đăng nhập lại.")
+    if not login_limiter.allow(f"refresh:{user_id}", LOGIN_LIMIT * 3, LOGIN_WINDOW):
+        raise HTTPException(status_code=429, detail="Quá nhiều yêu cầu làm mới phiên.")
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="Tài khoản không còn tồn tại.")
     return _token_pair(user)
+
+def get_optional_user(token: Optional[str] = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
+    """Lấy user nếu token hợp lệ, không ném 401 nếu token rỗng/hết hạn."""
+    if not token:
+        return None
+    user_id = decode_access_token(token)
+    if not user_id:
+        return None
+    return db.query(User).filter(User.id == user_id).first()
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: Optional[str] = None
+
+
+@router.post("/logout")
+def logout(
+    payload: Optional[LogoutRequest] = None,
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    """
+    Đăng xuất an toàn: Xác nhận từ máy chủ, ghi nhận kết thúc phiên học tập.
+    Luôn trả về 200 ngay cả khi token đã hết hạn để client dọn dẹp sạch sẽ.
+    """
+    user_email = current_user.email if current_user else None
+    return {
+        "status": "success",
+        "message": "Đã đăng xuất khỏi Không gian học tập Stuđiô AI an toàn.",
+        "user_email": user_email,
+    }
+
 
 class GoogleAuthRequest(BaseModel):
     # Frontend demo chỉ gửi email chọn tài khoản; id_token chỉ có khi tích hợp Google Identity thật
@@ -148,29 +198,46 @@ class GoogleAuthRequest(BaseModel):
     email: Optional[str] = None
 
 
+ALLOWED_DEMO_EMAILS = {
+    "chau.nguyen@vnuhcm.edu.vn": ("Nguyễn Minh Châu", "21120001", "Công nghệ Thông tin"),
+    "minhchau.designer@gmail.com": ("Minh Châu (Cá nhân)", "21120002", "Khoa học Máy tính"),
+    "lab.hciresearch@gmail.com": ("AI & HCI Lab Research", "21120003", "Trí tuệ Nhân tạo"),
+}
+
+
 @router.post("/google", response_model=TokenResponse)
 def google_auth(payload: GoogleAuthRequest, db: Session = Depends(get_db)):
     """
     Google Sign-In: xác minh id_token qua tokeninfo của Google (kèm kiểm tra aud khi cấu hình
-    GOOGLE_CLIENT_ID). Ở chế độ demo (id_token rỗng) -> đăng nhập tài khoản sinh viên mẫu.
+    GOOGLE_CLIENT_ID). Ở chế độ demo (id_token rỗng) -> chỉ cho phép các tài khoản mẫu định danh.
     """
     import httpx
 
     id_token = (payload.id_token or "").strip()
-    # Chế độ demo 1-chạm: nếu client gửi email -> đăng nhập đúng tài khoản đó nếu tồn tại (mô phỏng SSO .edu.vn)
     demo_email = _normalize_email(payload.email) if payload.email else "chau.nguyen@vnuhcm.edu.vn"
 
+    if not login_limiter.allow(f"google:{demo_email}", LOGIN_LIMIT * 2, LOGIN_WINDOW):
+        raise HTTPException(status_code=429, detail="Quá nhiều yêu cầu đăng nhập Google. Vui lòng thử lại sau.")
+
     if not id_token:
-        # Chế độ demo 1-chạm: chỉ dùng cho trình diễn học thuật, không dùng production.
+        # B04: Ở production chặn demo mode không token; ở development chỉ chấp nhận ALLOWED_DEMO_EMAILS
+        if settings.ENV == "production":
+            raise HTTPException(status_code=400, detail="Google Sign-In yêu cầu id_token hợp lệ.")
+        if demo_email not in ALLOWED_DEMO_EMAILS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Chế độ demo chỉ hỗ trợ các tài khoản mẫu: {', '.join(ALLOWED_DEMO_EMAILS.keys())}"
+            )
+        name, student_id, major = ALLOWED_DEMO_EMAILS[demo_email]
         user = db.query(User).filter(User.email == demo_email).first()
         if not user:
             user = User(
                 email=demo_email,
                 password_hash=hash_password("password123"),
-                full_name="Nguyễn Minh Châu",
-                student_id="21120001",
+                full_name=name,
+                student_id=student_id,
                 university="ĐHQG TP.HCM",
-                major="Công nghệ Thông tin",
+                major=major,
                 academic_year=3,
                 is_email_verified=True
             )
@@ -286,10 +353,15 @@ def verify_otp(payload: VerifyOtpRequest, db: Session = Depends(get_db)):
     # (luồng quên mật khẩu: verify -> reset-password dùng cùng mã).
     otp_verify_limiter.reset(f"otp-verify:{email}")
     user = db.query(User).filter(User.email == email).first()
+    res = {"status": "success", "message": "Xác minh email thành công!"}
     if user:
         user.is_email_verified = True
         db.commit()
-    return {"status": "success", "message": "Xác minh email thành công!"}
+        tokens = _token_pair(user)
+        res["access_token"] = tokens["access_token"]
+        res["refresh_token"] = tokens["refresh_token"]
+        res["user"] = tokens["user"]
+    return res
 
 
 class ResetPasswordRequest(BaseModel):
@@ -303,6 +375,8 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     """Đặt mật khẩu mới bằng mã OTP còn hiệu lực (tiêu thụ mã sau khi dùng)."""
     email = _normalize_email(payload.email)
     code = (payload.code or "").strip()
+    if not otp_verify_limiter.allow(f"otp-verify:{email}", OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW):
+        raise HTTPException(status_code=429, detail="Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.")
     if len(payload.new_password or "") < 8:
         raise HTTPException(status_code=400, detail="Mật khẩu mới tối thiểu 8 ký tự.")
     record = db.query(OtpCode).filter(
@@ -315,6 +389,7 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản.")
+    otp_verify_limiter.reset(f"otp-verify:{email}")
     user.password_hash = hash_password(payload.new_password)
     user.is_email_verified = True
     record.is_used = True
@@ -395,6 +470,7 @@ def update_profile(
     return {
         "status": "success",
         "message": "Cập nhật hồ sơ sinh viên thành công!",
+        "full_name": current_user.full_name,
         "profile": {
             "full_name": current_user.full_name,
             "university": current_user.university,

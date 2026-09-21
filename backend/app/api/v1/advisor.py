@@ -42,14 +42,18 @@ async def chat_with_advisor(
         db.commit()
         db.refresh(session)
 
+    content_text = (msg_in.content or msg_in.message or "").strip()
+    if not content_text:
+        raise HTTPException(status_code=422, detail="Nội dung tin nhắn không được để trống.")
+
     # Save user message
-    user_msg = ChatMessage(session_id=session.id, sender="user", content=msg_in.content)
+    user_msg = ChatMessage(session_id=session.id, sender="user", content=content_text)
     db.add(user_msg)
     db.commit()
 
     # Query student profile and active tasks to enrich user_context
-    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first()
-    active_tasks = db.query(Task).filter(Task.user_id == current_user.id, Task.status != "completed").limit(5).all()
+    profile = db.query(UserProfile).filter(UserProfile.user_id == current_user.id).first() if msg_in.include_profile else None
+    active_tasks = db.query(Task).filter(Task.user_id == current_user.id, Task.status != "completed").limit(5).all() if msg_in.include_tasks else []
     tasks_summary = [f"- {t.title} ({t.subject_name or t.subject_code}, hạn chót: {t.deadline or 'Trong tuần'})" for t in active_tasks]
 
     user_context = {
@@ -59,9 +63,10 @@ async def chat_with_advisor(
         "chronotype": profile.chronotype if profile else "bear",
         "wake_time": profile.wake_up_time if profile else "06:30",
         "sleep_time": profile.bed_time if profile else "23:00",
-        "active_tasks": tasks_summary
+        "active_tasks": tasks_summary,
+        "context_type": msg_in.context_type or "general",
     }
-    advisor_reply = await AIService.chat_with_advisor(msg_in.content, user_context)
+    advisor_reply = await AIService.chat_with_advisor(content_text, user_context)
 
     # Save advisor message
     adv_msg = ChatMessage(session_id=session.id, sender="advisor", content=advisor_reply)
@@ -103,6 +108,49 @@ def new_session(
     db.commit()
     db.refresh(session)
     return {"id": session.id, "title": session.title, "created_at": session.created_at, "message_count": 0}
+
+
+class ChatSessionUpdate(BaseModel):
+    title: str
+
+
+@router.patch("/sessions/{session_id}", response_model=ChatSessionOut)
+def rename_session(
+    session_id: str,
+    payload: ChatSessionUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id, ChatSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phiên.")
+    title = (payload.title or "").strip()
+    if len(title) < 2:
+        raise HTTPException(status_code=400, detail="Tên phiên quá ngắn.")
+    session.title = title[:255]
+    db.commit()
+    db.refresh(session)
+    count = db.query(ChatMessage).filter(ChatMessage.session_id == session.id).count()
+    return {"id": session.id, "title": session.title, "created_at": session.created_at, "message_count": count}
+
+
+@router.delete("/sessions/{session_id}")
+def delete_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id, ChatSession.user_id == current_user.id
+    ).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phiên.")
+    db.query(ChatMessage).filter(ChatMessage.session_id == session.id).delete()
+    db.delete(session)
+    db.commit()
+    return {"status": "success", "message": "Đã xóa phiên tham vấn."}
 
 
 @router.get("/sessions/{session_id}/messages", response_model=List[ChatMessageOut])

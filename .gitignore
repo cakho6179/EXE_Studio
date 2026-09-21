@@ -5,3 +5,5 @@ __pycache__/
 backend/uploads/
 *.db-journal
 temp/
+backend/env
+docs

@@ -1,0 +1,273 @@
+/* ==========================================================================
+   STUĐIÔ AI - CALM WORKSPACE DESIGN SYSTEM STYLESHEET (V3.2)
+   Không gian học tập tĩnh lặng & Điều phối nhịp sinh học
+   Local High-Resolution Asset Binding & Offline Design Tokens
+   ========================================================================== */
+
+/* Design Tokens & Theme Variables */
+:root {
+  --color-brand-50: #f0f7ff;
+  --color-brand-100: #e0effe;
+  --color-brand-200: #bae0fd;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  
+  --color-circadian-alpha: #0284c7;
+  --color-circadian-golden: #f59e0b;
+  --color-circadian-rest: #10b981;
+  --color-circadian-burnout: #f43f5e;
+  
+  --glass-bg-base: rgba(255, 255, 255, 0.82);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-shadow: 0 10px 30px -5px rgba(22, 53, 107, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* ==========================================================================
+   1. SCENIC WATERCOLOR LIGHTHOUSE BACKGROUNDS (LOCAL HIGH-RES BINDING)
+   ========================================================================== */
+
+/* Universal Widescreen Watercolor Coastal Scenery */
+.bg-watercolor,
+.bg-lighthouse-scenery,
+.bg-watercolor-scenery {
+  background-image: 
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 60%),
+    url('../images/lighthouse-wide.png') !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Vertical / Portrait Coastal Scenery (Auth Cards & Mobile Layouts) */
+.bg-watercolor-vertical {
+  background-image: 
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 60%),
+    url('../images/lighthouse-tall.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Canvas texture & ambient grain overlay */
+.watercolor-grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* ==========================================================================
+   2. GLASSMORPHISM & TRANQUIL AMBIENCE
+   ========================================================================== */
+
+.glass-card {
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-card:hover {
+  background: var(--glass-bg-elevated);
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 15px -2px rgba(15, 23, 42, 0.05);
+}
+
+.glass-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.2);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  background: #ffffff;
+  border-color: var(--color-brand-600);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+/* ==========================================================================
+   3. CALM PULSE & BREATHING ANIMATIONS
+   ========================================================================== */
+
+@keyframes gentlePulse {
+  0%, 100% { opacity: 0.65; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.02); }
+}
+
+.aura-glow {
+  animation: gentlePulse 6s ease-in-out infinite;
+}
+
+@keyframes pulseWave {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+.audio-wave-bar {
+  animation: pulseWave 1.4s ease-in-out infinite alternate;
+}
+
+/* Custom smooth scrollbar (calm & non-intrusive) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+/* ==========================================================================
+   Timetable sticky hour column + scroll hint (mobile)
+   ========================================================================== */
+
+#tt-body .grid > div:first-child,
+#tt-header > div:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+#tt-body .grid > div:first-child {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 12px;
+}
+
+.tt-scroll-hint {
+  position: relative;
+}
+
+/* ==========================================================================
+   Skeleton shimmer (loading placeholders)
+   ========================================================================== */
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(226, 232, 240, 0.7);
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: shimmerSweep 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmerSweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.6);
+}
+
+/* ==========================================================================
+   5. KEYBOARD FOCUS VISIBILITY (A11Y)
+   ========================================================================== */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   6. REDUCED MOTION (A11Y)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   7. USER PROFILE DROPDOWN & LOGOUT DIALOG
+   ========================================================================== */
+
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-dropdown-menu.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.calm-logout-dialog {
+  animation: calmFadeIn 0.25s ease-out;
+}
+
+/* ==========================================================================
+   8. FOCUS-DIM MODE (khiên tập trung: ẩn header/footer đỡ xao nhãng)
+   ========================================================================== */
+
+body.focus-dim header,
+body.focus-dim footer {
+  display: none;
+}
+
+@keyframes calmFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+

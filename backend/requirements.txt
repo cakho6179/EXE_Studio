@@ -10,3 +10,6 @@ python-dotenv>=1.0.1
 # Trích xuất text giáo trình cho AI Advisor
 pypdf>=4.0.0
 python-docx>=1.1.0
+# Driver kết nối cơ sở dữ liệu PostgreSQL khi deploy server thật
+psycopg2-binary>=2.9.9
+

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # Auth Schemas
 class UserRegister(BaseModel):
@@ -57,6 +57,7 @@ class UserOut(BaseModel):
     major: str
     academic_year: int
     is_email_verified: bool
+    is_onboarded: bool = False
     avatar_url: Optional[str] = None
     profile: Optional[UserProfileOut] = None
 
@@ -78,22 +79,143 @@ class MicroSubtaskOut(BaseModel):
     class Config:
         from_attributes = True
 
+import re
+
+def parse_flexible_datetime(v):
+    if not v:
+        return None
+    if isinstance(v, datetime):
+        return v
+    if isinstance(v, str):
+        v = v.strip()
+        if not v or v.lower() in ("none", "null", "undefined"):
+            return None
+        try:
+            return datetime.fromisoformat(v.replace("Z", "+00:00"))
+        except Exception:
+            pass
+        for fmt in (
+            "%Y-%m-%dT%H:%M",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%d %H:%M:%S",
+            "%d/%m/%Y %I:%M %p",
+            "%m/%d/%Y %I:%M %p",
+            "%d/%m/%Y %H:%M",
+            "%m/%d/%Y %H:%M",
+            "%Y-%m-%d",
+            "%d/%m/%Y",
+            "%m/%d/%Y",
+        ):
+            try:
+                return datetime.strptime(v, fmt)
+            except Exception:
+                continue
+    return None
+
+def normalize_priority(v):
+    if not v:
+        return "high"
+    v_clean = str(v).strip().lower()
+    if any(k in v_clean for k in ("cao", "high", "urgent", "khẩn", "gấp")):
+        return "high"
+    if any(k in v_clean for k in ("thấp", "low", "tự học", "nhe")):
+        return "low"
+    if any(k in v_clean for k in ("tiêu chuẩn", "medium", "trung bình", "vừa", "standard")):
+        return "medium"
+    return "medium"
+
+def normalize_complexity(v):
+    if not v:
+        return "medium"
+    v_clean = str(v).strip().lower()
+    if "review" in v_clean or "ôn tập" in v_clean:
+        return "review"
+    if any(k in v_clean for k in ("complex", "đồ án", "bài báo", "lớn", "phức tạp")):
+        return "complex"
+    if any(k in v_clean for k in ("simple", "lab", "ngắn", "dễ", "đơn giản")):
+        return "simple"
+    if any(k in v_clean for k in ("medium", "tiểu luận", "vừa")):
+        return "medium"
+    return v_clean[:50] if len(v_clean) <= 50 else "medium"
+
+
 class MicroSubtaskCreate(BaseModel):
-    title: str
+    title: str = "Micro-sprint tập trung"
     estimated_minutes: int = 25
     pomodoro_count: int = 1
-    recommended_circadian_window: Optional[str] = "Khung giờ vàng chiều"
+    recommended_circadian_window: Optional[str] = "Khung giờ vàng chiều (14:00 - 16:30)"
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def clean_title(cls, v):
+        if not v or not str(v).strip():
+            return "Micro-sprint tập trung 25p"
+        return str(v).strip()[:255]
+
+    @field_validator("estimated_minutes", mode="before")
+    @classmethod
+    def clean_estimated_minutes(cls, v):
+        if v is None:
+            return 25
+        m = re.search(r"\d+", str(v))
+        return int(m.group(0)) if m else 25
+
+    @field_validator("pomodoro_count", mode="before")
+    @classmethod
+    def clean_pomodoro_count(cls, v):
+        if v is None:
+            return 1
+        m = re.search(r"\d+", str(v))
+        return max(1, int(m.group(0))) if m else 1
 
 class TaskCreate(BaseModel):
-    title: str = Field(min_length=2, max_length=255)
+    title: str = Field(default="Nhiệm vụ học tập mới", min_length=1, max_length=255)
     description: Optional[str] = None
     subject_name: Optional[str] = "Trí tuệ nhân tạo"
     subject_code: Optional[str] = "CS301"
     deadline: Optional[datetime] = None
-    priority: Optional[Literal["high", "medium", "low"]] = "high"
-    complexity: Optional[Literal["simple", "medium", "complex"]] = "medium"
-    status: Optional[Literal["pending", "in_progress", "completed"]] = None
+    priority: Optional[str] = "high"
+    complexity: Optional[str] = "medium"
+    status: Optional[str] = None
     subtasks: Optional[List[MicroSubtaskCreate]] = []
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def clean_task_title(cls, v):
+        if not v or not str(v).strip():
+            return "Nhiệm vụ học tập mới"
+        return str(v).strip()[:255]
+
+    @field_validator("deadline", mode="before")
+    @classmethod
+    def parse_deadline(cls, v):
+        return parse_flexible_datetime(v)
+
+    @field_validator("priority", mode="before")
+    @classmethod
+    def parse_priority(cls, v):
+        return normalize_priority(v)
+
+    @field_validator("complexity", mode="before")
+    @classmethod
+    def parse_complexity(cls, v):
+        return normalize_complexity(v)
+
+    @field_validator("subtasks", mode="before")
+    @classmethod
+    def clean_subtasks_list(cls, v):
+        if not v:
+            return []
+        res = []
+        for item in v:
+            if isinstance(item, str):
+                res.append({"title": item})
+            elif isinstance(item, dict):
+                res.append(item)
+            else:
+                res.append(item)
+        return res
 
 class TaskOut(BaseModel):
     id: str
@@ -138,15 +260,30 @@ class AIDeconstructResponse(BaseModel):
 # ---- Task update & schedule event update ----
 class TaskUpdate(BaseModel):
     """Cập nhật một phần thông tin nhiệm vụ (mọi trường đều optional)."""
-    title: Optional[str] = Field(default=None, min_length=2, max_length=255)
+    title: Optional[str] = Field(default=None, max_length=255)
     description: Optional[str] = None
     subject_name: Optional[str] = None
     subject_code: Optional[str] = None
     deadline: Optional[datetime] = None
-    priority: Optional[Literal["high", "medium", "low"]] = None
-    complexity: Optional[Literal["simple", "medium", "complex"]] = None
-    status: Optional[Literal["pending", "in_progress", "completed"]] = None
+    priority: Optional[str] = None
+    complexity: Optional[str] = None
+    status: Optional[str] = None
     total_sprints: Optional[int] = Field(default=None, ge=0, le=200)
+
+    @field_validator("deadline", mode="before")
+    @classmethod
+    def parse_update_deadline(cls, v):
+        return parse_flexible_datetime(v)
+
+    @field_validator("priority", mode="before")
+    @classmethod
+    def parse_update_priority(cls, v):
+        return normalize_priority(v) if v is not None else None
+
+    @field_validator("complexity", mode="before")
+    @classmethod
+    def parse_update_complexity(cls, v):
+        return normalize_complexity(v) if v is not None else None
 
 class MicroSubtaskUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=2, max_length=255)
@@ -177,6 +314,7 @@ class FocusSessionOut(BaseModel):
     ambient_sound_used: str
     notes: Optional[str]
     created_at: datetime
+    focus_score: Optional[int] = 85
 
     class Config:
         from_attributes = True
@@ -240,7 +378,11 @@ class CircadianInsightItem(BaseModel):
 
 # AI Advisor Schemas
 class ChatMessageCreate(BaseModel):
-    content: str
+    content: Optional[str] = None
+    message: Optional[str] = None
+    context_type: Optional[str] = None
+    include_profile: Optional[bool] = True
+    include_tasks: Optional[bool] = True
 
 class ChatMessageOut(BaseModel):
     id: str

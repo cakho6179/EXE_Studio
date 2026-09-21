@@ -10,15 +10,15 @@ from app.core.database import Base, engine, SessionLocal
 from app.core.security import hash_password
 from app.models.entities import (
     User, UserProfile, Task, MicroSubtask, ScheduleEvent,
-    FocusSession, ChatSession, ChatMessage, MoodEntry, Note,
+    FocusSession, ChatSession, ChatMessage, MoodEntry, Note, StudyPlan,
 )
-from app.api.v1 import auth, circadian, tasks, focus, schedule, advisor, audio, analytics, notifications, moods, notes
+from app.api.v1 import auth, circadian, tasks, focus, schedule, advisor, audio, analytics, notifications, moods, notes, study_plans, onboarding
 
 # Initialize DB Tables
 Base.metadata.create_all(bind=engine)
 
-if settings.SECRET_KEY == "dev-only-change-me":
-    print("[Studio AI] CẢNH BÁO: đang dùng SECRET_KEY mặc định. Đặt SECRET_KEY trong backend/.env khi chạy production.")
+if "dev-only" in settings.SECRET_KEY:
+    print("[Studio AI] WARNING: Using default SECRET_KEY. Set SECRET_KEY in backend/.env for production.")
 
 
 def _migrate_schedule_event_date():
@@ -60,6 +60,19 @@ def _migrate_fk_indexes():
 _migrate_fk_indexes()
 
 
+def _migrate_user_columns():
+    """Bổ sung cột is_onboarded cho bảng users nếu chưa có."""
+    from sqlalchemy import text
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN is_onboarded BOOLEAN DEFAULT 0"))
+    except Exception:
+        pass
+
+
+_migrate_user_columns()
+
+
 def _backfill_event_dates():
     """Sự kiện cũ chưa có event_date -> gán hôm nay (để grid tuần hiển thị đúng)."""
     from sqlalchemy import text
@@ -93,6 +106,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc: RequestValidationError):
+    try:
+        body = await request.body()
+        body_str = body.decode("utf-8", errors="ignore")
+    except Exception:
+        body_str = "<could not read body>"
+    print(f"[Studio AI][422 Validation Error] path={request.url.path} errors={exc.errors()} body={body_str}")
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 import sys
 if hasattr(sys.stdout, 'reconfigure'):
@@ -203,7 +229,8 @@ def seed_demo_data():
                 university="ĐHQG TP.HCM",
                 major="Công nghệ Thông tin",
                 academic_year=3,
-                is_email_verified=True
+                is_email_verified=True,
+                is_onboarded=True,
             )
             db.add(user)
             db.commit()
@@ -320,6 +347,9 @@ def seed_demo_data():
         # --- Backfill cho DB đã tồn tại từ trước (thiếu dữ liệu mới) ---
         existing = db.query(User).filter(User.email == "chau.nguyen@vnuhcm.edu.vn").first()
         if existing:
+            if not getattr(existing, "is_onboarded", False):
+                existing.is_onboarded = True
+                db.commit()
             _seed_schedule_events(db, existing)
             _seed_focus_week(db, existing)
             _seed_chat_history(db, existing)
@@ -342,16 +372,22 @@ app.include_router(analytics.router, prefix=f"{settings.API_V1_STR}/analytics", 
 app.include_router(notifications.router, prefix=f"{settings.API_V1_STR}/notifications", tags=["Notifications"])
 app.include_router(moods.router, prefix=f"{settings.API_V1_STR}/moods", tags=["Moods"])
 app.include_router(notes.router, prefix=f"{settings.API_V1_STR}/notes", tags=["Notes"])
+app.include_router(study_plans.router, prefix=f"{settings.API_V1_STR}/study-plans", tags=["StudyPlans"])
+app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding", tags=["Onboarding"])
 
 # Mount Frontend static files
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
-if frontend_dir.exists():
-    app.mount("/pages", StaticFiles(directory=str(frontend_dir / "pages")), name="pages")
+react_dist = Path(__file__).resolve().parent.parent.parent / "frontend-react" / "dist"
+legacy_pages = Path(__file__).resolve().parent.parent.parent / "temp" / "pages-backup" / "pages"
+
+# Ưu tiên assets từ React bundle đã build, nếu chưa build thì dùng assets cũ
+if react_dist.exists() and (react_dist / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(react_dist / "assets")), name="react_assets")
+elif frontend_dir.exists():
     app.mount("/assets", StaticFiles(directory=str(frontend_dir / "assets")), name="assets")
 
-    @app.get("/")
-    def root():
-        return RedirectResponse(url="/pages/01-landing/index.html")
+if frontend_dir.exists():
+    app.mount("/legacy-assets", StaticFiles(directory=str(frontend_dir / "assets")), name="legacy_assets")
 
     @app.get("/favicon.ico", include_in_schema=False)
     def favicon():
@@ -359,7 +395,39 @@ if frontend_dir.exists():
         icon = frontend_dir / "assets" / "images" / "logo.png"
         if icon.exists():
             return FileResponse(icon)
-        return RedirectResponse(url="/pages/01-landing/index.html")
+        return RedirectResponse(url="/")
+
+if legacy_pages.exists():
+    app.mount("/pages", StaticFiles(directory=str(legacy_pages)), name="pages")
+
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+class SinglePageApplication(StaticFiles):
+    """Phục vụ SPA: mọi route con không phải asset vật lý tự động fallback về index.html."""
+    def __init__(self, directory: str, index: str = "index.html"):
+        super().__init__(directory=directory, html=True)
+        self.index = index
+
+    async def get_response(self, path: str, scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as ex:
+            has_file_ext = "." in Path(path).name
+            if ex.status_code == 404 and not has_file_ext:
+                return await super().get_response(self.index, scope)
+            raise
+
+if react_dist.exists():
+    app.mount("/app", SinglePageApplication(directory=str(react_dist)), name="app")
+
+    @app.get("/")
+    def root():
+        return RedirectResponse(url="/app/")
+else:
+    @app.get("/")
+    def root():
+        # Chưa build React: mở Vite dev server (npm run dev trong frontend-react)
+        return RedirectResponse(url="http://localhost:5173/")
 
 if __name__ == "__main__":
     import uvicorn

@@ -5,8 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Stuđiô AI"
     API_V1_STR: str = "/api/v1"
-    # Bí mật đọc từ .env (không hardcode key thật trong source)
-    SECRET_KEY: str = "dev-only-change-me"
+    ENV: str = "development"
+    # Bí mật đọc từ .env (không hardcode key thật trong source, tối thiểu 32 ký tự theo RFC 7518)
+    SECRET_KEY: str = "dev-only-change-me-super-secret-jwt-key-32chars-min"
     ALGORITHM: str = "HS256"
     # Access token ngắn hạn + refresh token dài hạn (an toàn hơn JWT 7 ngày)
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -35,6 +36,8 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://127.0.0.1:5500",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")

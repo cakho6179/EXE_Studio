@@ -19,6 +19,7 @@ class User(Base):
     major = Column(String(255), default="Công nghệ Thông tin")
     academic_year = Column(Integer, default=3)
     is_email_verified = Column(Boolean, default=False)
+    is_onboarded = Column(Boolean, default=False)
     avatar_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -27,6 +28,7 @@ class User(Base):
     focus_sessions = relationship("FocusSession", back_populates="user", cascade="all, delete-orphan")
     schedule_events = relationship("ScheduleEvent", back_populates="user", cascade="all, delete-orphan")
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
+    study_plans = relationship("StudyPlan", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserProfile(Base):
@@ -94,6 +96,14 @@ class FocusSession(Base):
     ambient_sound_used = Column(String(100), default="Sóng Biển 432Hz")
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    @property
+    def focus_score(self) -> int:
+        if not self.planned_minutes or self.planned_minutes <= 0:
+            return 85
+        ratio = min(1.0, (self.actual_minutes or 0) / self.planned_minutes)
+        penalty = (self.distractions_count or 0) * 5
+        return max(20, min(100, int(ratio * 100 - penalty)))
 
     user = relationship("User", back_populates="focus_sessions")
 
@@ -185,6 +195,25 @@ class Note(Base):
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class StudyPlan(Base):
+    """Kế hoạch ôn tập do sinh viên tạo thủ công hoặc AI sinh lộ trình theo ngày thi."""
+    __tablename__ = "study_plans"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    subject = Column(String(255), nullable=True)
+    exam_date = Column(String(10), nullable=True)  # YYYY-MM-DD
+    hours_per_day = Column(Float, default=3.0)
+    level = Column(String(20), default="medium")  # easy, medium, intense
+    phases_json = Column(Text, default="[]")  # [{date, focus, minutes}]
+    summary = Column(Text, nullable=True)
+    progress = Column(Float, default=0.0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="study_plans")
 
 
 class AudioPreset(Base):

@@ -47,7 +47,7 @@ def main():
         "email": email, "password": "matkhau123", "full_name": "Fresh User"})
     check("1a. Register 200 + có refresh_token", r.status_code == 200 and bool(r.json().get("refresh_token")), r.text[:150])
     uh = {"Authorization": f"Bearer {r.json()['access_token']}"}
-    check("1b. User mới chưa verify", client.get("/api/v1/auth/me", headers=uh).json()["is_email_verified"] is False)
+    check("1b. User mới chưa verify và chưa onboard", client.get("/api/v1/auth/me", headers=uh).json()["is_email_verified"] is False and client.get("/api/v1/auth/me", headers=uh).json().get("is_onboarded") is False)
     check("1c. User mới tasks trống", client.get("/api/v1/tasks/", headers=uh).json() == [])
     check("1d. User mới timeline trống", client.get("/api/v1/schedule/timeline", headers=uh).json() == [])
 
@@ -55,7 +55,7 @@ def main():
     code = r.json().get("dev_code", "")
     check("1e. Forgot cấp mã 6 số", r.status_code == 200 and len(code) == 6, r.text[:150])
     r = client.post("/api/v1/auth/verify-otp", json={"email": email, "code": code})
-    check("1f. Verify OTP OK (chưa đốt mã)", r.status_code == 200, r.text[:150])
+    check("1f. Verify OTP OK + cấp token", r.status_code == 200 and "access_token" in r.json() and r.json()["user"].get("is_onboarded") is False, r.text[:150])
     r = client.post("/api/v1/auth/reset-password",
                     json={"email": email, "code": code, "new_password": "moikhoe123"})
     check("1g. Reset password bằng cùng mã OK", r.status_code == 200, r.text[:150])
@@ -143,7 +143,60 @@ def main():
     r = client.post("/api/v1/auth/verify-otp", json={"email": email, "code": "000000"})
     check("6e. OTP sai -> 400", r.status_code == 400)
 
-    # ---- Dọn ----
+    # ---- 7. Tính năng mới: Certificate, Task Deduplicate, Multi-provider LMS Sync ----
+    r = client.get("/api/v1/analytics/certificate", headers=uh)
+    cert = r.json()
+    check("7a. Cấp chứng nhận Deep Work số hóa",
+          r.status_code == 200 and cert.get("status") == "verified" and cert.get("certificate_id", "").startswith("STU-CERT-2026-"),
+          r.text[:120])
+    check("7b. Chứng nhận có băm xác thực SHA-256",
+          bool(cert.get("verification_hash")) and bool(cert.get("verification_url")),
+          cert.get("verification_hash", ""))
+
+    # Deduplicate task
+    client.post("/api/v1/tasks/", json={"title": "Task Trùng Lặp Kiểm Thử", "priority": "medium", "complexity": "simple", "total_sprints": 2}, headers=uh)
+    client.post("/api/v1/tasks/", json={"title": "Task Trùng Lặp Kiểm Thử", "priority": "medium", "complexity": "simple", "total_sprints": 2}, headers=uh)
+    r = client.post("/api/v1/tasks/deduplicate", headers=uh)
+    check("7c. Gộp task trùng (POST /tasks/deduplicate)",
+          r.status_code == 200 and r.json().get("removed_count", 0) >= 1,
+          r.text[:120])
+
+    # Multi-provider LMS Sync (Teams)
+    r = client.post("/api/v1/schedule/lms-sync", json={"provider": "teams", "include_timeline": True}, headers=uh)
+    check("7d. Đồng bộ LMS đa nền tảng (Microsoft Teams)",
+          r.status_code == 200 and r.json().get("provider") == "teams" and "Teams" in r.json().get("message", ""),
+          r.text[:120])
+
+    # Flexible Task Creation (không bị 422 khi date format UI, tiếng Việt priority, hay custom complexity)
+    flex_task = {
+        "title": "Hoàn thành bài tập về nhà",
+        "description": "Bài tập lớn môn AI",
+        "subject_name": "Trí tuệ nhân tạo (CS301)",
+        "subject_code": "CS301",
+        "deadline": "10/01/2026 07:18 PM",
+        "priority": "Ưu tiên cao",
+        "complexity": "Đồ án lớn / Bài báo (5 - 8 Sprints • ~200p)",
+        "subtasks": [
+            {"title": "Bước 1: Nghiên cứu đề bài", "estimated_minutes": "30 phút", "pomodoro_count": "1"}
+        ]
+    }
+    r = client.post("/api/v1/tasks/", json=flex_task, headers=uh)
+    check("7e. Tạo task linh hoạt (deadline 10/01/2026 07:18 PM, priority VN, complexity custom)",
+          r.status_code == 201 and r.json().get("priority") == "high" and r.json().get("complexity") == "complex",
+          r.text[:120])
+
+    # Logout server
+    r = client.post("/api/v1/auth/logout", headers=uh)
+    check("7f. Đăng xuất an toàn server (POST /auth/logout)",
+          r.status_code == 200 and r.json().get("status") == "success",
+          r.text[:120])
+
+    # Complete onboarding marks is_onboarded=True
+    r = client.post("/api/v1/onboarding/complete", json={"answers": {"major": "Khoa học Máy tính", "chronotype": "owl", "focus_duration": "medium"}}, headers=uh)
+    check("7g. Hoàn tất onboarding đánh dấu is_onboarded=True (POST /onboarding/complete)",
+          r.status_code == 200 and client.get("/api/v1/auth/me", headers=uh).json().get("is_onboarded") is True,
+          r.text[:120])
+
     client.delete(f"/api/v1/tasks/{tid}", headers=uh)
     client.delete(f"/api/v1/schedule/events/{evid}", headers=uh)
     client.delete(f"/api/v1/notes/{nid}", headers=uh)

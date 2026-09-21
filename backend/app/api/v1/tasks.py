@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
+from datetime import datetime
 from app.core.database import get_db
-from app.models.entities import User, Task, MicroSubtask
+from app.models.entities import User, Task, MicroSubtask, ScheduleEvent, FocusSession
 from app.api.v1.auth import get_current_user
 from app.services.ai_service import AIService
 from app.schemas.all_schemas import (
@@ -29,14 +30,23 @@ def _get_owned_task(db: Session, task_id: str, user: User) -> Task:
 
 def _recalc_task_progress(db: Session, task: Task) -> None:
     """Tính lại completed_sprints và status từ danh sách subtasks."""
+    total_subtasks = db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).count()
+    if total_subtasks == 0:
+        if task.status == "completed":
+            task.completed_sprints = task.total_sprints or 1
+        else:
+            task.completed_sprints = 0
+        return
+
     completed = db.query(MicroSubtask).filter(
         MicroSubtask.task_id == task.id,
         MicroSubtask.is_completed == True
     ).count()
     task.completed_sprints = completed
-    if task.total_sprints > 0 and completed >= task.total_sprints:
+    task.total_sprints = max(total_subtasks, 1)
+    if completed >= total_subtasks:
         task.status = "completed"
-    elif task.status == "completed":
+    else:
         task.status = "in_progress"
 
 
@@ -49,7 +59,7 @@ def get_tasks(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    query = db.query(Task).filter(Task.user_id == current_user.id)
+    query = db.query(Task).options(selectinload(Task.subtasks)).filter(Task.user_id == current_user.id)
     if status:
         query = query.filter(Task.status == status)
     if priority:
@@ -68,13 +78,18 @@ def create_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    dl = task_in.deadline
+    if dl is not None and getattr(dl, 'tzinfo', None) is not None:
+        from datetime import timezone
+        dl = dl.astimezone(timezone.utc).replace(tzinfo=None)
+
     task = Task(
         user_id=current_user.id,
         title=task_in.title,
         description=task_in.description,
         subject_name=task_in.subject_name or "Trí tuệ nhân tạo",
         subject_code=task_in.subject_code or "CS301",
-        deadline=task_in.deadline,
+        deadline=dl,
         priority=task_in.priority or "high",
         complexity=task_in.complexity or "medium",
         status="in_progress",
@@ -122,10 +137,13 @@ def update_task(
     task = _get_owned_task(db, task_id, current_user)
     data = task_in.model_dump(exclude_unset=True)
 
-    if "deadline" in data and data["deadline"] is None:
-        # Cho phép xóa deadline bằng cách gửi null
-        task.deadline = None
-        data.pop("deadline")
+    if "deadline" in data:
+        if data["deadline"] is None:
+            task.deadline = None
+            data.pop("deadline")
+        elif getattr(data["deadline"], 'tzinfo', None) is not None:
+            from datetime import timezone
+            data["deadline"] = data["deadline"].astimezone(timezone.utc).replace(tzinfo=None)
 
     for field, value in data.items():
         setattr(task, field, value)
@@ -149,8 +167,56 @@ def delete_task(
     return {"message": "Đã xóa nhiệm vụ thành công."}
 
 
+@router.post("/deduplicate")
+def deduplicate_tasks(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Tự động quét và gộp các nhiệm vụ trùng tên của sinh viên.
+    Giữ lại bản ghi có tiến độ cao nhất (completed_sprints lớn nhất, hoặc mới nhất),
+    xóa an toàn các bản ghi trùng lặp trong cơ sở dữ liệu.
+    """
+    user_tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
+    grouped = {}
+    for t in user_tasks:
+        norm_title = (t.title or "").strip().lower()
+        if not norm_title:
+            continue
+        grouped.setdefault(norm_title, []).append(t)
+
+    removed_count = 0
+    for norm_title, t_list in grouped.items():
+        if len(t_list) > 1:
+            # Ưu tiên bản ghi có completed_sprints lớn nhất, sau đó là ngày tạo mới nhất
+            t_list.sort(key=lambda x: (x.completed_sprints or 0, getattr(x, 'created_at', None) or datetime.min), reverse=True)
+            to_delete = t_list[1:]
+            for t in to_delete:
+                # Xóa subtasks con nếu có
+                db.query(MicroSubtask).filter(MicroSubtask.task_id == t.id).delete()
+                # Gỡ task_id ở các ScheduleEvent liên quan để tránh ràng buộc khóa ngoại
+                db.query(ScheduleEvent).filter(ScheduleEvent.task_id == t.id).update({"task_id": None})
+                # Gỡ task_id ở các FocusSession liên quan
+                db.query(FocusSession).filter(FocusSession.task_id == t.id).update({"task_id": None})
+                db.delete(t)
+                removed_count += 1
+
+    db.commit()
+    remaining_count = db.query(Task).filter(Task.user_id == current_user.id).count()
+
+    return {
+        "status": "success",
+        "removed_count": removed_count,
+        "remaining_count": remaining_count,
+        "message": f"Đã dọn dẹp và gộp thành công {removed_count} nhiệm vụ trùng lặp.",
+    }
+
+
 @router.post("/ai-decompose", response_model=AIDeconstructResponse)
-async def ai_decompose_task(payload: AIDeconstructRequest):
+async def ai_decompose_task(
+    payload: AIDeconstructRequest,
+    current_user: User = Depends(get_current_user)
+):
     """
     AI Deconstructor v3.2: Analyzes an assignment and decomposes into micro-sprints.
     """
@@ -248,6 +314,7 @@ def delete_subtask(
         raise HTTPException(status_code=403, detail="Bạn không có quyền xóa nhiệm vụ này.")
 
     db.delete(subtask)
+    db.flush()
     remaining = db.query(MicroSubtask).filter(MicroSubtask.task_id == parent.id).count()
     parent.total_sprints = max(remaining, 1)
     _recalc_task_progress(db, parent)

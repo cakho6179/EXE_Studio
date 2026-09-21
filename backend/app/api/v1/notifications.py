@@ -19,12 +19,20 @@ def get_notifications(
     now = datetime.utcnow()
     items = []
 
+    def _to_naive_utc(dt):
+        if not dt:
+            return None
+        if getattr(dt, 'tzinfo', None) is not None:
+            from datetime import timezone
+            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
+
     # 1. Deadline sắp tới / quá hạn
     tasks = db.query(Task).filter(
         Task.user_id == current_user.id, Task.status != "completed",
     ).all()
-    overdue = [t for t in tasks if t.deadline and t.deadline < now]
-    due_soon = [t for t in tasks if t.deadline and now <= t.deadline <= now + timedelta(days=3)]
+    overdue = [t for t in tasks if t.deadline and _to_naive_utc(t.deadline) < now]
+    due_soon = [t for t in tasks if t.deadline and now <= _to_naive_utc(t.deadline) <= now + timedelta(days=3)]
     for t in overdue[:2]:
         items.append({
             "icon": "⏰", "tone": "urgent",

@@ -21,9 +21,10 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 # Biến môi trường production: tắt trả dev_code trong API response
 ENV OTP_RETURN_DEV_CODE=false
 
-# Copy source code and frontend
+# Copy source code, built React SPA, and legacy assets
 COPY backend/ /app/backend/
 COPY frontend/ /app/frontend/
+COPY frontend-react/dist/ /app/frontend-react/dist/
 
 # Expose server port
 EXPOSE 8000
