@@ -35,6 +35,13 @@ SLOT_PEAK_MAP = {
 }
 BED_MAP = {"lark": "22:30", "intermediate": "23:00", "owl": "00:00"}
 WAKE_MAP = {"lark": "05:30", "intermediate": "06:30", "owl": "07:30"}
+# Khung giờ vàng mặc định theo chronotype (khớp GOLDEN_RANGES của CircadianService)
+# dùng khi wizard không gửi slot (tránh profile thiếu peak_time -> auto-balance sai)
+PEAK_FALLBACK_MAP = {
+    "lark": ("08:30", "11:30"),
+    "intermediate": ("10:00", "12:00"),
+    "owl": ("20:30", "23:30"),
+}
 
 
 def _pick_num(answers: dict, *keys) -> Optional[float]:
@@ -110,6 +117,11 @@ def complete_onboarding(
     slot = (_pick(answers, "circadian_slot", "slot") or "").lower()
     if slot in SLOT_PEAK_MAP:
         profile.peak_start_time, profile.peak_end_time = SLOT_PEAK_MAP[slot]
+    elif not (profile.peak_start_time and profile.peak_end_time):
+        # Không có slot và profile chưa có peak -> dùng khung vàng theo chronotype
+        profile.peak_start_time, profile.peak_end_time = PEAK_FALLBACK_MAP.get(
+            chronotype, ("10:00", "12:00")
+        )
 
     goal = _pick(answers, "goal")
     current_user.is_onboarded = True

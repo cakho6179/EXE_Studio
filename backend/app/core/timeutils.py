@@ -45,3 +45,8 @@ def vn_hour(dt_utc_naive: datetime) -> int:
 def vn_today_iso() -> str:
     """Ngày hôm nay theo giờ VN, định dạng YYYY-MM-DD."""
     return vn_now().date().isoformat()
+
+
+def vn_today_date():
+    """Ngày hôm nay theo giờ VN (date object) — dùng thay date.today() lệch múi giờ."""
+    return vn_now().date()

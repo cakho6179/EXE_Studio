@@ -93,7 +93,7 @@ class FocusSession(Base):
     planned_minutes = Column(Integer, default=25)
     actual_minutes = Column(Integer, default=25)
     distractions_count = Column(Integer, default=0)
-    ambient_sound_used = Column(String(100), default="Sóng Biển 432Hz")
+    ambient_sound_used = Column(String(100), nullable=True)  # None = học không nhạc
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

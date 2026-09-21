@@ -4,6 +4,8 @@ Test suite bổ sung cho các tính năng mới sau khi hoàn thiện backend:
 - Refresh token + chặn refresh token gọi API
 - Email normalize, validate input, rate-limit
 - Múi giờ VN, auto-balance theo chronotype, security headers
+- Logout thu hồi refresh token (revoke)
+- Study plan: tạo + PATCH progress + ownership
 Chạy: python test_enhancements.py
 """
 import sys, os
@@ -137,6 +139,49 @@ def main():
     radar_scores = [s['score'] for s in res.json().get('subject_radar', [])]
     check("10a. Radar điểm trong khoảng 0-100", all(0 <= s <= 100 for s in radar_scores), str(radar_scores))
     check("10b. Zen index có mặt", 'zen_efficiency_index' in res.json())
+
+    # ---- 11. Logout thu hồi refresh token (revoke) ----
+    rand = os.urandom(3).hex()
+    res = client.post('/api/v1/auth/register', json={
+        'email': f'revoke_test_{rand}@vnuhcm.edu.vn', 'password': 'password123', 'full_name': 'Test Revoke'
+    })
+    check("11a. Đăng ký user test revoke", res.status_code in (200, 201), f"(got {res.status_code})")
+    revoke_refresh = res.json().get('refresh_token', '')
+    res = client.post('/api/v1/auth/logout', json={'refresh_token': revoke_refresh})
+    check("11b. Logout trả 200", res.status_code == 200, f"(got {res.status_code})")
+    res = client.post('/api/v1/auth/refresh', json={'refresh_token': revoke_refresh})
+    check("11c. Refresh token đã bị thu hồi sau logout", res.status_code in (401, 403), f"(got {res.status_code})")
+
+    # ---- 12. Study plan: tạo + cập nhật tiến độ + ownership ----
+    res = client.post('/api/v1/auth/register', json={
+        'email': f'plan_test_{os.urandom(3).hex()}@vnuhcm.edu.vn', 'password': 'password123', 'full_name': 'Chủ Kế Hoạch'
+    })
+    plan_token = res.json()['access_token']
+    plan_headers = {'Authorization': f'Bearer {plan_token}'}
+
+    res = client.post('/api/v1/study-plans/', json={
+        'title': 'Ôn Giải tích 2', 'subject': 'Giải tích 2', 'exam_date': '2026-12-15'
+    }, headers=plan_headers)
+    check("12a. Tạo study plan (201)", res.status_code == 201, f"(got {res.status_code})")
+    plan = res.json()
+    check("12b. exam_date validate đúng dạng", plan.get('exam_date') == '2026-12-15')
+
+    res = client.patch(f"/api/v1/study-plans/{plan['id']}", json={'progress': 42.5}, headers=plan_headers)
+    check("12c. PATCH progress", res.status_code == 200 and res.json().get('progress') == 42.5, f"(got {res.status_code})")
+
+    res = client.get('/api/v1/study-plans/', headers=plan_headers)
+    check("12d. GET list phản ánh progress mới", res.status_code == 200 and res.json()[0]['progress'] == 42.5)
+
+    # User khác không được sửa kế hoạch của người khác
+    res = client.patch(f"/api/v1/study-plans/{plan['id']}", json={'progress': 99}, headers=headers)
+    check("12e. Plan của user khác bị chặn (404)", res.status_code == 404, f"(got {res.status_code})")
+
+    # progress vượt phạm vi bị từ chối
+    res = client.patch(f"/api/v1/study-plans/{plan['id']}", json={'progress': 150}, headers=plan_headers)
+    check("12f. Từ chối progress > 100", res.status_code == 422)
+
+    res = client.delete(f"/api/v1/study-plans/{plan['id']}", headers=plan_headers)
+    check("12g. DELETE plan", res.status_code == 200, f"(got {res.status_code})")
 
     # ---- Dọn dữ liệu test ----
     client.delete(f'/api/v1/tasks/{tid}', headers=headers)

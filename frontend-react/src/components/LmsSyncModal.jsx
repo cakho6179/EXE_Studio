@@ -31,6 +31,7 @@ export default function LmsSyncModal({ isOpen, onClose, initialProvider = 'canva
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });
       showToast(res.message || 'Đồng bộ bài tập & lịch học thành công!', 'success');
       onClose();

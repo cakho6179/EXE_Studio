@@ -309,10 +309,24 @@ def main():
           r_wrong_pwd.status_code == 400 and r_short_pwd.status_code == 400 and r_ok_pwd.status_code == 200 and r_relogin_old.status_code == 400 and r_relogin_new.status_code == 200,
           f"wrong={r_wrong_pwd.status_code}, ok={r_ok_pwd.status_code}, relogin_new={r_relogin_new.status_code}")
 
+    # 7v. Đổi tên phiên cố vấn có xác thực độ dài & Phân tích nhịp sinh học theo chronotype
+    r_sess = client.post("/api/v1/advisor/new-session", headers=uh)
+    new_sid = r_sess.json().get("id")
+    r_rename_short = client.patch(f"/api/v1/advisor/sessions/{new_sid}", json={"title": "a"}, headers=uh)
+    r_rename_ok = client.patch(f"/api/v1/advisor/sessions/{new_sid}", json={"title": "Nghiên cứu Deep Learning"}, headers=uh)
+    r_dash = client.get("/api/v1/analytics/dashboard?range=week", headers=uh)
+    dash_data = r_dash.json() if r_dash.status_code == 200 else {}
+    check("7v. Xác thực đổi tên phiên cố vấn (min 2 ký tự) & Điểm sinh học Chronotype",
+          r_rename_short.status_code == 400 and r_rename_ok.status_code == 200
+          and r_dash.status_code == 200 and 0 <= dash_data.get("circadian_alignment_score", -1) <= 100
+          and 0 <= dash_data.get("zen_efficiency_index", -1) <= 100,
+          f"rename_short={r_rename_short.status_code}, score={dash_data.get('circadian_alignment_score')}")
+
     client.delete(f"/api/v1/tasks/{tid}", headers=uh)
     client.delete(f"/api/v1/schedule/events/{evid}", headers=uh)
     client.delete(f"/api/v1/notes/{nid}", headers=uh)
     client.delete(f"/api/v1/audio/presets/{pid}", headers=uh)
+    client.delete(f"/api/v1/advisor/sessions/{new_sid}", headers=uh)
 
     print(f"\n{'='*60}")
     print(f"KẾT QUẢ DB MỚI: {PASS} PASS / {FAIL} FAIL")

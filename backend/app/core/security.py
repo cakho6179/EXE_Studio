@@ -1,9 +1,63 @@
 import hashlib
 import secrets
+import threading
+import time
 from datetime import datetime, timedelta
 from typing import Optional, Any
 import jwt
 from app.core.config import settings
+
+# ---- Token revocation (logout) ----
+# Blacklist jti in-memory: jti -> mốc exp (epoch). Logout thu hồi refresh token ngay,
+# entry tự dọn khi quá hạn. Đủ dùng 1 worker dev/uvicorn; multi-worker production
+# nên thay bằng Redis (cùng interface).
+_revoked_store: dict = {}
+_revoked_lock = threading.Lock()
+
+
+def revoke_token(token: str) -> None:
+    """Đánh dấu jti của token vào blacklist đến khi token đó hết hạn tự nhiên."""
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM],
+            options={"verify_exp": False},
+        )
+    except Exception:
+        return
+    jti = payload.get("jti")
+    if not jti:
+        return
+    exp = float(payload.get("exp") or 0)
+    with _revoked_lock:
+        # Dọn rác định kỳ để không phình RAM
+        if len(_revoked_store) > 4096:
+            now_ts = time.time()
+            for k in [k for k, v in _revoked_store.items() if v <= now_ts]:
+                _revoked_store.pop(k, None)
+        _revoked_store[jti] = exp
+
+
+def is_token_revoked(token: str) -> bool:
+    """Kiểm tra token đã bị thu hồi (logout) hay chưa."""
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM],
+            options={"verify_exp": False},
+        )
+        jti = payload.get("jti")
+        if not jti:
+            return False
+        with _revoked_lock:
+            exp = _revoked_store.get(jti)
+        if exp is None:
+            return False
+        if exp <= time.time():
+            with _revoked_lock:
+                _revoked_store.pop(jti, None)
+            return False
+        return True
+    except Exception:
+        return False
 
 def hash_password(password: str) -> str:
     """Hash password using PBKDF2 with SHA-256 and salt for secure, zero-dependency hashing."""

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.cache import cached_response
+from app.core.timeutils import vn_today_date
 from app.models.entities import StudyPlan, User
 from app.api.v1.auth import get_current_user
 
@@ -26,6 +27,10 @@ class StudyPlanGenerate(BaseModel):
     exam_date: Optional[str] = None
     hours_per_day: float = Field(default=3.0, ge=0.5, le=16)
     level: str = Field(default="medium")  # easy, medium, intense
+
+
+class StudyPlanProgress(BaseModel):
+    progress: float = Field(ge=0.0, le=100.0)
 
 
 def _parse_date(s: Optional[str]) -> Optional[date]:
@@ -100,7 +105,8 @@ def generate_plan(
 ):
     level = gen_in.level if gen_in.level in ("easy", "medium", "intense") else "medium"
     exam = _parse_date(gen_in.exam_date)
-    today = date.today()
+    # "Hôm nay" theo lịch VN (trước đây date.today() lệch múi giờ khi deploy UTC)
+    today = vn_today_date()
     total_days = max(1, (exam - today).days) if exam else 21
     total_days = min(total_days, 120)
 
@@ -153,6 +159,27 @@ def generate_plan(
     db.commit()
     db.refresh(plan)
     return {"message": f"AI đã lên lộ trình {total_days} ngày cho {gen_in.subject.strip()}!", "plan": _out(plan)}
+
+
+@router.patch("/{plan_id}")
+def update_plan_progress(
+    plan_id: str,
+    payload: StudyPlanProgress,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Cập nhật tiến độ (%) của kế hoạch ôn tập khi sinh viên tick hoàn thành buổi học."""
+    plan = (
+        db.query(StudyPlan)
+        .filter(StudyPlan.id == plan_id, StudyPlan.user_id == current_user.id)
+        .first()
+    )
+    if not plan:
+        raise HTTPException(status_code=404, detail="Không tìm thấy kế hoạch.")
+    plan.progress = round(payload.progress, 1)
+    db.commit()
+    db.refresh(plan)
+    return {"status": "success", "id": plan.id, "progress": plan.progress}
 
 
 @router.delete("/{plan_id}")
@@ -214,9 +241,14 @@ def apply_plan_to_schedule(
             continue
 
         mins = min(max(30, int(p.get("minutes", 90))), 480)
-        start_h, start_m = 14, 0
-        end_min_total = min(start_h * 60 + start_m + mins, 23 * 60 + 30)
-        end_h = end_min_total // 60
+        profile = current_user.profile
+        chronotype = (profile.chronotype if profile else "lark") or "lark"
+        from app.services.circadian_service import CircadianService
+        golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
+        first_slot = golden_ranges[0].split(" - ")[0]
+        start_h, start_m = map(int, first_slot.split(":"))
+        end_min_total = min(start_h * 60 + start_m + mins, 23 * 60 + 45)
+        end_h = (end_min_total // 60) % 24
         end_m = end_min_total % 60
         start_str = f"{start_h:02d}:{start_m:02d}"
         end_str = f"{end_h:02d}:{end_m:02d}"

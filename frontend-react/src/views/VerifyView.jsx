@@ -25,6 +25,8 @@ export default function VerifyView() {
   }, [isLoggedIn, user, navigate]);
 
   const [email, setEmail] = useState('');
+  // TODO(FIX-LATER): Tạm chấp nhận mã cố định 123456 (backend ALLOW_FIXED_OTP).
+  // Khi nối SMTP thật: xóa hint demo bên dưới, giữ nguyên ô nhập.
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -286,25 +288,14 @@ export default function VerifyView() {
               </div>
             )}
 
-            {/* Demo Code Banner (khi SMTP chưa bật) */}
-            {demoCode && (
-              <div className="mt-4 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🔑</span>
-                  <div>
-                    <span className="text-amber-800 font-medium">Mã OTP demo học thuật: </span>
-                    <span className="font-mono font-bold text-amber-900 tracking-wider text-sm">{demoCode}</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleFillDemoCode}
-                  className="px-2.5 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-200 text-amber-900 font-semibold text-[11px] transition-colors cursor-pointer"
-                >
-                  Tự động điền
-                </button>
+            {/* TODO(FIX-LATER): Banner mã demo — xóa khi nối SMTP thật, giữ ô nhập bên dưới */}
+            <div className="mt-4 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center gap-2 text-xs">
+              <span className="text-base">🔑</span>
+              <div>
+                <span className="text-amber-800 font-medium">Demo tạm thời (chưa nối email thật): nhập </span>
+                <span className="font-mono font-bold text-amber-900 tracking-wider text-sm">123456</span>
               </div>
-            )}
+            </div>
 
             {/* OTP 6 Digits Segmented Input */}
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">

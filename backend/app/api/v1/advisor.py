@@ -226,8 +226,14 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="File rỗng.")
     upload_dir = Path(__file__).resolve().parent.parent.parent.parent / "uploads"
     upload_dir.mkdir(exist_ok=True)
-    safe_name = f"{current_user.id}_{int(datetime.utcnow().timestamp())}_{Path(file.filename).name}"
-    (upload_dir / safe_name).write_bytes(content)
+    # Chống path traversal: chỉ giữ tên gốc, loại ../, ký tự nguy hiểm và giới hạn 120 ký tự
+    from app.core.constants import SAFE_FILENAME_RE
+    original_name = Path(file.filename or "tai-lieu").name
+    safe_name = SAFE_FILENAME_RE.sub("_", original_name)[:120]
+    if not safe_name:
+        safe_name = "tai-lieu"
+    unique_name = f"{current_user.id}_{int(datetime.utcnow().timestamp())}_{safe_name}"
+    (upload_dir / unique_name).write_bytes(content)
 
     # Trích text thật cho mọi định dạng (txt/md/tex decode UTF-8; PDF/DOCX qua thư viện)
     if suffix in {".txt", ".md", ".tex"}:
@@ -242,7 +248,7 @@ async def upload_document(
     doc = Document(
         user_id=current_user.id,
         filename=file.filename or "tai-lieu",
-        stored_name=safe_name,
+        stored_name=unique_name,
         size_bytes=len(content),
         text_chars=len(text_preview),
     )

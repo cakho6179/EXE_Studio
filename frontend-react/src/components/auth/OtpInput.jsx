@@ -85,7 +85,7 @@ export default function OtpInput({
         return (
           <div
             key={index}
-            className={`w-11 h-14 sm:w-13 sm:h-16 flex items-center justify-center text-center text-xl sm:text-2xl font-bold rounded-2xl border-2 transition-all duration-150 ${
+            className={`w-11 h-14 sm:w-14 sm:h-16 flex items-center justify-center text-center text-xl sm:text-2xl font-bold rounded-2xl border-2 transition-all duration-150 ${
               hasError
                 ? 'border-rose-400 bg-rose-50/60 text-rose-900 ring-2 ring-rose-100'
                 : isCurrentSlot

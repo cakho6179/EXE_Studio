@@ -111,6 +111,7 @@ export default function DashboardView() {
       qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
     } catch (err) {
       showToast(err.message || 'Không cập nhật được.', 'error');
     } finally {
@@ -126,6 +127,8 @@ export default function DashboardView() {
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
     } catch (err) {
       showToast(err.message || 'Không thích ứng được.', 'error');
     } finally {

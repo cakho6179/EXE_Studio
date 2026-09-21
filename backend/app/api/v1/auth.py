@@ -8,7 +8,7 @@ from app.core.database import get_db
 from app.core.cache import cached_response, cache_user, get_cached_user, invalidate_user_by_id
 from app.core.security import (
     hash_password, verify_password, create_access_token, create_refresh_token,
-    decode_access_token, decode_refresh_token,
+    decode_access_token, decode_refresh_token, revoke_token, is_token_revoked,
 )
 from app.core.config import settings
 from app.core.ratelimit import (
@@ -162,9 +162,13 @@ class RefreshRequest(BaseModel):
 @router.post("/refresh", response_model=TokenResponse)
 def refresh_tokens(payload: RefreshRequest, db: Session = Depends(get_db)):
     """Đổi refresh token lấy cặp token mới (access ngắn hạn + refresh mới)."""
-    user_id = decode_refresh_token(payload.refresh_token or "")
+    raw_refresh = payload.refresh_token or ""
+    user_id = decode_refresh_token(raw_refresh)
     if not user_id:
         raise HTTPException(status_code=401, detail="Refresh token không hợp lệ. Vui lòng đăng nhập lại.")
+    # Token đã logout (revoke) -> không cấp lại
+    if is_token_revoked(raw_refresh):
+        raise HTTPException(status_code=401, detail="Phiên đã đăng xuất. Vui lòng đăng nhập lại.")
     if not login_limiter.allow(f"refresh:{user_id}", LOGIN_LIMIT * 3, LOGIN_WINDOW):
         raise HTTPException(status_code=429, detail="Quá nhiều yêu cầu làm mới phiên.")
     user = db.query(User).filter(User.id == user_id).first()
@@ -192,9 +196,12 @@ def logout(
     current_user: Optional[User] = Depends(get_optional_user),
 ):
     """
-    Đăng xuất an toàn: Xác nhận từ máy chủ, ghi nhận kết thúc phiên học tập.
+    Đăng xuất an toàn: thu hồi refresh token (nếu client gửi kèm) để không thể
+    đổi lấy phiên mới sau khi logout, xác nhận từ máy chủ và ghi nhận kết thúc phiên.
     Luôn trả về 200 ngay cả khi token đã hết hạn để client dọn dẹp sạch sẽ.
     """
+    if payload and payload.refresh_token:
+        revoke_token(payload.refresh_token)
     user_email = current_user.email if current_user else None
     return {
         "status": "success",
@@ -354,13 +361,21 @@ def verify_otp(payload: VerifyOtpRequest, db: Session = Depends(get_db)):
     if not otp_verify_limiter.allow(f"otp-verify:{email}", OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW):
         raise HTTPException(status_code=429, detail="Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.")
 
-    record = db.query(OtpCode).filter(
-        OtpCode.email == email, OtpCode.code == code, OtpCode.is_used == False
-    ).order_by(OtpCode.created_at.desc()).first()
-    if not record:
-        raise HTTPException(status_code=400, detail="Mã xác minh không đúng.")
-    if record.expires_at < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Mã đã hết hạn. Vui lòng gửi lại mã mới.")
+    # TODO(FIX-LATER): Bypass mã cố định 123456 (tắt bằng ALLOW_FIXED_OTP=False hoặc ENV=production)
+    use_fixed = (
+        settings.ALLOW_FIXED_OTP
+        and settings.ENV != "production"
+        and code == settings.FIXED_OTP_CODE
+    )
+    record = None
+    if not use_fixed:
+        record = db.query(OtpCode).filter(
+            OtpCode.email == email, OtpCode.code == code, OtpCode.is_used == False
+        ).order_by(OtpCode.created_at.desc()).first()
+        if not record:
+            raise HTTPException(status_code=400, detail="Mã xác minh không đúng.")
+        if record.expires_at < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="Mã đã hết hạn. Vui lòng gửi lại mã mới.")
     # KHÔNG đánh dấu đã dùng ở đây: mã còn hiệu lực cho bước đặt mật khẩu mới
     # (luồng quên mật khẩu: verify -> reset-password dùng cùng mã).
     otp_verify_limiter.reset(f"otp-verify:{email}")
@@ -392,20 +407,29 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=429, detail="Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.")
     if len(payload.new_password or "") < 8:
         raise HTTPException(status_code=400, detail="Mật khẩu mới tối thiểu 8 ký tự.")
-    record = db.query(OtpCode).filter(
-        OtpCode.email == email, OtpCode.code == code, OtpCode.is_used == False
-    ).order_by(OtpCode.created_at.desc()).first()
-    if not record:
-        raise HTTPException(status_code=400, detail="Mã xác minh không đúng.")
-    if record.expires_at < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Mã đã hết hạn. Vui lòng gửi lại mã mới.")
+    # TODO(FIX-LATER): Bypass mã cố định 123456 (xem /verify-otp)
+    use_fixed = (
+        settings.ALLOW_FIXED_OTP
+        and settings.ENV != "production"
+        and code == settings.FIXED_OTP_CODE
+    )
+    record = None
+    if not use_fixed:
+        record = db.query(OtpCode).filter(
+            OtpCode.email == email, OtpCode.code == code, OtpCode.is_used == False
+        ).order_by(OtpCode.created_at.desc()).first()
+        if not record:
+            raise HTTPException(status_code=400, detail="Mã xác minh không đúng.")
+        if record.expires_at < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="Mã đã hết hạn. Vui lòng gửi lại mã mới.")
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản.")
     otp_verify_limiter.reset(f"otp-verify:{email}")
     user.password_hash = hash_password(payload.new_password)
     user.is_email_verified = True
-    record.is_used = True
+    if record is not None:
+        record.is_used = True
     db.commit()
     invalidate_user_by_id(user.id)
     return {"status": "success", "message": "Đặt lại mật khẩu thành công! Hãy đăng nhập lại."}

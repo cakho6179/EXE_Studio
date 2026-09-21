@@ -204,6 +204,10 @@ export default function AdvisorView() {
       setEditingSessionId(null);
       return;
     }
+    if (trimmed.length < 2) {
+      showToast('Tên phiên cần tối thiểu 2 ký tự.', 'warning');
+      return;
+    }
     try {
       await api.patch(`/advisor/sessions/${encodeURIComponent(id)}`, { title: trimmed });
       showToast('Đã đổi tên phiên.', 'success');

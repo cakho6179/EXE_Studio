@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional
 from datetime import datetime
+from sqlalchemy import func
 from app.core.database import get_db
 from app.core.cache import cached_response
 from app.models.entities import User, Task, MicroSubtask, ScheduleEvent, FocusSession
@@ -47,7 +48,9 @@ def _recalc_task_progress(db: Session, task: Task) -> None:
     task.total_sprints = max(total_subtasks, 1)
     if completed >= total_subtasks:
         task.status = "completed"
-    else:
+    elif task.status == "completed":
+        # Chỉ hạ xuống in_progress khi task ĐANG completed nhưng còn sprint chưa xong;
+        # giữ nguyên "pending" để user có thể đưa task về trạng thái chưa bắt đầu
         task.status = "in_progress"
 
 
@@ -89,8 +92,9 @@ def create_task(
         user_id=current_user.id,
         title=task_in.title,
         description=task_in.description,
-        subject_name=task_in.subject_name or "Trí tuệ nhân tạo",
-        subject_code=task_in.subject_code or "CS301",
+        # Không gán môn cứng: task không rõ môn về nhóm "Chung" thay vì đếm nhầm vào môn AI ở analytics
+        subject_name=(task_in.subject_name or "Chung").strip() or "Chung",
+        subject_code=(task_in.subject_code or "").strip() or None,
         deadline=dl,
         priority=task_in.priority or "high",
         complexity=task_in.complexity or "medium",
@@ -251,9 +255,12 @@ def add_subtask(
 ):
     """Thêm micro-sprint mới vào cuối danh sách của nhiệm vụ."""
     task = _get_owned_task(db, task_id, current_user)
-    next_order = db.query(MicroSubtask).filter(
+    # Dùng max(order_index)+1 thay vì count(): sau khi xóa subtask giữa danh sách,
+    # count() trả về index đã tồn tại -> 2 subtask cùng order_index, thứ tự sắp xếp vỡ
+    max_order = db.query(func.max(MicroSubtask.order_index)).filter(
         MicroSubtask.task_id == task.id
-    ).count()
+    ).scalar()
+    next_order = (max_order + 1) if max_order is not None else 0
     subtask = MicroSubtask(
         task_id=task.id,
         title=sub_in.title,
@@ -278,10 +285,10 @@ def toggle_subtask(
     subtask = db.query(MicroSubtask).filter(MicroSubtask.id == subtask_id).first()
     if not subtask:
         raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
-    # Kiểm tra quyền sở hữu qua task cha
+    # Kiểm tra quyền sở hữu qua task cha — trả 404 để không lộ sự tồn tại của task người khác
     parent = db.query(Task).filter(Task.id == subtask.task_id, Task.user_id == current_user.id).first()
     if not parent:
-        raise HTTPException(status_code=403, detail="Bạn không có quyền sửa nhiệm vụ này.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
 
     subtask.is_completed = not subtask.is_completed
     _recalc_task_progress(db, parent)
@@ -303,7 +310,7 @@ def update_subtask(
         raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
     parent = db.query(Task).filter(Task.id == subtask.task_id, Task.user_id == current_user.id).first()
     if not parent:
-        raise HTTPException(status_code=403, detail="Bạn không có quyền sửa nhiệm vụ này.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
 
     for field, value in sub_in.model_dump(exclude_unset=True).items():
         setattr(subtask, field, value)
@@ -324,7 +331,7 @@ def delete_subtask(
         raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
     parent = db.query(Task).filter(Task.id == subtask.task_id, Task.user_id == current_user.id).first()
     if not parent:
-        raise HTTPException(status_code=403, detail="Bạn không có quyền xóa nhiệm vụ này.")
+        raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
 
     db.delete(subtask)
     db.flush()

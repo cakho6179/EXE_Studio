@@ -61,6 +61,13 @@ def list_presets(
         AudioPreset.user_id == current_user.id
     ).order_by(AudioPreset.created_at.desc()).all()
     import json
+    def _safe_levels(raw: str) -> dict:
+        """JSON hỏng/tai nạn kiểu lạ -> trả {} thay vì 500 cả danh sách preset."""
+        try:
+            val = json.loads(raw or "{}")
+            return val if isinstance(val, dict) else {}
+        except Exception:
+            return {}
     return {
         "presets": [
             {
@@ -68,7 +75,7 @@ def list_presets(
                 "name": p.name,
                 "track": p.track,
                 "volume": p.volume,
-                "levels": json.loads(p.levels_json or "{}"),
+                "levels": _safe_levels(p.levels_json),
                 "spatial_on": p.spatial_on,
                 "created_at": p.created_at,
             }
