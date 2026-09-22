@@ -257,6 +257,35 @@ def main():
           str([n['title'] for n in sched_noti]))
     client.delete(f'/api/v1/schedule/events/{ev_future_id}', headers=headers)
 
+    # ---- 13. Deadline rác -> 422 (không còn xóa âm thầm deadline của user) ----
+    res = client.post('/api/v1/tasks/', json={
+        'title': 'Task có deadline', 'deadline': '2026-12-31T17:00:00'
+    }, headers=headers)
+    tid_dl = res.json()['id']
+    check("13a. Tạo task với deadline ISO hợp lệ", res.status_code == 201 and res.json().get('deadline'))
+    res = client.patch(f'/api/v1/tasks/{tid_dl}', json={'deadline': '31-02/2026 cái này rác'}, headers=headers)
+    check("13b. PATCH deadline rác -> 422 (trước đây âm thầm xóa deadline)",
+          res.status_code == 422, f"(got {res.status_code})")
+    res = client.get(f'/api/v1/tasks/{tid_dl}', headers=headers)
+    check("13c. Deadline KHÔNG bị xóa sau PATCH rác", bool(res.json().get('deadline')),
+          f"(deadline={res.json().get('deadline')})")
+    res = client.patch(f'/api/v1/tasks/{tid_dl}', json={'deadline': '31/12/2026'}, headers=headers)
+    check("13d. PATCH deadline '31/12/2026' vẫn parse OK", res.status_code == 200,
+          f"(got {res.status_code})")
+    client.delete(f'/api/v1/tasks/{tid_dl}', headers=headers)
+
+    # ---- 14. Subtask tạo với phút 0/9999 -> kẹp về [5,120] (như PATCH) ----
+    res = client.post('/api/v1/tasks/', json={
+        'title': 'Task subtask phút lạ',
+        'subtasks': [{'title': 'S1', 'estimated_minutes': 0}, {'title': 'S2', 'estimated_minutes': 9999}]
+    }, headers=headers)
+    subs_new = res.json()['subtasks']
+    check("14a. estimated_minutes=0 -> kẹp về 5", subs_new[0]['estimated_minutes'] == 5,
+          f"(got {subs_new[0]['estimated_minutes']})")
+    check("14b. estimated_minutes=9999 -> kẹp về 120", subs_new[1]['estimated_minutes'] == 120,
+          f"(got {subs_new[1]['estimated_minutes']})")
+    client.delete(f"/api/v1/tasks/{res.json()['id']}", headers=headers)
+
     # ---- Dọn dẹp ----
     for t in (tid, tid2, tid_re, tid_p):
         client.delete(f'/api/v1/tasks/{t}', headers=headers)

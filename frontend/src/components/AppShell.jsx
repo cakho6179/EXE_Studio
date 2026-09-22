@@ -12,6 +12,7 @@ const TABS = [
   { to: '/planner', label: 'Lập kế hoạch' },
   { to: '/schedule', label: 'Lịch trình AI' },
   { to: '/tasks', label: 'Nhiệm vụ & Chia nhỏ' },
+  { to: '/deepwork', label: 'Deep Work' },
   { to: '/sound', label: 'Âm thanh & Thư giãn' },
   { to: '/advisor', label: 'Cố vấn AI' },
   { to: '/analytics', label: 'Thống kê' },

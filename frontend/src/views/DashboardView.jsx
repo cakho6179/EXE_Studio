@@ -141,15 +141,22 @@ export default function DashboardView() {
     try {
       const label = (ins.action_label || '').toLowerCase();
       if (label.includes('nhắc')) {
-        const [sh, sm] = String(ins.suggested_time || '19:30').split(':').map(Number);
-        const endMin = (sm || 30) + 30;
-        const endH = (sh || 19) + Math.floor(endMin / 60);
+        const startStr = ins.suggested_time || '19:30';
+        const [sh, sm] = startStr.split(':').map(Number);
+        // FIX 2: (sm || 30) coi phút 00 là falsy -> "19:00" thành "19:30"; và reminder 23:30
+        // cộng 30p ra end "23:00" TRƯỚC start -> backend 400 "kết thúc sau bắt đầu".
+        // Kẹp end trong cùng ngày, tối thiểu bằng start + 1 phút.
+        const startTotal = (sh || 19) * 60 + (sm || 0);
+        const endTotal = Math.min(23 * 60 + 45, startTotal + 30);
+        const safeEnd = Math.max(endTotal, Math.min(startTotal + 1, 23 * 60 + 45));
+        const endH = Math.floor(safeEnd / 60);
+        const endM = safeEnd % 60;
         await api.post('/schedule/events', {
           title: `Nhắc nhở: ${ins.title}`,
           description: ins.detail || '',
           event_date: new Date().toLocaleDateString('en-CA'),
-          start_time: ins.suggested_time || '19:30',
-          end_time: `${String(endH).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`,
+          start_time: startStr,
+          end_time: `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`,
           event_type: 'self_study',
           is_circadian_optimized: true,
         });
@@ -196,7 +203,7 @@ export default function DashboardView() {
   const nowHM = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
   const upcoming = todayEvents
     .filter((e) => !e.is_completed && e.end_time > nowHM)
-    .sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
+    .sort((a, b) => String(a.start_time || '').localeCompare(String(b.start_time || '')))[0];
 
   const dateLine = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const effDiff = focus ? Math.round((focus.today_focus_hours - (focus.yesterday_hours || 0)) * 10) / 10 : 0;
@@ -364,6 +371,11 @@ export default function DashboardView() {
                   <span className="animate-spin inline-block w-5 h-5 border-2 border-blue-200 border-t-blue-600 rounded-full" />
                   <p className="text-xs text-slate-500 mt-2">Đang tải thời khóa biểu...</p>
                 </div>
+              ) : timelineQ.isError ? (
+                <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200/70 text-center space-y-1.5">
+                  <p className="text-xs font-bold text-rose-700">Không tải được thời khóa biểu.</p>
+                  <button type="button" onClick={() => timelineQ.refetch()} className="text-[11px] text-blue-600 hover:underline font-semibold">Thử lại</button>
+                </div>
               ) : todayEvents.length === 0 ? (
                 <div className="p-4 rounded-2xl bg-white/70 border border-slate-200/70 text-center space-y-1.5">
                   <p className="text-xs font-bold text-slate-800">Lịch hôm nay trống.</p>
@@ -439,6 +451,11 @@ export default function DashboardView() {
                   <span className="animate-spin inline-block w-5 h-5 border-2 border-blue-200 border-t-blue-600 rounded-full" />
                   <p className="text-xs text-slate-500 mt-2">Đang tải nhiệm vụ...</p>
                 </div>
+              ) : tasksQ.isError ? (
+                <div className="p-6 rounded-2xl bg-rose-50/70 border border-rose-200/70 text-center space-y-2">
+                  <p className="text-sm font-bold text-rose-700">Không tải được nhiệm vụ.</p>
+                  <button type="button" onClick={() => tasksQ.refetch()} className="text-xs text-blue-600 hover:underline font-semibold">Thử lại</button>
+                </div>
               ) : tasks.length === 0 ? (
                 <div className="p-6 rounded-2xl bg-white/70 border border-slate-200/70 text-center space-y-2">
                   <p className="text-sm font-bold text-slate-800">Chưa có nhiệm vụ nào.</p>
@@ -461,7 +478,7 @@ export default function DashboardView() {
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isPriorityHigh ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'}`}>
                                   {isPriorityHigh ? 'Ưu tiên Cao' : 'Tiêu chuẩn'}
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-medium">({t.subject_name})</span>
+                                {t.subject_name ? <span className="text-[10px] text-slate-400 font-medium">({t.subject_name})</span> : null}
                               </div>
                               <p className="text-xs text-slate-500 mt-0.5">{t.description || 'Bài tập bẻ khóa bởi AI Deconstructor'}</p>
                             </div>
@@ -573,7 +590,15 @@ export default function DashboardView() {
               <span className="w-2 h-2 rounded-full bg-purple-500" />
             </div>
             {insightsQ.isPending && <p className="text-xs text-slate-500">Đang phân tích nhịp sinh học...</p>}
-            {insightsQ.isError && <p className="text-xs text-rose-600">Không tải được đề xuất AI.</p>}
+            {insightsQ.isError && (
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-rose-600">Không tải được đề xuất AI.</p>
+                <button type="button" onClick={() => insightsQ.refetch()} className="text-[11px] text-blue-600 hover:underline font-semibold">Thử lại</button>
+              </div>
+            )}
+            {!insightsQ.isPending && !insightsQ.isError && insights.length === 0 && (
+              <p className="text-xs text-slate-500">Hoàn thành onboarding và vài phiên Deep Work để AI gợi ý nhịp học riêng cho bạn.</p>
+            )}
             {insights.map((ins, i) => (
               <div key={i} className="p-3 rounded-xl bg-purple-50/50 border border-purple-100/70 space-y-1.5">
                 <div className="flex items-start gap-2">

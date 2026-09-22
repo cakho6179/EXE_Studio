@@ -7,7 +7,7 @@ import { usePulse, useTasks } from '../hooks/useApi.js';
 import LmsSyncModal from '../components/LmsSyncModal.jsx';
 
 const RANGE_LABEL = { week: 'Tuần này', month: 'Tháng này', semester: 'Học kỳ I' };
-const RANGE_DAYS = { week: 7, month: 30, semester: 120 };
+const RANGE_DAYS = { week: 7, month: 28, semester: 119 };
 
 function levelColor(v) {
   if (v == null) return 'bg-slate-200';
@@ -72,10 +72,12 @@ export default function AnalyticsView() {
   }, [hours]);
 
   // Đường cong mượt Catmull-Rom -> bezier (port từ 19-analytics)
+  // Không dữ liệu -> vẽ trục 0 + empty-state, KHÔNG vẽ số giả.
+  const hasChartData = !!(hours && hours.length === 7 && hours.some((h) => (h || 0) > 0));
   const chart = useMemo(() => {
     const X = [45, 145, 245, 345, 445, 545, 645];
-    const vals = hours && hours.length === 7 ? hours : [3.2, 5.4, 6.5, 5.8, 6.2, 5.4, 4.0];
-    const prevVals = [2.5, 4.0, 5.0, 4.2, 5.0, 4.5, 3.2];
+    const vals = hasChartData ? hours : [0, 0, 0, 0, 0, 0, 0];
+    const prevVals = hasChartData ? [2.5, 4.0, 5.0, 4.2, 5.0, 4.5, 3.2] : [0, 0, 0, 0, 0, 0, 0];
     const maxH = Math.max(8, ...vals, ...prevVals);
     const yOf = (h) => 220 - (Math.min(h, maxH) / maxH) * 200;
     const Y = vals.map(yOf);
@@ -108,12 +110,13 @@ export default function AnalyticsView() {
   }, [hours]);
 
   const [tipIdx, setTipIdx] = useState(null);
+  // Dùng ?? thay || để giữ giá trị 0 thật (user trắng thấy 0%/—, không phải số giả).
   const radarDims = [
-    ['Năng lượng', pulse?.pulse_percent || d?.circadian_alignment_score || 85],
-    ['Tập trung', avgFocus || d?.zen_efficiency_index || 82],
-    ['Hoàn thành', completionRate || 75],
-    ['Nhất quán', Math.min(100, (d?.current_streak_days || 1) * 12 + 40)],
-    ['Cân bằng', d?.circadian_alignment_score || 90],
+    ['Năng lượng', pulse?.pulse_percent ?? d?.circadian_alignment_score ?? null],
+    ['Tập trung', avgFocus ?? d?.zen_efficiency_index ?? null],
+    ['Hoàn thành', Number.isFinite(completionRate) ? completionRate : null],
+    ['Nhất quán', (d?.current_streak_days || 0) > 0 ? Math.min(100, d.current_streak_days * 12 + 40) : null],
+    ['Cân bằng', d?.circadian_alignment_score ?? null],
   ];
 
   const serverInsights = Array.isArray(insightsQ.data?.insights) ? insightsQ.data.insights : (Array.isArray(insightsQ.data) ? insightsQ.data : []);
@@ -132,6 +135,10 @@ export default function AnalyticsView() {
   const skills = d.subject_details || [];
   const badges = d.badges || [];
   const unlocked = badges.filter((b) => b.unlocked).length;
+
+  const RANGE_TARGET_HOURS = { week: 40, month: 120, semester: 400 };
+  const targetHours = RANGE_TARGET_HOURS[range] || 40;
+  const targetPct = Math.min(100, Math.round((totalHours / targetHours) * 100));
 
   const nowD = new Date();
   const isoWeek = Math.ceil((((nowD - new Date(nowD.getFullYear(), 0, 1)) / 864e5) + 1) / 7);
@@ -253,14 +260,21 @@ export default function AnalyticsView() {
     } catch (e) { showToast(e.message || 'Không tối ưu được.', 'error'); }
   }
 
+  const [moodSaving, setMoodSaving] = useState(false);
   async function saveMood(mood) {
+    if (moodSaving) return;
+    setMoodSaving(true);
     try {
       await api.post('/moods/', { mood, note: null });
       qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['analytics-insights'] });
       qc.invalidateQueries({ queryKey: ['analytics-correlations'] });
+      qc.invalidateQueries({ queryKey: ['pulse'] });
+      qc.invalidateQueries({ queryKey: ['focus-sessions'] });
+      qc.invalidateQueries({ queryKey: ['mood-today'] });
       showToast('Đã lưu cảm xúc vào nhật ký hệ thống!', 'success');
     } catch (err) { showToast(err.message || 'Không lưu được cảm xúc.', 'error'); }
+    finally { setMoodSaving(false); }
   }
 
   return (
@@ -319,18 +333,18 @@ export default function AnalyticsView() {
                   <span className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Tổng Giờ Tập Trung Sâu</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-3xl text-brand-700 font-bold">{totalHours}h</span>
-                    <span className="text-[11px] text-slate-500">/ 40h</span>
+                    <span className="text-[11px] text-slate-500">/ {targetHours}h</span>
                   </div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center text-brand-700"><span className="material-symbols-outlined text-xl">timer</span></div>
               </div>
               <div className="mt-4 flex flex-col gap-1.5">
                 <div className="w-full bg-brand-50 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-brand-600 h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(100, Math.round((totalHours / 40) * 100))}%` }} />
+                  <div className="bg-brand-600 h-full rounded-full transition-all duration-700" style={{ width: `${targetPct}%` }} />
                 </div>
                 <div className="flex justify-between items-center text-slate-500 text-[11px]">
                   <span className="flex items-center gap-0.5 text-brand-700 font-semibold"><span className="material-symbols-outlined text-xs">trending_up</span> Sóng Alpha ổn định</span>
-                  <span>{Math.min(100, Math.round((totalHours / 40) * 100))}% mục tiêu</span>
+                  <span>{targetPct}% mục tiêu</span>
                 </div>
               </div>
             </div>
@@ -418,14 +432,25 @@ export default function AnalyticsView() {
                   <span className="w-2 h-2 rounded-full bg-blue-600" />
                   <span>{RANGE_LABEL[range]} ({totalHours}h)</span>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium">
-                  <span className="w-3 h-0.5 border-t-2 border-dashed border-slate-400 inline-block" />
-                  <span>Tuần trước (đối chiếu)</span>
-                </div>
-                <a href="#radar-section" className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium transition-colors">
+                {hasChartData && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-medium">
+                    <span className="w-3 h-0.5 border-t-2 border-dashed border-slate-400 inline-block" />
+                    <span>Tuần trước (đối chiếu)</span>
+                  </div>
+                )}
+                {!hasChartData && (
+                  <div className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium border border-amber-200">
+                    Chưa có dữ liệu — hoàn thành 1 phiên Deep Work để vẽ biểu đồ
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('radar-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium transition-colors"
+                >
                   <span>Xem biểu đồ mạng nhện</span>
                   <span className="material-symbols-outlined text-xs">arrow_downward</span>
-                </a>
+                </button>
                 <div className="hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-cyan-100 text-cyan-900 text-[11px]">
                   <span className="material-symbols-outlined text-xs">graphic_eq</span><span>Sóng Alpha</span>
                 </div>
@@ -451,7 +476,7 @@ export default function AnalyticsView() {
                   </linearGradient>
                 </defs>
                 <path d={chart.area} fill="url(#focusFill)" />
-                <path d={chart.prevLine} fill="none" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth="2" opacity="0.75" />
+                {hasChartData && <path d={chart.prevLine} fill="none" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth="2" opacity="0.75" />}
                 <path d={chart.line} fill="none" stroke="url(#focusStroke)" strokeLinecap="round" strokeWidth="3.5" />
                 <g role="img" aria-label="Điểm dữ liệu giờ học">
                   {chart.X.map((x, i) => (
@@ -617,7 +642,7 @@ export default function AnalyticsView() {
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-50 hover:bg-brand-100 text-slate-900 text-xs transition-colors shadow-sm cursor-pointer disabled:opacity-60"
                 >
                   <span className="material-symbols-outlined text-base text-brand-700">qr_code_2</span>
-                  <span>{certLoading ? 'Đang tạo…' : 'Chia sẻ QR Vinh Danh'}</span>
+                  <span>{certLoading ? 'Đang tạo…' : 'Sao chép link vinh danh'}</span>
                 </button>
                 <button
                   type="button"
@@ -657,7 +682,7 @@ export default function AnalyticsView() {
               </div>
               <div className="flex items-center gap-1.5">
                 {[['alpha_flow', '🌅'], ['calm_focus', '🌊'], ['need_break', '🍃'], ['rest_mode', '🌙']].map(([mood, icon]) => (
-                  <button key={mood} type="button" title={mood} onClick={() => saveMood(mood)} className="w-9 h-9 rounded-xl bg-white hover:bg-brand-100 text-lg shadow-sm transition-all" aria-label={`Cảm xúc ${mood}`}>
+                  <button key={mood} type="button" title={mood} onClick={() => saveMood(mood)} disabled={moodSaving} className="w-9 h-9 rounded-xl bg-white hover:bg-brand-100 disabled:opacity-50 text-lg shadow-sm transition-all" aria-label={`Cảm xúc ${mood}`}>
                     {icon}
                   </button>
                 ))}

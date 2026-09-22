@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -43,6 +43,24 @@ export default function LandingView() {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [guestLoading, setGuestLoading] = useState(false);
+
+  // HashRouter chiếm '#' cho route nên anchor href="#..." sẽ vỡ điều hướng.
+  // Chặn click anchor nội trang và scroll tay thay thế.
+  useEffect(() => {
+    const onClick = (e) => {
+      const a = e.target.closest?.('a[href^="#"]');
+      if (!a) return;
+      const id = a.getAttribute('href').slice(1);
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
 
   async function oneTouch() {
     if (isLoggedIn) {
@@ -197,7 +215,7 @@ export default function LandingView() {
                   Đăng nhập tài khoản
                 </Link>
                 <Link
-                  to="/sound"
+                  to={isLoggedIn ? '/sound' : '/login'}
                   className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 rounded-xl glass-card text-slate-700 hover:text-brand-700 hover:bg-white/95 font-medium transition-all"
                 >
                   <svg className="w-5 h-5 mr-2 text-brand-600" fill="currentColor" viewBox="0 0 24 24">
@@ -488,13 +506,14 @@ export default function LandingView() {
                     ))}
                   </ul>
                 </div>
-                <Link
-                  to="/register"
+                <button
+                  type="button"
+                  onClick={goRegister}
                   id="dung-thu"
                   className="block text-center w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-md shadow-brand-500/25 transition-all text-xs"
                 >
                   Kích hoạt Stuđiô Pro (.edu.vn)
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -514,12 +533,13 @@ export default function LandingView() {
                   bằng cùng Stuđiô AI.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-3">
-                  <Link
-                    to="/register"
+                  <button
+                    type="button"
+                    onClick={goRegister}
                     className="px-6 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow transition-all"
                   >
                     Đăng ký tài khoản sinh viên miễn phí
-                  </Link>
+                  </button>
                   <a
                     className="px-6 py-3.5 rounded-xl glass-card text-slate-700 hover:text-brand-700 font-semibold text-sm transition-all"
                     href="#tinh-nang"

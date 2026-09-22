@@ -145,7 +145,10 @@ async def validation_exception_handler(request, exc: RequestValidationError):
     except Exception:
         body_str = "<could not read body>"
     print(f"[Studio AI][422 Validation Error] path={request.url.path} errors={exc.errors()} body={body_str}")
-    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+    # FIX: exc.errors() chứa ctx.error (object ValueError) không JSON-serialize được
+    # -> chính handler ném TypeError, client nhận lỗi vỡ thay vì 422 sạch
+    safe_errors = [{k: v for k, v in e.items() if k != "ctx"} for e in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": safe_errors})
 
 import sys
 if hasattr(sys.stdout, 'reconfigure'):
@@ -184,8 +187,9 @@ def _seed_schedule_events(db, user):
     """Lịch trình mẫu persist trong DB (thay mock frontend). Idempotent."""
     if db.query(ScheduleEvent).filter(ScheduleEvent.user_id == user.id).count() > 0:
         return
-    from datetime import date as _date
-    today_iso = _date.today().isoformat()
+    # "Hôm nay" theo lịch VN (date.today() lệch múi giờ khi deploy server UTC)
+    from app.core.timeutils import vn_today_iso
+    today_iso = vn_today_iso()
     seed_events = [
         ("Lớp Học Máy (Machine Learning)", "Giảng đường B204 • Gradient Descent & Backpropagation", "08:00", "09:30", "class", True),
         ("Tự học Thư viện - Cấu trúc dữ liệu", "Cây AVL & Đồ thị có hướng • Flashcard AI", "10:00", "11:30", "self_study", True),

@@ -80,6 +80,7 @@ export default function TasksView() {
   const [aiText, setAiText] = useState('');
   const [aiDeadline, setAiDeadline] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiSaving, setAiSaving] = useState(false);
   const [aiResult, setAiResult] = useState(null);
 
   // Notes
@@ -235,8 +236,8 @@ export default function TasksView() {
   let filtered = allTasks;
   if (filter === 'in_progress') filtered = filtered.filter((t) => t.status !== 'completed');
   else if (filter === 'completed') filtered = filtered.filter((t) => t.status === 'completed');
-  else if (filter === 'high_priority') filtered = filtered.filter((t) => t.priority === 'high');
-  else if (filter === 'complex') filtered = filtered.filter((t) => t.complexity === 'complex');
+  else if (filter === 'high_priority') filtered = filtered.filter((t) => t.priority === 'high' && t.status !== 'completed');
+  else if (filter === 'complex') filtered = filtered.filter((t) => t.complexity === 'complex' && t.status !== 'completed');
   const q = query.trim().toLowerCase();
   if (q) {
     filtered = filtered.filter(
@@ -308,9 +309,13 @@ export default function TasksView() {
   const totalCount = allTasks.length;
   const completedCount = allTasks.filter((t) => t.status === 'completed').length;
   const pctAll = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const totalSteps = allTasks.reduce((a, t) => a + (t.subtasks?.length || 0), 0);
+  const doneSteps = allTasks.reduce((a, t) => a + (t.subtasks?.filter((s) => s.is_completed).length || 0), 0);
+  const pctSteps = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
   const urgent = allTasks.filter((t) => {
     if (!t.deadline || t.status === 'completed') return false;
-    return new Date(t.deadline) - new Date() < 48 * 3600 * 1000;
+    const diff = new Date(t.deadline) - new Date();
+    return diff > 0 && diff < 48 * 3600 * 1000;
   });
 
   const nextSub = (() => {
@@ -339,7 +344,8 @@ export default function TasksView() {
     }
   };
   const saveAiTask = async () => {
-    if (!aiResult) return;
+    if (!aiResult || aiSaving) return;
+    setAiSaving(true);
     let deadlineIso = null;
     if (aiDeadline && typeof aiDeadline === 'string' && aiDeadline.trim()) {
       const trimmed = aiDeadline.trim();
@@ -377,7 +383,14 @@ export default function TasksView() {
       });
 
       // Tự động phân bổ micro-sprints vào 4 ngày tới trong lịch (F27)
+      // FIX: đặt vào khung giờ vàng ĐẦU TIÊN theo tuýp sinh học của user (backend trả
+      // golden_hour_range dạng "08:30 - 11:30 & ...") — trước đây gán cứng 14:30 cho mọi người,
+      // user cú đêm bị sắp học 14:30 ngoài khung 20:30-23:30 của họ
       if (created?.id && Array.isArray(aiResult.subtasks) && aiResult.subtasks.length > 0) {
+        const firstRange = String(pulse?.golden_hour_range || '').split(' & ')[0] || '';
+        const [gs, ge] = firstRange.split(' - ');
+        const startT = /^\d{2}:\d{2}$/.test(gs || '') ? gs : '14:00';
+        const endT = /^\d{2}:\d{2}$/.test(ge || '') ? ge : '15:30';
         for (let i = 0; i < Math.min(aiResult.subtasks.length, 4); i++) {
           const d = new Date();
           d.setDate(d.getDate() + i);
@@ -387,8 +400,8 @@ export default function TasksView() {
             title: `Bước ${i + 1}: ${aiResult.subtasks[i].title}`,
             description: `Micro-sprint ${i + 1} của ${aiResult.task_title || aiText.trim()}`,
             event_date: dateStr,
-            start_time: '14:30',
-            end_time: '15:00',
+            start_time: startT,
+            end_time: endT,
             event_type: 'deep_work',
             is_circadian_optimized: true,
           }).catch(() => null);
@@ -402,6 +415,8 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['tasks'] });
     } catch (err) {
       showToast(err.message || 'Không lưu được nhiệm vụ.', 'error');
+    } finally {
+      setAiSaving(false);
     }
   };
 
@@ -448,7 +463,7 @@ export default function TasksView() {
   };
   // ---- Modal tạo / sửa ----
   const handleFilesAdded = async (newFiles) => {
-    const ALLOWED_EXTS = ['.pdf', '.docx', '.zip', '.txt', '.md', '.tex'];
+    const ALLOWED_EXTS = ['.pdf', '.docx', '.tex', '.txt', '.md'];
     const invalid = newFiles.filter((f) => !ALLOWED_EXTS.some((ext) => f.name.toLowerCase().endsWith(ext)));
     if (invalid.length > 0) {
       showToast(`Chỉ chấp nhận các định dạng PDF, DOCX, ZIP, TXT, MD, TEX. Đã bỏ qua ${invalid.length} tệp không hợp lệ.`, 'warning');
@@ -790,7 +805,7 @@ export default function TasksView() {
               <div className="text-xs text-slate-500 font-medium">Khung giờ vàng Alpha</div>
               <div className="text-base font-bold text-blue-900">{pulse?.golden_hour_range || '14:30 - 16:30 • Đỉnh tư duy'}</div>
               <div className="text-[11px] text-emerald-600 font-semibold">
-                Độ sẵn sàng giải quyết bài khó: {pulse ? `${pulse.pulse_percent}%` : '94%'}
+                Độ sẵn sàng giải quyết bài khó: {pulseQ.isPending ? 'Đang tải…' : pulse ? `${pulse.pulse_percent}%` : 'Chưa có dữ liệu'}
               </div>
             </div>
           </div>
@@ -823,17 +838,17 @@ export default function TasksView() {
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="text-2xl font-bold text-slate-900">
-              {allTasks.reduce((a, t) => a + (t.subtasks?.length || 0), 0)} bước
+              {totalSteps} bước
             </span>
             <span className="text-xs text-emerald-600 font-semibold">
-              ✓ {allTasks.reduce((a, t) => a + (t.subtasks?.filter((s) => s.is_completed).length || 0), 0)} hoàn tất
+              ✓ {doneSteps} hoàn tất
             </span>
           </div>
           <div className="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
-            <div className="bg-indigo-600 h-2 rounded-full transition-all" style={{ width: `${pctAll}%` }} />
+            <div className="bg-indigo-600 h-2 rounded-full transition-all" style={{ width: `${pctSteps}%` }} />
           </div>
           <div className="flex justify-between text-[11px] text-slate-500">
-            <span className="text-indigo-600 font-medium">{completedCount}/{totalCount} nhiệm vụ đã xong</span>
+            <span className="text-indigo-600 font-medium">{doneSteps}/{totalSteps} micro-sprints đã xong</span>
             <span>Đúng nhịp Ultradian</span>
           </div>
         </div>
@@ -843,14 +858,14 @@ export default function TasksView() {
             <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">⚡</span>
           </div>
           <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-2xl font-bold text-emerald-600">{pulse?.is_golden_hour ? 'Đỉnh Alpha' : 'Ổn định'}</span>
-            <span className="text-xs text-slate-500 font-normal">({pulse?.golden_hour_range || '14:30 - 16:30'})</span>
+            <span className="text-2xl font-bold text-emerald-600">{pulseQ.isPending ? '…' : pulse?.is_golden_hour ? 'Đỉnh Alpha' : pulse ? 'Ổn định' : 'Chưa đo'}</span>
+            <span className="text-xs text-slate-500 font-normal">({pulse?.golden_hour_range || 'làm test Chronotype để biết khung giờ vàng'})</span>
           </div>
           <div className="w-full bg-slate-200/80 rounded-full h-2 mb-2 overflow-hidden">
-            <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${pulse?.pulse_percent ?? 94}%` }} />
+            <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${pulse?.pulse_percent ?? 0}%` }} />
           </div>
           <div className="flex justify-between text-[11px] text-slate-500">
-            <span className="text-emerald-700 font-medium">Tập trung {pulse?.pulse_percent ?? 94}%</span>
+            <span className="text-emerald-700 font-medium">Tập trung {pulseQ.isPending ? '…' : pulse ? `${pulse.pulse_percent}%` : '—'}</span>
             <span>Sẵn sàng đồ án khó</span>
           </div>
         </div>
@@ -989,7 +1004,7 @@ export default function TasksView() {
                         <span className="text-xs text-slate-500 font-medium">
                           Môn: <strong>{t.subject_name}{t.subject_code ? ` (${t.subject_code})` : ''}</strong>
                         </span>
-                        {t.deadline && (
+                        {t.deadline && !Number.isNaN(new Date(t.deadline).getTime()) && (
                           <span className="text-[11px] text-slate-500">
                             Hạn: {new Date(t.deadline).toLocaleDateString('vi-VN')} {new Date(t.deadline).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                           </span>
@@ -1243,15 +1258,15 @@ export default function TasksView() {
                     <button
                       type="button"
                       onClick={saveAiTask}
-                      disabled={splitSaving}
+                      disabled={splitSaving || aiSaving}
                       className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold text-xs rounded-xl transition"
                     >
-                      Lưu thành 1 nhiệm vụ
+                      {aiSaving ? 'Đang lưu…' : 'Lưu thành 1 nhiệm vụ'}
                     </button>
                     <button
                       type="button"
                       onClick={saveAiSplit}
-                      disabled={splitSaving}
+                      disabled={splitSaving || aiSaving}
                       className="w-full py-2 bg-white hover:bg-blue-50 disabled:opacity-60 text-blue-700 font-semibold text-xs rounded-xl border border-blue-200 transition"
                     >
                       {splitSaving ? 'Đang lưu từng task…' : `Tách thành ${(aiResult.subtasks || []).length} task nhỏ`}
@@ -1337,7 +1352,7 @@ export default function TasksView() {
                           type="button"
                           aria-label="Xóa ghi chú"
                           title="Xóa ghi chú"
-                          onClick={() => delNote.mutate(n.id)}
+                          onClick={() => { if (window.confirm('Xóa ghi chú này?')) delNote.mutate(n.id); }}
                           className="text-slate-300 hover:text-rose-600 transition cursor-pointer"
                         >
                           ✕
@@ -1379,7 +1394,7 @@ export default function TasksView() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-800 flex-wrap">
                 <span className="truncate">
-                  Phiên học tiếp theo: {nextSub ? `${nextSub.t.title} (${nextSub.s.title.slice(0, 40)})` : 'Báo cáo đồ án AI (Viết nhận xét Confusion Matrix)'}
+                  Phiên học tiếp theo: {nextSub ? `${nextSub.t.title} (${nextSub.s.title.slice(0, 40)})` : 'Chưa có bước nào — hãy tạo nhiệm vụ đầu tiên'}
                 </span>
                 <span className="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-medium">25 phút</span>
               </div>
@@ -1773,7 +1788,7 @@ export default function TasksView() {
                     <input
                       type="file"
                       multiple
-                      accept=".pdf,.docx,.zip,.txt,.md,.tex"
+                      accept=".pdf,.docx,.tex,.txt,.md"
                       className="hidden"
                       onChange={(e) => {
                         handleFilesAdded(Array.from(e.target.files || []));

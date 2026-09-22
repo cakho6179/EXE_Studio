@@ -29,6 +29,14 @@ class User(Base):
     schedule_events = relationship("ScheduleEvent", back_populates="user", cascade="all, delete-orphan")
     chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
     study_plans = relationship("StudyPlan", back_populates="user", cascade="all, delete-orphan")
+    # FIX: các bảng còn lại thiếu cascade — xóa user trên Postgres gây FK violation,
+    # trên SQLite để lại row mồ côi (user_id trỏ vào user không tồn tại)
+    moods = relationship("MoodEntry", back_populates="user", cascade="all, delete-orphan")
+    notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
+    audio_presets = relationship("AudioPreset", back_populates="user", cascade="all, delete-orphan")
+    # OtpCode join qua email (không phải FK) -> không khai relationship; bảng này
+    # không có ràng buộc FK tới users nên không gây FK violation khi xóa user
 
 
 class UserProfile(Base):
@@ -162,6 +170,8 @@ class MoodEntry(Base):
     note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    user = relationship("User", back_populates="moods")
+
 
 class OtpCode(Base):
     """Mã OTP khôi phục/xác thực email (hết hạn 10 phút, dùng 1 lần)."""
@@ -190,6 +200,8 @@ class Document(Base):
     extracted_text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    user = relationship("User", back_populates="documents")
+
 
 class Note(Base):
     """Ghi chú nhanh của sinh viên (thay card ghi chú tĩnh ở trang tasks)."""
@@ -200,6 +212,8 @@ class Note(Base):
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="notes")
 
 
 class StudyPlan(Base):
@@ -233,3 +247,5 @@ class AudioPreset(Base):
     levels_json = Column(Text, default="{}")
     spatial_on = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="audio_presets")

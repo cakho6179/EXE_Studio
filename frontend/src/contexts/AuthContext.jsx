@@ -26,6 +26,8 @@ export function AuthProvider({ children }) {
     try {
       qc.clear(); // Xóa toàn bộ cache React Query (tasks/timeline/pulse...) của user cũ
       USER_SCOPED_KEYS.forEach((k) => localStorage.removeItem(k));
+      // Key động theo user (yêu thích âm thanh...)
+      Object.keys(localStorage).filter((k) => k.startsWith('studi_sound_favs:')).forEach((k) => localStorage.removeItem(k));
       sessionStorage.removeItem('studi_pending_auth');
       sessionStorage.removeItem('studi_verify_email');
       sessionStorage.removeItem('studi_demo_otp');

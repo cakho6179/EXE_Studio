@@ -5,7 +5,9 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
 import { api } from '../services/api.js';
 
-const CHRONO_LABEL = { lark: '🌅 Chim Sớm', owl: '🌙 Cú Đêm', intermediate: '⚖️ Cân bằng', morning: '🌅 Chim Sớm', evening: '🌙 Cú Đêm' };
+// FIX: thêm hummingbird (onboarding gửi giá trị này) + ánh xạ qua _ALIASES backend
+// (intermediate/bear → hummingbird, dolphin → owl)
+const CHRONO_LABEL = { lark: '🌅 Chim Sớm', owl: '🌙 Cú Đêm', hummingbird: '🐦 Chim Ruồi', intermediate: '⚖️ Cân bằng', bear: '🐻 Giữa ngày', dolphin: '🐬 Cú Nhẹ', morning: '🌅 Chim Sớm', evening: '🌙 Cú Đêm' };
 
 export default function ProfileView() {
   const { user, saveUser, logout } = useAuth();
@@ -38,11 +40,17 @@ export default function ProfileView() {
   }, [profileQ.data, form]);
 
   const save = useMutation({
-    mutationFn: () =>
-      api.put('/auth/profile', {
-        full_name: form.full_name,
-        university: form.university,
-        major: form.major,
+    mutationFn: () => {
+      const name = (form.full_name || '').trim();
+      if (name.length < 2) throw new Error('Họ và tên tối thiểu 2 ký tự.');
+      const clean = (v) => {
+        const t = (v ?? '').toString().trim();
+        return t ? t : undefined; // Rỗng -> không gửi (backend giữ giá trị cũ)
+      };
+      return api.put('/auth/profile', {
+        full_name: name,
+        university: clean(form.university),
+        major: clean(form.major),
         academic_year: Number(form.academic_year) || null,
         chronotype: form.chronotype,
         wake_up_time: form.wake_up_time || null,
@@ -51,8 +59,9 @@ export default function ProfileView() {
         peak_end_time: form.peak_end_time || null,
         target_daily_focus_hours: Number(form.target_daily_focus_hours) || null,
         target_gpa: Number(form.target_gpa) || null,
-        preferred_study_style: form.preferred_study_style || null,
-      }),
+        preferred_study_style: clean(form.preferred_study_style),
+      });
+    },
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['profile'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });
@@ -61,13 +70,14 @@ export default function ProfileView() {
       qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       if (res?.profile) {
+        // Chỉ merge field thuộc User, không trộn field profile (chronotype/wake...)
+        const { full_name, university, major, academic_year } = res.profile;
         saveUser({
           ...(user || {}),
-          full_name: res.profile.full_name || form.full_name,
-          university: res.profile.university || form.university,
-          major: res.profile.major || form.major,
-          academic_year: res.profile.academic_year || form.academic_year,
-          ...res.profile,
+          ...(full_name ? { full_name } : {}),
+          ...(university ? { university } : {}),
+          ...(major ? { major } : {}),
+          ...(academic_year != null ? { academic_year } : {}),
         });
       }
       showToast('Đã lưu hồ sơ sinh học & thông tin cá nhân!', 'success');
@@ -129,15 +139,15 @@ export default function ProfileView() {
         </div>
         <div className="flex gap-6 text-center">
           <div>
-            <p className="text-xl font-bold text-slate-900">{doneTasks}</p>
+            <p className="text-xl font-bold text-slate-900">{tasksQ.isLoading ? '…' : doneTasks}</p>
             <p className="text-[11px] text-slate-500">task xong</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-slate-900">{focusH}h</p>
+            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : `${focusH}h`}</p>
             <p className="text-[11px] text-slate-500">focus 30 ngày</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-slate-900">{sessions.length}</p>
+            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : sessions.length}</p>
             <p className="text-[11px] text-slate-500">phiên sâu</p>
           </div>
         </div>
@@ -146,7 +156,16 @@ export default function ProfileView() {
       <section className="glass-card rounded-3xl p-6">
         <h3 className="text-sm font-bold text-slate-800">Thông tin cá nhân</h3>
         {profileQ.isLoading || !form ? (
-          <p className="text-xs text-slate-500 mt-2">Đang tải…</p>
+          profileQ.isError ? (
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-rose-600">Không tải được hồ sơ. Kiểm tra mạng rồi thử lại.</p>
+              <button type="button" onClick={() => profileQ.refetch()} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+                Thử lại
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 mt-2">Đang tải…</p>
+          )
         ) : (
           <form
             onSubmit={(e) => {
@@ -186,7 +205,7 @@ export default function ProfileView() {
               Chronotype
               <select value={form.chronotype || ''} onChange={(e) => set('chronotype', e.target.value)} className={inputCls}>
                 <option value="lark">🌅 Chim Sớm</option>
-                <option value="intermediate">⚖️ Cân bằng</option>
+                <option value="hummingbird">🐦 Chim Ruồi</option>
                 <option value="owl">🌙 Cú Đêm</option>
               </select>
             </label>

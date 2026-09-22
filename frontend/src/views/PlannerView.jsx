@@ -103,6 +103,14 @@ export default function PlannerView() {
     },
     onError: (err) => showToast(err.message || 'Lỗi.', 'error'),
   });
+  const updatePlanProgress = useMutation({
+    mutationFn: ({ id, progress }) => api.patch(`/study-plans/${id}`, { progress }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['study-plans'] });
+      showToast('Đã cập nhật tiến độ kế hoạch!', 'success');
+    },
+    onError: (err) => showToast(err.message || 'Không cập nhật được tiến độ.', 'error'),
+  });
   const applyPlan = useMutation({
     mutationFn: (id) => api.post(`/study-plans/${id}/apply-to-schedule`, {}),
     onSuccess: (res) => {
@@ -418,8 +426,9 @@ export default function PlannerView() {
                         </button>
                       </div>
                       {p.progress != null && (
-                        <div className="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
-                          <div className="h-full rounded-full bg-blue-500" style={{ width: `${Math.min(100, Math.round(p.progress * 100))}%` }} />
+                        <div className="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden" title={`Tiến độ: ${Math.round(p.progress)}%`}>
+                          {/* FIX: backend trả progress 0-100 (không phải 0-1) — nhân 100 làm thanh luôn đầy */}
+                          <div className="h-full rounded-full bg-blue-500" style={{ width: `${Math.min(100, Math.max(0, Math.round(p.progress)))}%` }} />
                         </div>
                       )}
                       {p.summary && <p className="mt-2 text-xs text-slate-500 leading-relaxed">{p.summary}</p>}
@@ -451,6 +460,25 @@ export default function PlannerView() {
                             Áp dụng vào lịch
                           </button>
                         )}
+                        {/* FIX: backend đã có PATCH /study-plans/{id} (progress 0-100) từ trước
+                            nhưng UI không có nút nào gọi — sinh viên tick buổi học xong không thể cập nhật tiến độ */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const input = window.prompt('Tiến độ kế hoạch này (%):', String(Math.round(p.progress || 0)));
+                            if (input === null) return;
+                            const val = Number(input);
+                            if (!Number.isFinite(val) || val < 0 || val > 100) {
+                              showToast('Tiến độ phải là số từ 0 đến 100.', 'warning');
+                              return;
+                            }
+                            updatePlanProgress.mutate({ id: p.id, progress: val });
+                          }}
+                          disabled={updatePlanProgress.isPending}
+                          className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-[11px] font-semibold transition"
+                        >
+                          Cập nhật tiến độ
+                        </button>
                       </div>
                     </div>
                   ))}

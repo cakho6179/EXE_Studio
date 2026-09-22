@@ -37,12 +37,14 @@ const SOUND_LABEL = {
   silence: 'Im Lặng Tuyệt Đối (Pure Silence)',
 };
 
-// ocean/rain có synth thật; brown/coffee fallback ocean; silence = không phát
+// ocean/rain/binaural có synth thật; brown/coffee fallback ocean; silence = không phát
 const toEngineTrack = (k) => {
   if (k === 'ocean' || k === 'brown' || k === 'coffee') return 'ocean';
   if (k === 'rain') return 'rain';
+  if (k === 'binaural') return 'binaural';
   return null;
 };
+const VALID_SOUNDS = ['ocean', 'rain', 'brown', 'coffee', 'binaural', 'silence'];
 
 const PRESETS = [
   [25, '25m', '(Pomodoro)'],
@@ -74,10 +76,25 @@ export default function DeepWorkView() {
   const paramTitle = (params.get('title') || '').slice(0, 120);
   const rawDuration = parseInt(params.get('duration') || '', 10);
   const paramDuration = Number.isFinite(rawDuration) ? Math.min(240, Math.max(5, rawDuration)) : null;
-  const paramSound = params.get('sound') || '';
+  const paramSound = VALID_SOUNDS.includes(params.get('sound')) ? params.get('sound') : '';
   const paramMode = params.get('mode') || '';
 
   const [duration, setDurationState] = useState(paramDuration || 50);
+  // Khôi phục meta (title/sound/taskId) khi refresh mà không có param mới
+  const restoredMeta = (() => {
+    if (paramDuration || paramTitle || paramTaskId) return null;
+    try {
+      const raw = localStorage.getItem(PERSIST_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (!s || Date.now() - (s.savedAt || 0) >= 3 * 3600 * 1000) return null;
+      return {
+        title: typeof s.title === 'string' ? s.title.slice(0, 120) : '',
+        sound: VALID_SOUNDS.includes(s.sound) ? s.sound : '',
+        taskId: typeof s.taskId === 'string' && s.taskId ? s.taskId : null,
+      };
+    } catch { return null; }
+  })();
   const [tm, setTm] = useState(() => {
     try {
       // Khôi phục phiên cũ nếu không có param mới (tránh đè param)
@@ -95,9 +112,9 @@ export default function DeepWorkView() {
   });
   const [running, setRunning] = useState(false);
   const [ended, setEnded] = useState(false);
-  const [title, setTitle] = useState(paramTitle);
-  const [taskId, setTaskId] = useState(paramTaskId || null);
-  const [sound, setSound] = useState(paramSound || 'ocean');
+  const [title, setTitle] = useState(paramTitle || restoredMeta?.title || '');
+  const [taskId, setTaskId] = useState(paramTaskId || restoredMeta?.taskId || null);
+  const [sound, setSound] = useState(paramSound || restoredMeta?.sound || 'ocean');
   const [pacing, setPacing] = useState(paramMode === 'free' ? 'free' : String(paramDuration || 50));
   const [distractions, setDistractions] = useState(0);
   const [notes, setNotes] = useState('');
@@ -138,12 +155,15 @@ export default function DeepWorkView() {
   const subs = task?.subtasks || [];
   const doneSubs = subs.filter((s) => s.is_completed).length;
 
-  // Auto-select task pending đầu tiên khi chưa có task (port hành vi 15)
+  // Auto-select task pending đầu tiên khi chưa có task (chỉ 1 lần — không gán lại sau refetch)
+  const autoPickedRef = useRef(false);
   useEffect(() => {
-    if (!taskId && tasks.length && !paramTitle) {
+    if (autoPickedRef.current) return;
+    if (!taskId && !paramTitle && !title && tasks.length) {
       const pending = tasks.filter((t) => t.status !== 'completed');
       const first = (pending.length ? pending : tasks)[0];
       if (first) {
+        autoPickedRef.current = true;
         setTaskId(first.id);
         setTitle(first.title);
       }
@@ -242,6 +262,8 @@ export default function DeepWorkView() {
   }
 
   // LƯU PHIÊN ĐÚNG endpoint POST /focus/session/complete (KHÔNG dùng /focus/sessions)
+  const navTimeoutRef = useRef(null);
+  useEffect(() => () => { if (navTimeoutRef.current) clearTimeout(navTimeoutRef.current); }, []);
   async function completeSession() {
     if (completedRef.current) return;
     completedRef.current = true;
@@ -249,18 +271,26 @@ export default function DeepWorkView() {
     try { engine()?.stopAll(); } catch { /* bỏ qua */ }
     try { engine()?.playChime?.(); } catch { /* bỏ qua */ }
     try { localStorage.removeItem(PERSIST_KEY); } catch { /* bỏ qua */ }
-    const plannedMin = tm.legs.filter((l) => l.kind === 'focus').reduce((a, l) => a + l.minutes, 0) || duration;
+    const plannedMin = isFree
+      ? Math.max(1, Math.round(tm.focusElapsed / 60))
+      : tm.legs.filter((l) => l.kind === 'focus').reduce((a, l) => a + l.minutes, 0) || duration;
     const actualMin = Math.max(1, Math.round(tm.focusElapsed / 60));
     setEnded(true);
+    // taskId lạ/khác user -> gửi null để backend không 404 orphan (ghi chú rõ trong notes)
+    const linkedTask = taskId && tasks.some((t) => String(t.id) === String(taskId)) ? taskId : null;
+    if (taskId && !linkedTask) showToast('Nhiệm vụ đã chọn không còn tồn tại — phiên lưu không gắn task.', 'warning');
     showToast(`Đang ghi nhận phiên học (${actualMin}p) vào cơ sở dữ liệu...`, 'info');
     try {
       const res = await api.post('/focus/session/complete', {
-        task_id: taskId || null,
+        task_id: linkedTask,
         planned_minutes: plannedMin,
         actual_minutes: actualMin,
-        distractions_count: distractions,
+        distractions_count: Math.min(100, distractions),
         notes: notes || title || task?.title || 'Phiên Deep Work',
-        ambient_sound_used: SOUND_LABEL[sound] || sound || 'Sóng Biển Hải Đăng 432Hz',
+        // FIX: 'Im Lặng' phải gửi chuỗi rỗng (= phiên không-nhạc) — trước đây gửi nhãn
+        // "Im Lặng Tuyệt Đối (Pure Silence)" khiến backend lưu như một phiên CÓ nhạc,
+        // tương quan ambient ở analytics không bao giờ có nhóm so sánh
+        ambient_sound_used: sound === 'silence' ? '' : (SOUND_LABEL[sound] || sound || ''),
         complete_next_subtask: completeNext,
       });
       tasksQ.refetch();
@@ -273,7 +303,7 @@ export default function DeepWorkView() {
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast(res.message || '🎉 Đã hoàn tất phiên Deep Work & cập nhật tiến độ! Chuyển về Tổng quan sau 1.5s...', 'success');
-      setTimeout(() => {
+      navTimeoutRef.current = setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
     } catch (err) {
@@ -319,33 +349,44 @@ export default function DeepWorkView() {
   }
   function pauseTimerSilent() { setRunning(false); try { engine()?.stopAll(); } catch { /* bỏ qua */ } }
 
+  const [scheduling, setScheduling] = useState(false);
   async function handleSchedule() {
+    if (scheduling) return;
     const t = title.trim() || 'Phiên học tập trung sâu';
+    setScheduling(true);
     try {
-      // Ngày LOCAL (không dùng toISOString UTC — trước 07:00 VN sẽ lệch sang hôm qua)
+      // Ngày + giờ LOCAL hiện tại (làm tròn 5 phút) — không hardcode 14:00 quá khứ
       const now = new Date();
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      const dur = duration || 50;
-      const endTotalMin = 14 * 60 + dur;
-      const endH = Math.floor(endTotalMin / 60);
-      const endM = endTotalMin % 60;
-      const endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+      const startMin = Math.ceil((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
+      const dur = isFree ? Math.max(25, actualMinGuess()) : (duration || 50);
+      // Kẹp trong cùng ngày (backend từ chối end <= start)
+      const endTotalMin = Math.min(startMin + dur, 24 * 60 - 5);
+      const startTimeStr = `${String(Math.floor(startMin / 60) % 24).padStart(2, '0')}:${String(startMin % 60).padStart(2, '0')}`;
+      const endTimeStr = `${String(Math.floor(endTotalMin / 60) % 24).padStart(2, '0')}:${String(endTotalMin % 60).padStart(2, '0')}`;
       await api.post('/schedule/events', {
         task_id: taskId || null,
         title: `Học sâu: ${t.slice(0, 80)}`,
         description: `Phiên ${dur}p • Âm ${SOUND_LABEL[sound] || sound}`,
         event_date: dateStr,
-        start_time: '14:00',
+        start_time: startTimeStr,
         end_time: endTimeStr,
         event_type: 'deep_work',
         is_circadian_optimized: true,
       });
       qc.invalidateQueries({ queryKey: ['timeline'] });
-      showToast(`Đã gán phiên học vào Lịch Sinh học (14:00 - ${endTimeStr}).`, 'success');
+      showToast(`Đã gán phiên học vào Lịch Sinh học (${startTimeStr} - ${endTimeStr}).`, 'success');
     } catch (e) { showToast(e.message || 'Không gán được lịch.', 'error'); }
+    finally { setScheduling(false); }
+  }
+  function actualMinGuess() {
+    return Math.max(1, Math.round((tm?.focusElapsed || 0) / 60));
   }
 
+  const [togglingSubId, setTogglingSubId] = useState(null);
   async function toggleSubtask(sub) {
+    if (togglingSubId) return;
+    setTogglingSubId(sub.id);
     try {
       await api.patch(`/tasks/subtasks/${sub.id}/toggle`);
       qc.invalidateQueries({ queryKey: ['tasks'] });
@@ -353,12 +394,15 @@ export default function DeepWorkView() {
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['focus-summary'] });
     } catch (err) { showToast(err.message || 'Lỗi.', 'error'); }
+    finally { setTogglingSubId(null); }
   }
 
-  // Phím tắt: Space pause/resume, M mute/unmute
+  // Phím tắt: Space pause/resume, M mute/unmute (bỏ qua khi focus button/input hoặc kèm Ctrl/Meta/Alt)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.target.matches('input, textarea, select')) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t?.matches?.('input, textarea, select, button, [contenteditable]')) return;
       if (e.code === 'Space') { e.preventDefault(); handleMainButtonRef.current(); }
       if (e.key === 'm' || e.key === 'M') {
         const eng = engine();
@@ -508,8 +552,18 @@ export default function DeepWorkView() {
                   placeholder="VD: Hoàn thiện chương 3 Luận văn tốt nghiệp hoặc Đọc 20 trang tài liệu..."
                   type="text"
                   value={title}
-                  onChange={(e) => { setTitle(e.target.value); setTaskId(null); }}
+                  onChange={(e) => { setTitle(e.target.value); }}
                 />
+                {taskId && (
+                  <button
+                    type="button"
+                    title="Đang gắn với 1 nhiệm vụ (tự tick micro-sprint khi xong). Bấm để gỡ."
+                    onClick={() => { setTaskId(null); showToast('Đã gỡ liên kết nhiệm vụ — phiên này không tự tick.', 'info'); }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 transition"
+                  >
+                    🔗 Đang gắn task — gỡ?
+                  </button>
+                )}
               </div>
               {showSuggest && (
                 <div className="absolute top-full mt-2 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border border-brand-200/80 rounded-2xl shadow-xl p-3">
@@ -675,7 +729,7 @@ export default function DeepWorkView() {
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setDistractions((d) => { showToast(`Ghi nhận xao nhãng (${d + 1}). Hít thở sâu và quay lại nhé!`, 'warning'); return d + 1; })}
+                onClick={() => setDistractions((d) => { const n = Math.min(100, d + 1); showToast(`Ghi nhận xao nhãng (${n}). Hít thở sâu và quay lại nhé!`, 'warning'); return n; })}
                 title="Bấm mỗi khi bạn bị xao nhãng"
                 className="px-4 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-sm font-semibold border border-amber-200 transition"
               >
@@ -707,8 +761,8 @@ export default function DeepWorkView() {
                 <div className="space-y-2">
                   {subs.map((s) => (
                     <button
-                      key={s.id} type="button" onClick={() => toggleSubtask(s)}
-                      className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/80 border border-slate-200/70 text-left hover:border-emerald-300 transition"
+                      key={s.id} type="button" onClick={() => toggleSubtask(s)} disabled={togglingSubId === s.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/80 border border-slate-200/70 text-left hover:border-emerald-300 transition disabled:opacity-60"
                     >
                       <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-bold ${s.is_completed ? 'bg-emerald-500 text-white' : 'border border-slate-300 text-transparent'}`}>✓</span>
                       <span className={`text-xs font-medium ${s.is_completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>{s.title}</span>

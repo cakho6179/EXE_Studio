@@ -36,9 +36,9 @@ const CATS = [
   ['solfeggio', 'Solfeggio'],
 ];
 
-const FAV_KEY = 'studi_sound_favs';
-const getFavs = () => {
-  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
+const favKeyFor = (user) => `studi_sound_favs:${user?.id || 'guest'}`;
+const getFavs = (user) => {
+  try { return JSON.parse(localStorage.getItem(favKeyFor(user)) || '[]'); } catch { return []; }
 };
 
 const FREQS = [
@@ -54,7 +54,7 @@ export default function SoundView() {
   const { isPlaying, track, volume, setVolume, togglePlay, switchTrack, nextTrack, setSleepTimer, engine, ready } = useAudio();
   const [cat, setCat] = useState('all');
   const [query, setQuery] = useState('');
-  const [favs, setFavs] = useState(getFavs);
+  const [favs, setFavs] = useState(() => getFavs(user));
   const [sleepMin, setSleepMin] = useState(0);
   const [sleepLeft, setSleepLeft] = useState(0);
   const [freq, setFreq] = useState('432 Hz');
@@ -68,16 +68,24 @@ export default function SoundView() {
 
   const engTrackId = engine()?.currentTrackId || track.id;
 
-  const list = useMemo(
-    () => TRACKS.filter((t) => (cat === 'all' || t.category === cat) && (!query.trim() || t.title.toLowerCase().includes(query.trim().toLowerCase()))),
-    [cat, query],
-  );
+  const list = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return TRACKS.filter((t) =>
+      (cat === 'all' || t.category === cat) &&
+      (!q || [t.title, t.desc, t.freq, t.category].filter(Boolean).join(' ').toLowerCase().includes(q)),
+    );
+  }, [cat, query]);
 
-  // Hẹn giờ tắt: engine tắt thật + countdown hiển thị (AudioContext phụ trách toast duy nhất)
+  // Hẹn giờ tắt: ENGINE tắt thật (toast duy nhất từ engine); view chỉ đồng bộ hiển thị.
+  // Lắng nghe event calmAudioSleep để reset countdown (tránh double-stop + double-toast).
+  useEffect(() => {
+    const onSleep = () => { setSleepMin(0); setSleepLeft(0); };
+    document.addEventListener('calmAudioSleep', onSleep);
+    return () => document.removeEventListener('calmAudioSleep', onSleep);
+  }, []);
   useEffect(() => {
     if (!sleepLeft) return;
     if (sleepLeft <= 0) {
-      if (isPlaying) togglePlay();
       setSleepMin(0);
       return;
     }
@@ -93,23 +101,30 @@ export default function SoundView() {
     if (m > 0) showToast(`Nhạc sẽ tắt sau ${m} phút.`, 'info');
   }
 
+  // Track đang phát HIỂN THỊ (id trong TRACKS) — engine chỉ có 3 kênh nên không dùng
+  // engine id để highlight (6 track ocean sẽ sáng cùng lúc).
+  const [activeId, setActiveId] = useState(track.id);
+
   function playTrack(t) {
     const eng = engine();
     if (!eng) { showToast('Engine âm thanh chưa sẵn sàng.', 'warning'); return; }
     if (t.engine === 'silence') {
       if (eng.isPlaying) togglePlay();
+      setActiveId(t.id);
       showToast('Đã chuyển sang Im lặng tuyệt đối.', 'info');
       return;
     }
     if (t.missing) showToast(`"${t.title}" chưa có synth offline — ${t.missing}.`, 'warning');
     if (eng.currentTrackId !== t.engine) switchTrack(t.engine);
     if (!eng.isPlaying) togglePlay();
+    setActiveId(t.id);
   }
 
   function toggleFav(id) {
+    const key = favKeyFor(user);
     setFavs((f) => {
       const next = f.includes(id) ? f.filter((x) => x !== id) : [...f, id];
-      try { localStorage.setItem(FAV_KEY, JSON.stringify(next)); } catch { /* bỏ qua */ }
+      try { localStorage.setItem(key, JSON.stringify(next)); } catch { /* bỏ qua */ }
       return next;
     });
   }
@@ -183,9 +198,14 @@ export default function SoundView() {
       showToast(`Đã lưu preset "${name}" trong bộ nhớ thiết bị!`, 'success');
     } catch (err) { showToast(err.message || 'Không lưu được preset.', 'error'); }
   }
+  const ENGINE_TRACKS = ['ocean', 'rain', 'binaural'];
   function applyPreset(p) {
     const eng = engine();
     if (!eng) return;
+    if (!ENGINE_TRACKS.includes(p.track)) {
+      showToast(`Preset "${p.name}" dùng track lạ (${p.track}) — bỏ qua để tránh phát nhầm.`, 'warning');
+      return;
+    }
     if (p.levels) Object.entries(p.levels).forEach(([tr, lv]) => { try { eng.setTrackVolume(tr, lv); } catch {} });
     setVolume(p.volume ?? 0.65);
     try { eng.setSpatial(p.spatial_on !== false); } catch {}
@@ -232,7 +252,7 @@ export default function SoundView() {
   }, [breathOn]);
 
   const spatial = engine()?.spatial !== false;
-  const activeTrack = TRACKS.find((t) => t.engine === engTrackId && !t.missing) || TRACKS.find((t) => t.engine === engTrackId) || TRACKS[0];
+  const activeTrack = TRACKS.find((t) => t.id === activeId) || TRACKS.find((t) => t.engine === engTrackId && !t.missing) || TRACKS.find((t) => t.engine === engTrackId) || TRACKS[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 pb-28">
@@ -366,7 +386,7 @@ export default function SoundView() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {list.map((t) => {
-                  const active = engTrackId === t.engine && isPlaying && t.engine !== 'silence';
+                  const active = activeId === t.id && (t.engine === 'silence' ? !isPlaying : isPlaying);
                   const fav = favs.includes(t.id);
                   return (
                     <div key={t.id} className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
@@ -380,7 +400,9 @@ export default function SoundView() {
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="text-xs font-bold text-slate-900 truncate">{t.title}</h3>
                           <div className="flex items-center gap-1 shrink-0">
-                            {t.badge && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">{t.badge}</span>}
+                            {t.missing
+                              ? <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium" title={t.missing}>fallback</span>
+                              : t.badge && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">{t.badge}</span>}
                             <button type="button" aria-label="Yêu thích" onClick={() => toggleFav(t.id)} className={`text-base transition ${fav ? 'text-rose-500' : 'text-slate-300 hover:text-rose-400'}`}>{fav ? '♥' : '♡'}</button>
                           </div>
                         </div>
@@ -388,12 +410,13 @@ export default function SoundView() {
                         <div className="flex items-center gap-2 mt-2">
                           <input
                             type="range" min={0} max={100} value={t.missing || t.engine === 'silence' ? 50 : trackLevel(t.engine)}
+                            disabled={!!t.missing || t.engine === 'silence'}
                             onChange={(e) => {
                               const v = Number(e.target.value);
-                              if (t.missing || t.engine === 'silence') setTrackLevel(t.engine, v, t.title);
-                              else setTrackLevel(t.engine, v);
+                              setTrackLevel(t.engine, v);
                             }}
-                            className="w-full h-1 bg-slate-200 accent-blue-600 rounded-lg" aria-label={`Âm lượng ${t.title}`}
+                            title={t.missing || t.engine === 'silence' ? 'Kênh dùng chung engine — chỉnh ở Bộ trộn âm bên dưới' : undefined}
+                            className="w-full h-1 bg-slate-200 accent-blue-600 rounded-lg disabled:opacity-40" aria-label={`Âm lượng ${t.title}`}
                           />
                           <span className="text-[10px] font-mono text-slate-600">{t.missing || t.engine === 'silence' ? '—' : `${trackLevel(t.engine)}%`}</span>
                         </div>
@@ -410,7 +433,7 @@ export default function SoundView() {
                 <div className="space-y-2.5">
                   {TRACKS.filter((t) => t.category === 'music').map((t) => {
                     const fav = favs.includes(t.id);
-                    const active = engTrackId === t.engine && isPlaying;
+                    const active = activeId === t.id && isPlaying;
                     return (
                       <div key={t.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-200/70 transition">
                         <div className="flex items-center gap-3 min-w-0">

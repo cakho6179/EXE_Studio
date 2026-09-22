@@ -95,15 +95,15 @@ export default function OnboardingView() {
     }
   }
 
-  async function next() {
-    if (step === 1 && majors.length === 0) {
+  async function next(force = false) {
+    if (step === 1 && majors.length === 0 && !force) {
       showToast('Vui lòng chọn ít nhất 1 lĩnh vực để AI gợi ý lộ trình.', 'warning');
       return;
     }
-    // Lưu trung gian từng bước (F05)
+    // Lưu trung gian từng bước (F05) — gửi major dạng chuỗi (backend không đọc mảng majors)
     try {
       if (step === 1 && majors.length > 0) {
-        await api.put('/auth/profile', { major: majors[0] });
+        await api.put('/auth/profile', { major: majors.join(', ') });
       } else if (step === 2) {
         const goalObj = GOALS.find((g) => g.value === goal) || GOALS[1];
         await api.put('/auth/profile', { target_daily_focus_hours: goalObj.hours });
@@ -124,11 +124,12 @@ export default function OnboardingView() {
 
   async function finish(useDefaults = false) {
     const goalObj = GOALS.find((g) => g.value === goal) || GOALS[1];
+    const majorStr = (majors.length ? majors : [MAJORS[0].name]).join(', ');
     const answers = useDefaults
       ? { majors: [MAJORS[0].name], major: MAJORS[0].name, daily_goal: '4.5h', focus_hours: 4.5, circadian_slot: 'afternoon', chronotype: 'lark', intensity: 'balanced' }
       : {
           majors,
-          major: majors[0],
+          major: majorStr,
           daily_goal: goal,
           focus_hours: goalObj.hours,
           target_hours: hours,
@@ -143,14 +144,15 @@ export default function OnboardingView() {
       try {
         await api.post('/onboarding/complete', { answers });
       } catch (err) {
-        const styleMap = { relaxed: 'pomodoro', balanced: 'pomodoro', deep: 'deep_work', sprint: 'sprint' };
+        const styleMap = { relaxed: 'pomodoro', balanced: 'pomodoro_50', deep: 'deep_work', sprint: 'sprint' };
+        // Chuẩn hóa chronotype như backend (hummingbird -> intermediate), không gửi GPA ép buộc
+        const chronoNorm = answers.chronotype === 'hummingbird' ? 'intermediate' : answers.chronotype;
         await api.put('/auth/profile', {
           major: answers.major,
-          chronotype: answers.chronotype,
-          wake_up_time: answers.chronotype === 'owl' ? '09:00' : answers.chronotype === 'hummingbird' ? '07:30' : '06:30',
-          bed_time: answers.chronotype === 'owl' ? '01:00' : answers.chronotype === 'hummingbird' ? '23:30' : '23:00',
+          chronotype: chronoNorm,
+          wake_up_time: chronoNorm === 'owl' ? '09:00' : chronoNorm === 'intermediate' ? '07:30' : '06:30',
+          bed_time: chronoNorm === 'owl' ? '01:00' : chronoNorm === 'intermediate' ? '23:30' : '23:00',
           target_daily_focus_hours: answers.target_hours ?? answers.focus_hours,
-          target_gpa: 3.8,
           preferred_study_style: styleMap[answers.intensity] || 'pomodoro',
         });
       }
@@ -604,7 +606,7 @@ export default function OnboardingView() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setStep((s) => Math.min(4, s + 1))}
+                onClick={() => next(true)}
                 disabled={saving}
                 className="text-xs font-semibold text-slate-500 hover:text-blue-600 transition py-2 px-2 hover:underline cursor-pointer disabled:opacity-40"
               >
