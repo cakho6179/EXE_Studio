@@ -11,6 +11,7 @@ from app.core.cache import cached_response
 from app.core.timeutils import vn_today_date
 from app.models.entities import StudyPlan, User
 from app.api.v1.auth import get_current_user
+from app.services.circadian_service import CircadianService
 
 router = APIRouter()
 
@@ -242,8 +243,7 @@ def apply_plan_to_schedule(
 
         mins = min(max(30, int(p.get("minutes", 90))), 480)
         profile = current_user.profile
-        chronotype = (profile.chronotype if profile else "lark") or "lark"
-        from app.services.circadian_service import CircadianService
+        chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
         golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
         first_slot = golden_ranges[0].split(" - ")[0]
         start_h, start_m = map(int, first_slot.split(":"))

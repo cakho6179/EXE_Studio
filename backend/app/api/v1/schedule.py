@@ -154,7 +154,7 @@ def auto_balance_schedule(
     Khung giờ lấy theo tuýp sinh học CỦA CHÍNH user (GOLDEN_RANGES), không còn cứng cho mọi người.
     """
     profile = current_user.profile
-    chronotype = (profile.chronotype if profile else "lark") or "lark"
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
 
     tasks = db.query(Task).filter(
         Task.user_id == current_user.id,

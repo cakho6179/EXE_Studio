@@ -122,6 +122,37 @@ def main():
           isinstance(cscore, int) and 0 <= cscore <= 100 and cscore != 88 or cscore == 0,
           f"(got {cscore})")
 
+    # ---- 7. Từ vựng chronotype: intermediate/bear phải ra khung giờ vàng đúng ----
+    res = client.post('/api/v1/auth/register', json={
+        'email': f'chrono_test_{os.urandom(3).hex()}@vnuhcm.edu.vn',
+        'password': 'password123', 'full_name': 'Test Chronotype'
+    })
+    chrono_headers = {'Authorization': f"Bearer {res.json()['access_token']}"}
+
+    # Wizard gửi "evening" -> owl -> khung giờ vàng tối 20:30-23:30
+    res = client.post('/api/v1/onboarding/complete', json={
+        'answers': {'chronotype': 'evening', 'wake_up_time': '07:30'}
+    }, headers=chrono_headers)
+    check("7a. Onboarding complete", res.status_code == 200, f"(got {res.status_code})")
+    res = client.get('/api/v1/circadian/pulse', headers=chrono_headers)
+    golden = res.json().get('golden_hour_range', '')
+    check("7b. 'evening' -> owl có khung giờ tối 20:30 (không bị về khung lark)",
+          '20:30' in golden, f"(got {golden})")
+
+    # Wizard gửi "peak_afternoon" -> hummingbird -> có khung 15:00-17:30
+    res = client.post('/api/v1/auth/register', json={
+        'email': f'chrono2_test_{os.urandom(3).hex()}@vnuhcm.edu.vn',
+        'password': 'password123', 'full_name': 'Test Chronotype 2'
+    })
+    h2 = {'Authorization': f"Bearer {res.json()['access_token']}"}
+    client.post('/api/v1/onboarding/complete', json={
+        'answers': {'chronotype': 'peak_afternoon'}
+    }, headers=h2)
+    res = client.get('/api/v1/circadian/pulse', headers=h2)
+    golden2 = res.json().get('golden_hour_range', '')
+    check("7c. 'peak_afternoon' -> khung 15:00-17:30 (trước đây bị về lark)",
+          '15:00' in golden2, f"(got {golden2})")
+
     # ---- Dọn dẹp ----
     client.delete(f'/api/v1/tasks/{tid}', headers=headers)
     client.delete(f'/api/v1/tasks/{tid2}', headers=headers)

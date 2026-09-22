@@ -464,7 +464,7 @@ def get_academic_certificate(
     # 4. Điểm đồng bộ nhịp sinh học tính THẬT: % phiên rơi vào khung giờ vàng theo chronotype
     # (trước đây hardcode 88/75 — chứng nhận "chính thức" nhưng số không từ dữ liệu)
     profile = current_user.profile
-    chronotype = (profile.chronotype if profile else "lark") or "lark"
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
     golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
     aligned_sessions = sum(
         1 for created_at, _ in session_rows
