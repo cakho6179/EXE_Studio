@@ -62,8 +62,9 @@ class Task(Base):
     priority = Column(String(50), default="high") # high, medium, low
     complexity = Column(String(50), default="medium")
     status = Column(String(50), default="in_progress") # pending, in_progress, completed
-    total_sprints = Column(Integer, default=5)
-    completed_sprints = Column(Integer, default=2)
+    total_sprints = Column(Integer, default=1)
+    # FIX: default=2 làm task mới tạo theo ORM default đã 'hoàn thành 2/5 sprint' (sai sự thật)
+    completed_sprints = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="tasks")

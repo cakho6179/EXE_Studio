@@ -82,7 +82,10 @@ class MicroSubtaskOut(BaseModel):
 import re
 
 def parse_flexible_datetime(v):
-    if not v:
+    """Parse deadline linh hoạt. Chuỗi RÁC (không khớp format nào) -> raise ValidationError (422)
+    thay vì trả None âm thầm: trước đây PATCH deadline '31-02/2026' đã XÓA deadline của user
+    mà không báo lỗi (data loss im lặng)."""
+    if v is None:
         return None
     if isinstance(v, datetime):
         return v
@@ -111,7 +114,10 @@ def parse_flexible_datetime(v):
                 return datetime.strptime(v, fmt)
             except Exception:
                 continue
-    return None
+    # Chuỗi không rỗng nhưng không parse được -> lỗi 422 rõ ràng cho client
+    raise ValueError(
+        f"Không hiểu định dạng ngày giờ: '{v}'. Dùng YYYY-MM-DD hoặc ISO 8601."
+    )
 
 def normalize_priority(v):
     if not v:
@@ -159,7 +165,9 @@ class MicroSubtaskCreate(BaseModel):
         if v is None:
             return 25
         m = re.search(r"\d+", str(v))
-        return int(m.group(0)) if m else 25
+        raw = int(m.group(0)) if m else 25
+        # FIX: trước đây nhận mọi số (0 phút, 9999 phút) trong khi Update có ge=5 le=120
+        return max(5, min(120, raw))
 
     @field_validator("pomodoro_count", mode="before")
     @classmethod
@@ -167,7 +175,8 @@ class MicroSubtaskCreate(BaseModel):
         if v is None:
             return 1
         m = re.search(r"\d+", str(v))
-        return max(1, int(m.group(0))) if m else 1
+        raw = max(1, int(m.group(0))) if m else 1
+        return min(8, raw)
 
 class TaskCreate(BaseModel):
     title: str = Field(default="Nhiệm vụ học tập mới", min_length=1, max_length=255)

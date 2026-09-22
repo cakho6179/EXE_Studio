@@ -1,6 +1,19 @@
 """Schedule validation + CRUD + auto-balance + lms-sync."""
 
 
+LMS_TITLES = [
+    "Báo cáo Đồ án Thị giác Máy tính (ResNet-50)",
+    "Tiểu luận Cuối kỳ: Triết học & Trí tuệ Nhân tạo",
+    "Lab 4: Phân mảnh & Nhân bản Dữ liệu Phân tán",
+]
+
+
+def _clean_lms_tasks(client, auth_headers):
+    for t in client.get("/api/v1/tasks/", headers=auth_headers).json():
+        if t["title"] in LMS_TITLES:
+            client.delete(f"/api/v1/tasks/{t['id']}", headers=auth_headers)
+
+
 def test_normalize_one_digit(client, auth_headers):
     r = client.post(
         "/api/v1/schedule/events",
@@ -67,9 +80,12 @@ def test_auto_balance_ok(client, auth_headers):
 
 
 def test_lms_sync_demo_idempotent(client, auth_headers):
+    _clean_lms_tasks(client, auth_headers)  # Deterministic: không phụ thuộc thứ tự test
     r1 = client.post("/api/v1/schedule/lms-sync",
                      json={"provider": "canvas", "include_timeline": True}, headers=auth_headers)
     assert r1.status_code == 200 and r1.json().get("demo") is True, r1.text
+    assert r1.json().get("imported_count") == 3, r1.text
     r2 = client.post("/api/v1/schedule/lms-sync",
                      json={"provider": "canvas", "include_timeline": True}, headers=auth_headers)
     assert r2.json().get("imported_count") == 0, r2.text
+    _clean_lms_tasks(client, auth_headers)
