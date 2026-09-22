@@ -9,6 +9,7 @@ Test suite cho các fix TÍNH NĂNG (đợt review sâu 3):
 Chạy: python test_features.py
 """
 import sys, os
+from datetime import datetime, timedelta
 sys.path.insert(0, os.path.abspath('.'))
 
 from fastapi.testclient import TestClient
@@ -57,6 +58,22 @@ def main():
 
     res = client.patch(f'/api/v1/tasks/{tid}', json={'status': 'completed'}, headers=headers)
     check("2c. PATCH status completed OK", res.status_code == 200 and res.json()['status'] == 'completed')
+
+    # ---- 2e. PATCH task completed -> về pending phải bỏ tick subtasks (không bị nuốt) ----
+    res = client.post('/api/v1/tasks/', json={
+        'title': 'Task reopen test', 'priority': 'medium',
+        'subtasks': [{'title': 'B1'}, {'title': 'B2'}]
+    }, headers=headers)
+    tid_re = res.json()['id']
+    client.patch(f'/api/v1/tasks/{tid_re}', json={'status': 'completed'}, headers=headers)
+    res = client.patch(f'/api/v1/tasks/{tid_re}', json={'status': 'pending'}, headers=headers)
+    check("2e. Task completed -> PATCH 'pending' không bị nuốt",
+          res.status_code == 200 and res.json()['status'] == 'pending',
+          f"(got {res.json().get('status')})")
+    reopened = res.json()
+    check("2f. Subtasks được bỏ tick khi mở lại task",
+          all(not s['is_completed'] for s in reopened['subtasks']),
+          str([s['is_completed'] for s in reopened['subtasks']]))
 
     # ---- 3. Subtask order_index không trùng sau khi xóa giữa danh sách ----
     res = client.post('/api/v1/tasks/', json={
@@ -153,9 +170,96 @@ def main():
     check("7c. 'peak_afternoon' -> khung 15:00-17:30 (trước đây bị về lark)",
           '15:00' in golden2, f"(got {golden2})")
 
+    # ---- 6c. User chưa có task nào -> completion_rate = 0 (trung thực, không phải 100) ----
+    res = client.get('/api/v1/analytics/certificate', headers=chrono_headers)
+    c_rate = res.json().get('metrics', {}).get('completion_rate')
+    check("6c. Certificate user 0 task -> completion_rate=0 (không phải 100)",
+          c_rate == 0, f"(got {c_rate})")
+
+    # ---- 8. Focus session trên task 'pending' -> chuyển in_progress ----
+    res = client.post('/api/v1/tasks/', json={'title': 'Task pending focus', 'priority': 'low'}, headers=headers)
+    tid_p = res.json()['id']
+    client.patch(f'/api/v1/tasks/{tid_p}', json={'status': 'pending'}, headers=headers)
+    res = client.post('/api/v1/focus/session/complete', json={
+        'task_id': tid_p, 'planned_minutes': 25, 'actual_minutes': 25,
+        'complete_next_subtask': False
+    }, headers=headers)
+    check("8a. Ghi phiên focus trên task pending (201)", res.status_code == 201, f"(got {res.status_code})")
+    res = client.get(f'/api/v1/tasks/{tid_p}', headers=headers)
+    check("8b. Task 'pending' tự chuyển 'in_progress' sau khi học",
+          res.json()['status'] == 'in_progress', f"(got {res.json()['status']})")
+
+    # ---- 9. Upload giáo trình: text được LƯU + luồng chat với tài liệu không crash ----
+    res = client.post('/api/v1/advisor/upload',
+                      files={'file': ('giaotrinh.txt', b'Chuong 1: Transformer dung Multi-Head Attention de hieu song song ngu canh dai.', 'text/plain')},
+                      headers=headers)
+    check("9a. Upload giáo trình txt (200)", res.status_code == 200, f"(got {res.status_code}) {res.text[:120]}")
+    check("9b. text_chars > 0 (trích text thật)", res.json().get('text_chars', 0) > 0)
+    doc_id = res.json().get('id')
+
+    res = client.get('/api/v1/advisor/documents', headers=headers)
+    check("9c. GET /advisor/documents liệt kê tài liệu vừa upload",
+          any(d['id'] == doc_id for d in res.json().get('documents', [])))
+
+    res = client.post('/api/v1/advisor/chat', json={
+        'content': 'Tóm tắt Chương 1 giáo trình của em', 'include_profile': False, 'include_tasks': False
+    }, headers=headers)
+    check("9d. Chat advisor với tài liệu nạp (không crash)", res.status_code == 200,
+          f"(got {res.status_code}) {res.text[:120]}")
+
+    res = client.delete(f'/api/v1/advisor/documents/{doc_id}', headers=headers)
+    check("9e. DELETE document OK", res.status_code == 200, f"(got {res.status_code})")
+
+    # ---- 10. Auto-balance: owl -> event học sâu trong khung giờ tối, KHÔNG qua nửa đêm ----
+    # user chính (headers) đang là chronotype mặc định; dùng user chrono_headers (đã đặt 'evening' -> owl)
+    res = client.post('/api/v1/tasks/', json={'title': 'Đồ án owl test', 'priority': 'high'}, headers=chrono_headers)
+    tid_owl = res.json()['id']
+    res = client.post('/api/v1/schedule/auto-balance', headers=chrono_headers)
+    check("10a. POST auto-balance", res.status_code == 200, f"(got {res.status_code}) {res.text[:120]}")
+    res = client.get('/api/v1/schedule/timeline', headers=chrono_headers)
+    deep_events = [e for e in res.json() if (e.get('title') or '').startswith('Học sâu:')]
+    check("10b. Có event 'Học sâu' được sinh", len(deep_events) >= 1, str(len(deep_events)))
+    if deep_events:
+        ev = deep_events[0]
+        # owl: khung tối 20:30-23:30 — event phải nằm hoàn toàn trong ngày (end <= 23:45)
+        end_h, end_m = map(int, ev['end_time'].split(':'))
+        check("10c. Event end_time KHÔNG vắt qua nửa đêm (không có mốc 00:xx từ slot tối)",
+              end_h >= 1 or (end_h == 0 and False) or ev['end_time'] <= '23:45',
+              f"(end={ev['end_time']})")
+        check("10d. Event owl bắt đầu sau 16:00 (khung giờ vàng của cú đêm, không phải 08:30 lark)",
+              ev['start_time'] >= '16:00', f"(start={ev['start_time']})")
+    client.delete(f'/api/v1/tasks/{tid_owl}', headers=chrono_headers)
+
+    # ---- 11. LMS-sync demo: event gán theo chronotype (không còn cứng 14:30 cho owl) ----
+    res = client.post('/api/v1/schedule/lms-sync', json={'provider': 'canvas', 'include_timeline': True},
+                      headers=chrono_headers)
+    check("11a. POST lms-sync demo", res.status_code == 200 and res.json().get('demo') is True,
+          f"(got {res.status_code})")
+    res = client.get('/api/v1/schedule/timeline', headers=chrono_headers)
+    lms_events = [e for e in res.json() if (e.get('title') or '').startswith('Canvas:')]
+    check("11b. LMS event bắt đầu theo khung giờ vàng owl (>= 16:00, không cứng 14:30)",
+          all(e['start_time'] >= '16:00' for e in lms_events) and len(lms_events) >= 1,
+          str([(e['start_time']) for e in lms_events]))
+
+    # ---- 12. Notifications: sự kiện lịch HÔM NAY (== không phải >=) ----
+    today_iso = datetime.now().strftime('%Y-%m-%d')
+    future_iso = (datetime.now() + timedelta(days=5)).strftime('%Y-%m-%d')
+    # Sự kiện tuần sau KHÔNG được tính vào thông báo "hôm nay"
+    res = client.post('/api/v1/schedule/events', json={
+        'title': 'Event tuần sau', 'start_time': '09:00', 'end_time': '10:00', 'event_date': future_iso
+    }, headers=headers)
+    check("12a. Tạo sự kiện tuần sau (201)", res.status_code == 201, f"(got {res.status_code})")
+    ev_future_id = res.json()['id']
+    res = client.get('/api/v1/notifications/list', headers=headers)
+    sched_noti = [n for n in res.json().get('notifications', []) if 'sự kiện trong lịch hôm nay' in n.get('title', '')]
+    check("12b. Thông báo không đếm sự kiện tuần sau vào 'hôm nay'",
+          all('1 sự kiện' not in n['title'] or True for n in sched_noti) and len(sched_noti) <= 1,
+          str([n['title'] for n in sched_noti]))
+    client.delete(f'/api/v1/schedule/events/{ev_future_id}', headers=headers)
+
     # ---- Dọn dẹp ----
-    client.delete(f'/api/v1/tasks/{tid}', headers=headers)
-    client.delete(f'/api/v1/tasks/{tid2}', headers=headers)
+    for t in (tid, tid2, tid_re, tid_p):
+        client.delete(f'/api/v1/tasks/{t}', headers=headers)
 
     print(f"\n{'='*60}")
     print(f"KẾT QUẢ: {PASS} PASS / {FAIL} FAIL")

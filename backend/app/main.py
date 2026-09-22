@@ -39,7 +39,7 @@ def _migrate_schedule_event_date():
                 conn.execute(text("ALTER TABLE schedule_events ADD COLUMN event_date VARCHAR(10)"))
             print("[Studio AI] Migrated schedule_events.event_date")
     except Exception as e:
-        print(f"[Studio AI] Migration check skipped: {e}")
+        print(f"[Studio AI] Migration check skipped: {type(e).__name__}")
 
 
 _migrate_schedule_event_date() if DB_READY else None
@@ -62,20 +62,39 @@ def _migrate_fk_indexes():
             for name, table, col in wanted:
                 conn.execute(text(f"CREATE INDEX IF NOT EXISTS {name} ON {table} ({col})"))
     except Exception as e:
-        print(f"[Studio AI] Index migration skipped: {e}")
+        print(f"[Studio AI] Index migration skipped: {type(e).__name__}")
 
 
 _migrate_fk_indexes() if DB_READY else None
 
 
-def _migrate_user_columns():
-    """Bổ sung cột is_onboarded cho bảng users nếu chưa có."""
-    from sqlalchemy import text
+def _migrate_document_columns():
+    """Bổ sung cột extracted_text cho bảng documents nếu chưa có (DB cũ)."""
+    from sqlalchemy import inspect, text
     try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE users ADD COLUMN is_onboarded BOOLEAN DEFAULT 0"))
-    except Exception:
-        pass
+        cols = [c["name"] for c in inspect(engine).get_columns("documents")]
+        if "extracted_text" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE documents ADD COLUMN extracted_text TEXT"))
+            print("[Studio AI] Migrated documents.extracted_text")
+    except Exception as e:
+        print(f"[Studio AI] documents migration skipped: {type(e).__name__}")
+
+
+_migrate_document_columns() if DB_READY else None
+
+
+def _migrate_user_columns():
+    """Bổ sung cột is_onboarded cho bảng users nếu chưa có (check-first, êm log)."""
+    from sqlalchemy import inspect, text
+    try:
+        cols = [c["name"] for c in inspect(engine).get_columns("users")]
+        if "is_onboarded" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN is_onboarded BOOLEAN DEFAULT 0"))
+            print("[Studio AI] Migrated users.is_onboarded")
+    except Exception as e:
+        print(f"[Studio AI] User migration skipped: {type(e).__name__}")
 
 
 _migrate_user_columns() if DB_READY else None
@@ -92,7 +111,7 @@ def _backfill_event_dates():
                 {"today": date.today().isoformat()},
             )
     except Exception as e:
-        print(f"[Studio AI] event_date backfill skipped: {e}")
+        print(f"[Studio AI] event_date backfill skipped: {type(e).__name__}")
 
 
 _backfill_event_dates() if DB_READY else None

@@ -57,6 +57,24 @@ async def chat_with_advisor(
     active_tasks = db.query(Task).filter(Task.user_id == current_user.id, Task.status != "completed").limit(5).all() if msg_in.include_tasks else []
     tasks_summary = [f"- {t.title} ({t.subject_name or t.subject_code}, hạn chót: {t.deadline or 'Trong tuần'})" for t in active_tasks]
 
+    # FIX: nạp ngữ cảnh giáo trình user đã upload (tính năng "bộ nhớ AI" giờ hoạt động thật)
+    doc_context = ""
+    try:
+        from app.models.entities import Document
+        docs = db.query(Document).filter(
+            Document.user_id == current_user.id,
+            Document.extracted_text.isnot(None),
+        ).order_by(Document.created_at.desc()).limit(3).all()
+        chunks = []
+        for d in docs:
+            txt = (d.extracted_text or "").strip()
+            if txt:
+                chunks.append(f"--- Tài liệu: {d.filename} ---\n{txt[:4000]}")
+        if chunks:
+            doc_context = "\n\nNGỮ CẢNH GIÁO TRÌNH sinh viên đã nạp (dùng để trả lời câu hỏi liên quan):\n" + "\n".join(chunks)
+    except Exception as doc_err:
+        print(f"[Advisor] Không nạp được ngữ cảnh tài liệu: {doc_err}")
+
     user_context = {
         "full_name": current_user.full_name,
         "major": current_user.major,
@@ -67,7 +85,7 @@ async def chat_with_advisor(
         "active_tasks": tasks_summary,
         "context_type": msg_in.context_type or "general",
     }
-    advisor_reply = await AIService.chat_with_advisor(content_text, user_context)
+    advisor_reply = await AIService.chat_with_advisor(content_text, user_context, document_context=doc_context)
 
     # Save advisor message
     adv_msg = ChatMessage(session_id=session.id, sender="advisor", content=advisor_reply)
@@ -251,6 +269,8 @@ async def upload_document(
         stored_name=unique_name,
         size_bytes=len(content),
         text_chars=len(text_preview),
+        # FIX: lưu text thật để AI advisor đọc được khi chat (trước đây chỉ đếm rồi vứt)
+        extracted_text=(text_preview or None) or None,
     )
     db.add(doc)
     db.commit()
@@ -267,7 +287,7 @@ async def upload_document(
 
 
 @router.get("/documents")
-def list_documents(
+def    list_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

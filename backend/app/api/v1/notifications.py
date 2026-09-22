@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core.cache import cached_response
-from app.core.timeutils import vn_now, vn_day_start_utc, vn_today_iso
+from app.core.timeutils import vn_now, vn_day_start_utc, vn_today_iso, VN_UTC_OFFSET
 from app.models.entities import User, Task, MicroSubtask, FocusSession, ScheduleEvent
 from app.api.v1.auth import get_current_user
 
@@ -29,6 +29,11 @@ def get_notifications(
             return dt.astimezone(timezone.utc).replace(tzinfo=None)
         return dt
 
+    def _vn_display(dt):
+        """Deadline hiển thị theo giờ VN (deadline lưu naive UTC — trước đây in thẳng giờ UTC, lệch 7h)."""
+        n = _to_naive_utc(dt)
+        return (n + VN_UTC_OFFSET) if n else None
+
     # 1. Deadline sắp tới / quá hạn
     tasks = db.query(Task).filter(
         Task.user_id == current_user.id, Task.status != "completed",
@@ -39,7 +44,7 @@ def get_notifications(
         items.append({
             "icon": "⏰", "tone": "urgent",
             "title": f"Quá hạn: {t.title[:50]}",
-            "detail": f"Hạn nộp đã qua ({t.deadline.strftime('%d/%m %H:%M')}). Ưu tiên xử lý ngay.",
+            "detail": f"Hạn nộp đã qua ({_vn_display(t.deadline).strftime('%d/%m %H:%M')}). Ưu tiên xử lý ngay.",
             "time_label": "Quá hạn",
             "link": "/tasks",
         })
@@ -53,7 +58,7 @@ def get_notifications(
         items.append({
             "icon": "📅", "tone": "info",
             "title": f"Sắp đến hạn: {t.title[:50]}",
-            "detail": f"Hạn {t.deadline.strftime('%d/%m %H:%M')} ({left_txt}). Còn {remaining} micro-sprints chưa xong.",
+            "detail": f"Hạn {_vn_display(t.deadline).strftime('%d/%m %H:%M')} ({left_txt}). Còn {remaining} micro-sprints chưa xong.",
             "time_label": left_txt,
             "link": "/tasks",
         })
@@ -80,11 +85,12 @@ def get_notifications(
             "link": "/deepwork?duration=25",
         })
 
-    # 3. Sự kiện lịch hôm nay chưa xong (lọc đúng ngày VN, không đếm tồn đọng cũ)
+    # 3. Sự kiện lịch HÔM NAY chưa xong (== đúng ngày VN; >= trước đây đếm nhầm cả sự kiện tuần sau
+    #    nhưng thông báo lại ghi "trong lịch hôm nay")
     pending_events = db.query(ScheduleEvent).filter(
         ScheduleEvent.user_id == current_user.id,
         ScheduleEvent.is_completed == False,
-        ScheduleEvent.event_date >= vn_today_iso(),
+        ScheduleEvent.event_date == vn_today_iso(),
     ).count()
     if pending_events:
         items.append({

@@ -184,6 +184,9 @@ class Document(Base):
     stored_name = Column(String(255), nullable=False)
     size_bytes = Column(Integer, default=0)
     text_chars = Column(Integer, default=0)
+    # FIX: nội dung text trích xuất được LƯU LẠI để AI advisor đọc được khi chat
+    # (trước đây chỉ đếm text_chars rồi bỏ, tính năng "nạp giáo trình vào bộ nhớ AI" vô nghĩa)
+    extracted_text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

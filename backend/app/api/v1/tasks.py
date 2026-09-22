@@ -156,7 +156,9 @@ def update_task(
         new_status = data["status"]
         if new_status == "completed":
             db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).update({"is_completed": True})
-        elif new_status == "in_progress" and task.status == "completed":
+        elif new_status in ("in_progress", "pending") and task.status == "completed":
+            # FIX: mở lại task (kể cả về "pending") phải bỏ tick subtasks,
+            # nếu không _recalc đếm đủ sprint sẽ ép status về "completed" và nuốt yêu cầu của user
             db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).update({"is_completed": False})
 
     for field, value in data.items():

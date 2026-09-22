@@ -247,6 +247,8 @@ def apply_plan_to_schedule(
         golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
         first_slot = golden_ranges[0].split(" - ")[0]
         start_h, start_m = map(int, first_slot.split(":"))
+        # FIX: kẹp kết thúc trong ngày — mins tối đa 480 từ slot tối (20:30) tạo event qua nửa đêm,
+        # giờ-end rơi vào hôm sau làm vỡ grid lịch trong ngày
         end_min_total = min(start_h * 60 + start_m + mins, 23 * 60 + 45)
         end_h = (end_min_total // 60) % 24
         end_m = end_min_total % 60

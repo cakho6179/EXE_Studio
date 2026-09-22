@@ -268,9 +268,14 @@ YÊU CẦU: Trả về DUY NHẤT một đối tượng JSON hợp lệ theo đ�
             }
 
     @staticmethod
-    async def chat_with_advisor(message: str, user_context: Optional[Dict[str, Any]] = None) -> str:
+    async def chat_with_advisor(
+        message: str,
+        user_context: Optional[Dict[str, Any]] = None,
+        document_context: Optional[str] = None,
+    ) -> str:
         """
         Interactive Academic Advisor powered by Gemini 3.5 Flash-Lite.
+        document_context: text trích từ giáo trình user upload (nếu có) để AI trả lời dựa trên tài liệu thật.
         """
         user_name = user_context.get("full_name", "Minh Châu") if user_context else "Minh Châu"
         major = user_context.get("major", "Công nghệ Thông tin") if user_context else "Công nghệ Thông tin"
@@ -295,6 +300,7 @@ Phong cách tư vấn của bạn:
 - Trả lời bằng tiếng Việt lịch sự, định dạng Markdown rõ ràng, truyền cảm hứng tích cực.
 
 Câu hỏi của sinh viên: "{message}"
+{document_context}
 Hãy đưa ra câu trả lời chi tiết, thực tế và có cấu trúc:
 """
         reply = await AIService._call_gemini(prompt, json_mode=False, temperature=0.6)

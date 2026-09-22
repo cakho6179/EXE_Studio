@@ -173,12 +173,14 @@ def auto_balance_schedule(
         h, m = map(int, start.split(":"))
         eh, em = map(int, end.split(":"))
         dur = max(60, (eh * 60 + em) - (h * 60 + m))  # phiên học sâu tối thiểu 60 phút
-        end_h = h + dur // 60
-        end_m = m + dur % 60
-        if end_m >= 60:
-            end_h += 1
-            end_m -= 60
-        golden_slots.append((f"{h % 24:02d}:{m:02d}", f"{end_h % 24:02d}:{end_m:02d}", slot_labels[i % len(slot_labels)]))
+        end_total = h * 60 + m + dur
+        # FIX: phải kẹp trong ngày (<= 23:45) — trước đây slot tối 20:30 + dur 90+ phút
+        # sinh "25:15" (% 24 chỉ xử lý giờ) -> rơi vào mốc 00:15 bị _ensure_same_day_range từ chối,
+        # và ngày-event lệch so với giờ-event
+        if end_total > 23 * 60 + 45:
+            end_total = 23 * 60 + 45
+        end_h, end_m = end_total // 60, end_total % 60
+        golden_slots.append((f"{h % 24:02d}:{m:02d}", f"{end_h:02d}:{end_m:02d}", slot_labels[i % len(slot_labels)]))
 
     balanced_count = 0
     today_iso = vn_today_iso()
@@ -392,6 +394,9 @@ def sync_lms_canvas(
     imported_tasks = 0
     today_dt = datetime.utcnow()
     today_iso = vn_today_iso()
+    # Chronotype đã chuẩn hóa (alias intermediate/bear...) để chọn khung giờ vàng
+    profile = current_user.profile
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
 
     for item in sample_courses:
         exists = db.query(Task).filter(Task.user_id == current_user.id, Task.title == item["title"]).first()
@@ -430,14 +435,18 @@ def sync_lms_canvas(
             if include_timeline:
                 event_day = (date.fromisoformat(today_iso) + timedelta(days=min(item["deadline_days"] - 1, 3))).isoformat()
                 short_prov = "Canvas" if req_provider == "canvas" else ("Classroom" if req_provider == "classroom" else "Teams")
+                # Sự kiện mẫu đặt vào khung giờ vàng ĐẦU TIÊN theo tuýp sinh học của user
+                # (trước đây gán cứng 14:30-16:00 cho mọi chronotype — owl bị sắp học 14:30)
+                golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
+                gs, ge = golden_ranges[0].split(" - ")
                 sched_ev = ScheduleEvent(
                     user_id=current_user.id,
                     task_id=task.id,
                     title=f"{short_prov}: {item['subject_code']} - {item['title'][:30]}",
                     description=item["description"],
                     event_date=event_day,
-                    start_time="14:30",
-                    end_time="16:00",
+                    start_time=gs,
+                    end_time=ge,
                     event_type="deep_work",
                     is_circadian_optimized=True,
                 )

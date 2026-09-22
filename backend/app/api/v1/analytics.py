@@ -357,7 +357,8 @@ def get_correlations(
     without_music = [s for s in sessions if not s.ambient_sound_used]
     if with_music and without_music:
         avg_with = sum(s.actual_minutes or 0 for s in with_music) / len(with_music)
-        avg_without = sum(s.actual_minutes or 0 for s in without_music) / len(with_music)
+        # FIX: trước đây chia cho len(with_music) -> số % sai hoàn toàn khi 2 nhóm khác size
+        avg_without = sum(s.actual_minutes or 0 for s in without_music) / len(without_music)
         if avg_without > 0:
             delta = round((avg_with - avg_without) / avg_without * 100)
             correlations.append({
@@ -459,7 +460,8 @@ def get_academic_certificate(
     tasks = db.query(Task).filter(Task.user_id == current_user.id).all()
     total_tasks = len(tasks)
     completed_tasks = sum(1 for t in tasks if t.status == "completed")
-    completion_rate = round((completed_tasks / total_tasks * 100)) if total_tasks > 0 else 100
+    # FIX: chưa có task nào -> 0% (trung thực), không phải 100% như trước đây
+    completion_rate = round((completed_tasks / total_tasks * 100)) if total_tasks > 0 else 0
 
     # 4. Điểm đồng bộ nhịp sinh học tính THẬT: % phiên rơi vào khung giờ vàng theo chronotype
     # (trước đây hardcode 88/75 — chứng nhận "chính thức" nhưng số không từ dữ liệu)

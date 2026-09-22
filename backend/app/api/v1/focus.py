@@ -39,6 +39,9 @@ def record_focus_session(
     # Nếu gắn task: chỉ tự tick subtask kế tiếp khi client yêu cầu (mặc định giữ hành vi cũ)
     if valid_task:
         task = valid_task
+        # FIX: bắt tay học trên task "pending" -> chuyển in_progress (trước đây kẹt mãi ở pending)
+        if (task.status or "") == "pending":
+            task.status = "in_progress"
         total_subs = db.query(MicroSubtask).filter(MicroSubtask.task_id == task.id).count()
         if total_subs > 0:
             if session_in.complete_next_subtask:
