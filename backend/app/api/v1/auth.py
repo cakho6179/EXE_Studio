@@ -5,7 +5,7 @@ from typing import Optional
 import re
 import secrets
 from app.core.database import get_db
-from app.core.cache import cached_response, cache_user, get_cached_user, invalidate_user_by_id
+from app.core.cache import cached_response, cache_user, get_cached_user, invalidate_user_by_id, bump
 from app.core.security import (
     hash_password, verify_password, create_access_token, create_refresh_token,
     decode_access_token, decode_refresh_token, revoke_token, is_token_revoked,
@@ -385,6 +385,7 @@ def verify_otp(payload: VerifyOtpRequest, db: Session = Depends(get_db)):
         user.is_email_verified = True
         db.commit()
         invalidate_user_by_id(user.id)
+        bump(user.id)  # Không có Bearer ở request này nên middleware không bump -> làm tay
         tokens = _token_pair(user)
         res["access_token"] = tokens["access_token"]
         res["refresh_token"] = tokens["refresh_token"]
@@ -432,6 +433,7 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
         record.is_used = True
     db.commit()
     invalidate_user_by_id(user.id)
+    bump(user.id)  # Không có Bearer ở request này nên middleware không bump -> làm tay
     return {"status": "success", "message": "Đặt lại mật khẩu thành công! Hãy đăng nhập lại."}
 
 @router.get("/profile")

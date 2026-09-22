@@ -9,5 +9,4 @@ __pycache__
 temp/
 node_modules/
 frontend/app/
-frontend-react/dist/
 dist-ssr/

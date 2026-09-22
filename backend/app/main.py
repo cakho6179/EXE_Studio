@@ -14,8 +14,16 @@ from app.models.entities import (
 )
 from app.api.v1 import auth, circadian, tasks, focus, schedule, advisor, audio, analytics, notifications, moods, notes, study_plans, onboarding
 
-# Initialize DB Tables
-Base.metadata.create_all(bind=engine)
+# Initialize DB Tables — không crash import khi DB xa (Supabase/Neon) unreachable:
+# app vẫn boot để phục vụ /docs + static + thông báo lỗi rõ ở từng API.
+DB_READY = False
+try:
+    Base.metadata.create_all(bind=engine)
+    DB_READY = True
+except Exception as e:
+    # Print ASCII-only: console Windows (cp1252) crash voi tieng Viet co dau
+    print(f"[Studio AI] WARNING: DB unreachable at startup ({type(e).__name__}). "
+          f"App still boots (docs/static OK). Detail: {str(e)[:200]}")
 
 if "dev-only" in settings.SECRET_KEY:
     print("[Studio AI] WARNING: Using default SECRET_KEY. Set SECRET_KEY in backend/.env for production.")
@@ -34,7 +42,7 @@ def _migrate_schedule_event_date():
         print(f"[Studio AI] Migration check skipped: {e}")
 
 
-_migrate_schedule_event_date()
+_migrate_schedule_event_date() if DB_READY else None
 
 
 def _migrate_fk_indexes():
@@ -57,7 +65,7 @@ def _migrate_fk_indexes():
         print(f"[Studio AI] Index migration skipped: {e}")
 
 
-_migrate_fk_indexes()
+_migrate_fk_indexes() if DB_READY else None
 
 
 def _migrate_user_columns():
@@ -70,7 +78,7 @@ def _migrate_user_columns():
         pass
 
 
-_migrate_user_columns()
+_migrate_user_columns() if DB_READY else None
 
 
 def _backfill_event_dates():
@@ -87,7 +95,7 @@ def _backfill_event_dates():
         print(f"[Studio AI] event_date backfill skipped: {e}")
 
 
-_backfill_event_dates()
+_backfill_event_dates() if DB_READY else None
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -386,7 +394,13 @@ def seed_demo_data():
     finally:
         db.close()
 
-seed_demo_data()
+if DB_READY:
+    try:
+        seed_demo_data()
+    except Exception as e:
+        print(f"[Studio AI] WARNING: seed demo skipped ({type(e).__name__})")
+else:
+    print("[Studio AI] WARNING: skip seed demo (DB down)")
 
 # Register API routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Auth"])
@@ -405,14 +419,8 @@ app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding"
 
 # Mount Frontend static files
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"
-# Frontend chuan: build React xuat vao frontend/app (uu tien so 1),
-# fallback frontend-react/dist cu khi dev quen doi outDir
-react_dist = Path(__file__).resolve().parent.parent.parent / "frontend-react" / "dist"
-unified_app = frontend_dir / "app"
-for _cand in (unified_app, react_dist):
-    if _cand.exists() and (_cand / "assets").exists():
-        react_dist = _cand
-        break
+# Frontend chuan duy nhat: build React xuat vao frontend/app
+react_dist = frontend_dir / "app"
 legacy_pages = Path(__file__).resolve().parent.parent.parent / "temp" / "pages-backup" / "pages"
 
 # Ưu tiên assets chuẩn từ frontend/assets (1 nguồn duy nhất cho cả dev lẫn prod);
@@ -462,8 +470,22 @@ if react_dist.exists():
 else:
     @app.get("/")
     def root():
-        # Chưa build React: mở Vite dev server (npm run dev trong frontend-react)
+        # Chưa build React: mở Vite dev server (npm run dev trong frontend/)
         return RedirectResponse(url="http://localhost:5173/")
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    """Healthcheck cho Docker/monitoring: luôn 200, kèm trạng thái DB."""
+    db_status = "up"
+    if not DB_READY:
+        try:
+            with engine.connect() as conn:
+                conn.exec_driver_sql("SELECT 1")
+            db_status = "up"
+        except Exception as e:
+            db_status = f"down: {type(e).__name__}"
+    return {"status": "ok", "db": db_status}
 
 if __name__ == "__main__":
     import uvicorn

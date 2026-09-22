@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/tracks")
 def get_sound_tracks():
-    # Id khớp engine CalmAudioEngine (frontend-react/src/assets/js/audio.js)
+    # Id khớp engine CalmAudioEngine (frontend/src/assets/js/audio.js)
     return [
         {
             "id": "ocean",

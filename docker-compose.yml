@@ -12,10 +12,11 @@ services:
       # Persist SQLite database on host
       - ./backend/studi_ai.db:/app/backend/studi_ai.db
     environment:
-      - ENVIRONMENT=production
+      - ENV=production
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - SECRET_KEY=${SECRET_KEY:-calm_super_secret_jwt_key_study_ai_2025}
       - OTP_RETURN_DEV_CODE=false
+      - ALLOW_FIXED_OTP=false
       - SMTP_HOST=${SMTP_HOST:-}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USER=${SMTP_USER:-}

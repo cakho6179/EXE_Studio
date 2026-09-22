@@ -292,6 +292,7 @@ def toggle_subtask(
         raise HTTPException(status_code=404, detail="Không tìm thấy nhiệm vụ con.")
 
     subtask.is_completed = not subtask.is_completed
+    db.flush()  # autoflush=False: flush trước khi recalc đếm, nếu không count lỡ nhịp flip
     _recalc_task_progress(db, parent)
     db.commit()
     db.refresh(subtask)

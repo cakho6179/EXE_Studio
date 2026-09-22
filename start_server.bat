@@ -9,7 +9,7 @@ cd /d "%~dp0backend"
 start "Stuai AI - Backend :8000" cmd /k "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 echo [2/3] Khoi dong Frontend React (port 5173)...
-cd /d "%~dp0frontend-react"
+cd /d "%~dp0frontend"
 start "Stuai AI - Frontend :5173" cmd /k "npm run dev"
 
 echo [3/3] Cho 2 dich vu len xong roi mo trinh duyet...
