@@ -14,7 +14,9 @@ __pycache__/
 .pytest_cache/
 backend/env/
 backend/uploads/
+*.db
 *.db-journal
+*.sqlite3
 
 # --- Node / Frontend (1 thư mục frontend/ duy nhất) ---
 node_modules/
