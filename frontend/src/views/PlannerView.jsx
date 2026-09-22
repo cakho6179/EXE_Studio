@@ -248,6 +248,11 @@ export default function PlannerView() {
               <span className="text-blue-600 font-semibold">Alpha 10Hz</span>), bảo vệ giấc ngủ phục hồi và kích hoạt giao thức cảnh báo kiệt sức sớm (
               <span className="text-blue-700 font-semibold">Anti-burnout protocol</span>).
             </p>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Trang này lo <strong>lộ trình ôn thi + hạn nộp</strong> •
+              Chi tiết từng giờ xem <Link to="/schedule" className="text-blue-600 hover:underline font-semibold">Lịch trình</Link> •
+              Tạo/sửa bài tập ở <Link to="/tasks" className="text-blue-600 hover:underline font-semibold">Nhiệm vụ</Link>
+            </p>
           </div>
           <div className="w-full md:w-auto bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/80 rounded-2xl p-4 flex items-center justify-between md:justify-start gap-4 shrink-0 shadow-sm">
             <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-inner border border-blue-100 text-blue-600 text-xl">
@@ -584,55 +589,45 @@ export default function PlannerView() {
                 <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-slate-100">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-slate-800">Lịch trình chi tiết hôm nay: {todayStr}</h3>
+                      <h3 className="text-sm font-bold text-slate-800">Hôm nay: {todayStr}</h3>
                       <span className="px-2.5 py-0.5 rounded-full bg-blue-100/70 text-blue-700 text-xs font-bold border border-blue-200/60">
                         {pulse ? `${pulse.pulse_percent}% SẴN SÀNG TƯ DUY` : '...'}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500">Múi giờ chuẩn Việt Nam (GMT+7)</span>
+                    <Link to="/schedule" className="text-xs text-blue-600 hover:underline font-semibold">Mở Lịch trình chi tiết →</Link>
                   </div>
                   {timelineQ.isPending && <p className="text-xs text-slate-500">Đang tải lịch hôm nay...</p>}
                   {!timelineQ.isPending && events.length === 0 && (
-                    <div className="p-4 text-center text-xs text-slate-500">Chưa có sự kiện nào. Thêm phiên học để AI sắp vào khung giờ vàng.</div>
+                    <div className="p-4 text-center text-xs text-slate-500">Chưa có sự kiện nào. Sang Lịch trình để AI xếp phiên học vào khung giờ vàng.</div>
                   )}
-                  {events.slice(0, 6).map((ev) => (
-                    <div key={ev.id} className={`flex items-start gap-3 p-3.5 rounded-2xl border transition-all ${ev.is_completed ? 'bg-white/70 border-slate-100' : 'bg-white/90 border-slate-200/70 hover:shadow-xs'}`}>
-                      <div className="flex flex-col items-center shrink-0 w-24">
-                        <span className="text-xs font-bold text-slate-800">{ev.start_time} - {ev.end_time}</span>
-                        <span className={`mt-2 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${ev.is_completed ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-700'}`}>
-                          {ev.is_completed ? '✓' : '•'}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="px-2 py-0.5 rounded bg-blue-600 text-white text-[11px] font-bold">{TYPE_BADGE[ev.event_type] || ev.event_type}</span>
-                          {ev.is_circadian_optimized && <span className="text-[10px] text-emerald-700 font-semibold">✓ Tối ưu sinh học</span>}
-                        </div>
-                        <h4 className={`text-sm font-semibold text-slate-800 mt-1 ${ev.is_completed ? 'line-through text-slate-400' : ''}`}>{ev.title}</h4>
-                        {ev.description && <p className="text-xs text-slate-500 line-clamp-1">{ev.description}</p>}
-                      </div>
+                  {events.slice(0, 3).map((ev) => (
+                    <div key={ev.id} className={`flex items-center gap-3 p-3 rounded-2xl border ${ev.is_completed ? 'bg-white/70 border-slate-100' : 'bg-white/90 border-slate-200/70'}`}>
+                      <span className="text-xs font-bold text-slate-800 shrink-0 w-24">{ev.start_time} - {ev.end_time}</span>
+                      <span className={`text-xs font-semibold truncate ${ev.is_completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>{ev.title}</span>
+                      <span className={`ml-auto text-[10px] font-bold shrink-0 ${ev.is_completed ? 'text-emerald-600' : 'text-blue-600'}`}>{ev.is_completed ? '✓' : '•'}</span>
                     </div>
                   ))}
+                  {events.length > 3 && (
+                    <Link to="/schedule" className="text-center text-xs font-semibold text-blue-600 hover:underline">+ {events.length - 3} sự kiện nữa trong Lịch trình →</Link>
+                  )}
                 </div>
               </>
             )}
 
             {view === 'day' && (
               <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-slate-100">
-                <h3 className="text-sm font-bold text-slate-800">Lịch trình chi tiết hôm nay: {todayStr} ({events.length} sự kiện)</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-800">Lịch trình chi tiết hôm nay: {todayStr} ({events.length} sự kiện)</h3>
+                  <Link to="/schedule" className="text-xs text-blue-600 hover:underline font-semibold">Xem + tick trong Lịch trình →</Link>
+                </div>
                 {events.length === 0 && <p className="text-xs text-slate-500">Chưa có sự kiện nào hôm nay.</p>}
-                {events.map((ev) => (
-                  <div key={ev.id} className="flex items-start gap-3 p-3.5 rounded-2xl bg-white/90 border border-slate-200/70">
-                    <div className="flex flex-col items-center shrink-0 w-24">
-                      <span className="text-xs font-bold text-slate-800">{ev.start_time} - {ev.end_time}</span>
-                      <span className={`mt-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${ev.is_completed ? 'bg-emerald-500 text-white' : 'bg-blue-100 text-blue-700'}`}>✓</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-slate-800">{ev.title}</h4>
-                      <p className="text-[11px] text-slate-500">{ev.start_time} - {ev.end_time}{ev.description ? ` • ${ev.description.slice(0, 60)}` : ''}</p>
-                    </div>
+                {events.slice(0, 4).map((ev) => (
+                  <div key={ev.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white/90 border border-slate-200/70">
+                    <span className="text-xs font-bold text-slate-800 shrink-0 w-24">{ev.start_time} - {ev.end_time}</span>
+                    <span className={`text-xs font-semibold truncate ${ev.is_completed ? 'line-through text-slate-400' : 'text-slate-700'}`}>{ev.title}</span>
                   </div>
                 ))}
+                {events.length > 4 && <p className="text-[11px] text-slate-400 text-center">…và {events.length - 4} sự kiện khác (xem trong Lịch trình)</p>}
               </div>
             )}
 

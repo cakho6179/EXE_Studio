@@ -107,14 +107,23 @@ def list_sessions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # FIX N+1: 1 query gộp lấy cả message_count (trước đây: 1 query sessions +
+    # N query COUNT cho từng session -> 1+N round-trip mỗi lần mở trang cố vấn)
+    from sqlalchemy import func
+    counts = dict(
+        db.query(ChatMessage.session_id, func.count(ChatMessage.id))
+        .join(ChatSession, ChatMessage.session_id == ChatSession.id)
+        .filter(ChatSession.user_id == current_user.id)
+        .group_by(ChatMessage.session_id)
+        .all()
+    )
     sessions = db.query(ChatSession).filter(
         ChatSession.user_id == current_user.id
     ).order_by(ChatSession.created_at.desc()).all()
-    out = []
-    for s in sessions:
-        count = db.query(ChatMessage).filter(ChatMessage.session_id == s.id).count()
-        out.append({"id": s.id, "title": s.title, "created_at": s.created_at, "message_count": count})
-    return out
+    return [
+        {"id": s.id, "title": s.title, "created_at": s.created_at, "message_count": counts.get(s.id, 0)}
+        for s in sessions
+    ]
 
 
 @router.post("/new-session", response_model=ChatSessionOut)

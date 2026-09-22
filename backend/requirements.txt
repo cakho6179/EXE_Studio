@@ -14,5 +14,7 @@ python-dotenv>=1.0.1
 # Trích xuất text giáo trình cho AI Advisor (lazy import, thiếu vẫn chạy)
 pypdf>=4.0.0
 python-docx>=1.1.0
-# Driver PostgreSQL (Neon) khi DATABASE_URL là postgres; SQLite local không cần
+# Driver PostgreSQL khi DATABASE_URL là postgres; SQLite local không cần.
+# psycopg (v3) được ưu tiên bởi app/core/database.py (pipeline mode, ít RTT hơn qua pooler xa)
+psycopg[binary]>=3.1.0
 psycopg2-binary>=2.9.9

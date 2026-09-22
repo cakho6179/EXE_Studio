@@ -886,33 +886,46 @@ export default function ScheduleView() {
                 <span className="p-1.5 rounded-lg bg-rose-50 text-rose-600">📅</span>
                 <h3 className="text-sm font-bold text-slate-800">Cảnh báo &amp; Lịch cận kề</h3>
               </div>
-              <span className="text-xs text-slate-500 font-medium">{tasks.length} Đồ án</span>
+              <Link to="/planner" className="text-[11px] text-blue-600 hover:underline font-semibold">Hạn nộp đồ án →</Link>
             </div>
             <div className="space-y-2.5">
-              {tasks.length === 0 && (
-                <div className="p-3 rounded-2xl bg-white/70 border border-slate-100 text-center text-[11px] text-slate-500">
-                  Chưa có hạn nộp nào. Thêm nhiệm vụ để theo dõi tại đây.
-                </div>
-              )}
-              {tasks.slice(0, 4).map((task) => (
-                <div key={task.id} className="p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold uppercase leading-none">P{task.completed_sprints ?? 0}</span>
-                      <span className="text-xs font-bold leading-none mt-0.5">{task.total_sprints ?? 1}p</span>
+              {(() => {
+                const upcomingEvents = [...events]
+                  .filter((e) => !e.is_completed && evDay(e) >= today)
+                  .sort((a, b) => `${evDay(a)}${a.start_time || ''}`.localeCompare(`${evDay(b)}${b.start_time || ''}`))
+                  .slice(0, 4);
+                if (upcomingEvents.length === 0) {
+                  return (
+                    <div className="p-3 rounded-2xl bg-white/70 border border-slate-100 text-center text-[11px] text-slate-500">
+                      Không còn sự kiện nào sắp tới. Thêm phiên học ở lưới tuần bên trên.
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-bold text-slate-800 truncate">{task.title}</span>
-                      <span className="text-[11px] text-slate-500 truncate">
-                        {task.subject_name || 'Môn học'}{task.subject_code ? ` (${task.subject_code})` : ''} • Canvas LMS
-                      </span>
+                  );
+                }
+                return upcomingEvents.map((ev) => (
+                  <div key={ev.id} className="p-3 rounded-2xl bg-white/70 border border-slate-100 hover:bg-white transition-all flex items-center justify-between gap-2 shadow-2xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 flex flex-col items-center justify-center shrink-0">
+                        <span className="text-[10px] font-bold uppercase leading-none">{evDay(ev).slice(5)}</span>
+                        <span className="text-xs font-bold leading-none mt-0.5">{(ev.start_time || '').slice(0, 5)}</span>
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-slate-800 truncate">{ev.title}</span>
+                        <span className="text-[11px] text-slate-500 truncate">
+                          {TYPE_LABEL[ev.event_type] || 'Sự kiện'}{evDay(ev) === today ? ' • Hôm nay' : ` • ${evDay(ev).slice(5)}`}
+                        </span>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleEvent.mutate(ev.id)}
+                      disabled={toggleEvent.isPending}
+                      className="px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 disabled:opacity-60 text-emerald-700 text-xs font-bold shrink-0 border border-emerald-100 transition"
+                    >
+                      Xong ✓
+                    </button>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold shrink-0 border border-rose-100">
-                    {task.status === 'completed' ? 'Xong' : 'Ưu tiên'}
-                  </span>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </section>
 

@@ -85,7 +85,8 @@ def main():
     check("3b. Toggle subtask của mình", r.status_code == 200 and r.json()["is_completed"] is True)
     # user khác không được đụng
     r = client.patch(f"/api/v1/tasks/subtasks/{sid}/toggle", headers=demo_h)
-    check("3c. Demo không toggle được subtask người khác (403)", r.status_code == 403, r.text[:120])
+    # Contract đúng: 404 (không 403) — không lộ sự tồn tại của subtask người khác
+    check("3c. Demo không toggle được subtask người khác (404)", r.status_code == 404, r.text[:120])
     r = client.get(f"/api/v1/tasks/{tid}", headers=demo_h)
     check("3d. Demo không đọc task người khác (404)", r.status_code == 404)
     r = client.delete(f"/api/v1/tasks/{tid}", headers=demo_h)

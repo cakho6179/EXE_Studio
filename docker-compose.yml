@@ -9,8 +9,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persist SQLite database on host
-      - ./backend/studi_ai.db:/app/backend/studi_ai.db
+      # Persist SQLite database: mount cả thư mục backend để -wal/-journal được lưu
+      # (mount file đơn lẻ bị hỏng khi SQLite tạo file journal tạm thời alongside)
+      - ./backend:/app/backend
     environment:
       - ENV=production
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}

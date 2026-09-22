@@ -15,7 +15,7 @@ const TABS = [
   { to: '/deepwork', label: 'Deep Work' },
   { to: '/sound', label: 'Âm thanh & Thư giãn' },
   { to: '/advisor', label: 'Cố vấn AI' },
-  { to: '/analytics', label: 'Thống kê' },
+  // /analytics KHÔNG ở taskbar — vào từ dropdown profile ("Thống kê giờ học & Chuỗi ngày")
 ];
 
 function initialsOf(name) {
@@ -222,17 +222,6 @@ export default function AppShell() {
                       <span>📈</span>
                       <span>Thống kê giờ học &amp; Chuỗi ngày</span>
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfileOpen(false);
-                        setConfirmLogout(true);
-                      }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 transition font-medium cursor-pointer text-left"
-                    >
-                      <span>🔄</span>
-                      <span>Đổi tài khoản / Đăng nhập lại</span>
-                    </button>
                   </div>
                   <div className="pt-2 border-t border-slate-100 mt-1">
                     <button
