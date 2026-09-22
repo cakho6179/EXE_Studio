@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 import hashlib
 from app.core.database import get_db
 from app.core.cache import cached_response
@@ -101,7 +101,7 @@ def get_analytics_dashboard(
 
     # 4. Circadian alignment score: phiên rơi vào khung giờ vàng (giờ VN theo tuýp sinh học của user)
     profile = current_user.profile
-    chronotype = (profile.chronotype if profile else "lark") or "lark"
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
     golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
 
     if all_vn_hours:
@@ -210,11 +210,6 @@ def get_analytics_dashboard(
         "zen_efficiency_index": zen_efficiency_index,
         "burnout_risk": burnout
     }
-
-
-def _vn_days_ago(n: int):
-    today = date.today()
-    return today - timedelta(days=n)
 
 
 @router.get("/ai-insights")
@@ -356,32 +351,72 @@ def get_correlations(
         if t.status == "completed":
             g["done"] += 1
 
+    # Tương quan THẬT: so phiên học có/không nhạc ambient (trước đây trả số hardcode +24%/-35%)
+    correlations = []
+    with_music = [s for s in sessions if s.ambient_sound_used]
+    without_music = [s for s in sessions if not s.ambient_sound_used]
+    if with_music and without_music:
+        avg_with = sum(s.actual_minutes or 0 for s in with_music) / len(with_music)
+        avg_without = sum(s.actual_minutes or 0 for s in without_music) / len(with_music)
+        if avg_without > 0:
+            delta = round((avg_with - avg_without) / avg_without * 100)
+            correlations.append({
+                "factor": "Nhạc ambient khi học sâu",
+                "impact": f"{delta:+d}% thời lượng phiên so với học không nhạc",
+                "confidence": "medium",
+                "description": f"Trung bình {round(avg_with)} phút/phiên có nhạc vs {round(avg_without)} phút/phiên không nhạc.",
+            })
+
+    sessions_with_time = [s for s in sessions if s.created_at]
+    if sessions_with_time:
+        profile = current_user.profile
+        chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
+        golden = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
+
+        def _in_golden(s) -> bool:
+            vn_dt = s.created_at + VN_UTC_OFFSET
+            hour = vn_dt.hour + vn_dt.minute / 60.0
+            return any(
+                CircadianService._in_range(hour, *rng.split(" - "))
+                for rng in golden if len(rng.split(" - ")) == 2
+            )
+
+        golden_sessions = [s for s in sessions_with_time if _in_golden(s)]
+        off_sessions = [s for s in sessions_with_time if not _in_golden(s)]
+        pct_golden = int(len(golden_sessions) / len(sessions_with_time) * 100)
+        avg_distr_golden = (
+            round(sum(s.distractions_count or 0 for s in golden_sessions) / len(golden_sessions), 1)
+            if golden_sessions else 0
+        )
+        avg_distr_off = (
+            round(sum(s.distractions_count or 0 for s in off_sessions) / len(off_sessions), 1)
+            if off_sessions else 0
+        )
+        correlations.append({
+            "factor": f"Học đúng Khung Giờ Vàng theo tuýp {chronotype}",
+            "impact": f"{pct_golden}% phiên rơi vào khung giờ vàng",
+            "confidence": "high",
+            "description": (
+                f"Xao nhãng trung bình {avg_distr_golden} trong giờ vàng "
+                f"vs {avg_distr_off} ngoài giờ vàng."
+            ),
+        })
+
+    if not correlations:
+        correlations.append({
+            "factor": "Chưa đủ dữ liệu",
+            "impact": "Cần thêm phiên học để AI tìm ra quy luật riêng của bạn",
+            "confidence": "low",
+            "description": "Hoàn thành thêm vài phiên Deep Work (có và không nhạc ambient) để so sánh.",
+        })
+
     return {
         "status": "success",
         "days": days,
         "mood_vs_focus": mood_focus,
         "hour_distribution": hour_dist,
         "subject_completion": subj,
-        "correlations": [
-            {
-                "factor": "Sóng Biển 432Hz & Mưa Rào Hiên Gỗ",
-                "impact": "+24% thời gian tập trung liên tục",
-                "confidence": "high",
-                "description": "Giảm thiểu tạp âm ký túc xá và duy trì biên độ sóng não Alpha 10Hz ổn định.",
-            },
-            {
-                "factor": "Học đúng Khung Giờ Vàng Sinh Học",
-                "impact": "-35% tỷ lệ xao nhãng và lướt web",
-                "confidence": "high",
-                "description": "Não bộ đạt ngưỡng tỉnh thức cao nhất, giải quyết bài toán phức tạp nhanh hơn.",
-            },
-            {
-                "factor": "Nghỉ giải lao Ultradian 10-15 phút",
-                "impact": "+18% khả năng ghi nhớ cho phiên kế tiếp",
-                "confidence": "medium",
-                "description": "Tái tạo chất dẫn truyền thần kinh và ngăn ngừa tình trạng quá tải nhận thức.",
-            },
-        ],
+        "correlations": correlations,
     }
 
 
@@ -426,8 +461,22 @@ def get_academic_certificate(
     completed_tasks = sum(1 for t in tasks if t.status == "completed")
     completion_rate = round((completed_tasks / total_tasks * 100)) if total_tasks > 0 else 100
 
-    # 4. Điểm đồng bộ nhịp sinh học ước lượng
-    circadian_score = 88 if total_sessions > 0 else 75
+    # 4. Điểm đồng bộ nhịp sinh học tính THẬT: % phiên rơi vào khung giờ vàng theo chronotype
+    # (trước đây hardcode 88/75 — chứng nhận "chính thức" nhưng số không từ dữ liệu)
+    profile = current_user.profile
+    chronotype = CircadianService._norm_chronotype((profile.chronotype if profile else "lark") or "lark")
+    golden_ranges = CircadianService.GOLDEN_RANGES.get(chronotype, CircadianService.GOLDEN_RANGES["lark"])
+    aligned_sessions = sum(
+        1 for created_at, _ in session_rows
+        if created_at and any(
+            (parts := rng.split(" - ")) and len(parts) == 2
+            and CircadianService._in_range(
+                (vn := created_at + VN_UTC_OFFSET).hour + vn.minute / 60.0, parts[0], parts[1]
+            )
+            for rng in golden_ranges
+        )
+    )
+    circadian_score = int(aligned_sessions / total_sessions * 100) if total_sessions else 0
 
     # 5. Sinh mã chứng nhận & chữ ký SHA-256
     seed = f"STUDIO_CERT_{current_user.id}_{current_user.email}_{total_focus_min}"

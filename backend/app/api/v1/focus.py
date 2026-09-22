@@ -27,7 +27,9 @@ def record_focus_session(
         planned_minutes=session_in.planned_minutes,
         actual_minutes=session_in.actual_minutes,
         distractions_count=session_in.distractions_count,
-        ambient_sound_used=session_in.ambient_sound_used or "Sóng Biển 432Hz",
+        # Lưu đúng những gì client gửi: ""/None = học không nhạc (để analytics so sánh được),
+        # không đè mặc định "Sóng Biển 432Hz" lên mọi phiên (bug tương quan âm thanh)
+        ambient_sound_used=(session_in.ambient_sound_used or "").strip() or None,
         notes=session_in.notes
     )
     db.add(session)

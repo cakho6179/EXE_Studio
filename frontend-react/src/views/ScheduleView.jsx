@@ -128,7 +128,7 @@ export default function ScheduleView() {
   const autoBalance = useMutation({
     mutationFn: () => api.post('/schedule/auto-balance', {}),
     onSuccess: (res) => {
-      ['timeline', 'tasks', 'focus-sessions', 'analytics-dashboard', 'pulse', 'notifications'].forEach((k) =>
+      ['timeline', 'tasks', 'focus-sessions', 'analytics-dashboard', 'analytics', 'pulse', 'notifications'].forEach((k) =>
         qc.invalidateQueries({ queryKey: [k] }),
       );
       showToast(res?.message || 'Thuật toán AI đã tự động tối ưu lịch trình!', 'success');
@@ -171,6 +171,7 @@ export default function ScheduleView() {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['focus-sessions'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast(

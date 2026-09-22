@@ -12,6 +12,22 @@ class CircadianService:
         "bear": ["10:00 - 12:00", "14:00 - 16:30"],
     }
 
+    # Từ vựng do các module khác lưu vào profile (onboarding từng lưu "intermediate",
+    # DB cũ có thể còn "bear") -> ánh xạ về từ vựng chuẩn của GOLDEN_RANGES.
+    # Không có alias này thì mọi user intermediate/bear/hummingbird đều rơi về khung lark.
+    _ALIASES = {
+        "intermediate": "hummingbird",
+        "hummingbird": "hummingbird",
+        "bear": "hummingbird",
+        "peak_afternoon": "hummingbird",
+        "dolphin": "owl",
+    }
+
+    @staticmethod
+    def _norm_chronotype(chronotype: str) -> str:
+        ctype = (chronotype or "lark").lower().strip()
+        return CircadianService._ALIASES.get(ctype, ctype)
+
     @staticmethod
     def _in_range(hour: float, start: str, end: str) -> bool:
         def to_h(t: str) -> float:
@@ -29,7 +45,7 @@ class CircadianService:
             now = vn_now()
 
         hour = now.hour + now.minute / 60.0
-        ctype = (chronotype or "lark").lower()
+        ctype = CircadianService._norm_chronotype(chronotype)
         if ctype not in CircadianService.GOLDEN_RANGES:
             ctype = "lark"
         golden = CircadianService.GOLDEN_RANGES[ctype]
@@ -94,7 +110,7 @@ class CircadianService:
         Gợi ý học thuật theo tuýp sinh học + khung giờ vàng thật từ GOLDEN_RANGES.
         Confidence là nhãn định tính theo độ vững của khuyến nghị (không phải số giả lập).
         """
-        ctype = (chronotype or "lark").lower()
+        ctype = CircadianService._norm_chronotype(chronotype)
         if ctype not in CircadianService.GOLDEN_RANGES:
             ctype = "lark"
         golden = CircadianService.GOLDEN_RANGES[ctype]

@@ -172,8 +172,9 @@ class MicroSubtaskCreate(BaseModel):
 class TaskCreate(BaseModel):
     title: str = Field(default="Nhiệm vụ học tập mới", min_length=1, max_length=255)
     description: Optional[str] = None
-    subject_name: Optional[str] = "Trí tuệ nhân tạo"
-    subject_code: Optional[str] = "CS301"
+    # None = không rõ môn -> backend gán nhóm "Chung" (tránh đếm nhầm vào môn AI ở analytics)
+    subject_name: Optional[str] = None
+    subject_code: Optional[str] = None
     deadline: Optional[datetime] = None
     priority: Optional[str] = "high"
     complexity: Optional[str] = "medium"
@@ -301,7 +302,8 @@ class FocusSessionCreate(BaseModel):
     planned_minutes: int = Field(default=25, ge=1, le=240)
     actual_minutes: int = Field(default=25, ge=0, le=240)
     distractions_count: int = Field(default=0, ge=0, le=100)
-    ambient_sound_used: Optional[str] = "Sóng Biển 432Hz"
+    # None/"" = học không nhạc (không đè mặc định âm thanh lên mọi phiên — bug tương quan analytics)
+    ambient_sound_used: Optional[str] = None
     notes: Optional[str] = None
     # Tự tick micro-sprint kế tiếp khi hoàn thành phiên (client chọn, mặc định True giữ tương thích)
     complete_next_subtask: bool = True
@@ -312,7 +314,7 @@ class FocusSessionOut(BaseModel):
     planned_minutes: int
     actual_minutes: int
     distractions_count: int
-    ambient_sound_used: str
+    ambient_sound_used: Optional[str]
     notes: Optional[str]
     created_at: datetime
     focus_score: Optional[int] = 85

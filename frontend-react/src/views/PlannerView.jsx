@@ -110,6 +110,7 @@ export default function PlannerView() {
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast(res?.message || 'Đã áp dụng lộ trình vào lịch!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không áp dụng được.', 'error'),
@@ -121,6 +122,7 @@ export default function PlannerView() {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast(res?.message || 'Thuật toán AI đã tự động tối ưu lịch trình!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không tối ưu được lịch. Thử lại sau.', 'error'),

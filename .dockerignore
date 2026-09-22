@@ -8,6 +8,6 @@ __pycache__
 *.log
 temp/
 node_modules/
+frontend/app/
 frontend-react/dist/
-frontend-react/node_modules/
 dist-ssr/

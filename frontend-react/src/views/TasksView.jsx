@@ -154,6 +154,7 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast(updated?.is_completed ? 'Hoàn thành 1 micro-sprint! Năng lượng duy trì tốt.' : 'Đã chuyển về trạng thái đang làm.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không cập nhật được.', 'error'),
@@ -163,6 +164,8 @@ export default function TasksView() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast('Đã xóa micro-sprint.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
@@ -174,6 +177,7 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast('Đã xóa nhiệm vụ thành công!', 'success');
     },
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
@@ -189,6 +193,7 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['focus-summary'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast(
         updated?.status === 'completed'
           ? '🎉 Đã hoàn thành nhiệm vụ và các micro-sprints!'
@@ -718,6 +723,8 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       setModalOpen(false);
     } catch (err) {
       setMErr(err.message || 'Không tạo được nhiệm vụ.');

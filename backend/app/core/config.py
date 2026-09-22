@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     # ĐẶT FALSE khi deploy production (bắt buộc cấu hình SMTP).
     OTP_RETURN_DEV_CODE: bool = True
 
+    # TODO(FIX-LATER): Bypass OTP tạm thời — mã cố định 123456 được chấp nhận ở
+    # /auth/verify-otp và /auth/reset-password mà không cần tra DB.
+    # ĐẶT FALSE (hoặc ENV=production) khi làm xong luồng OTP thật.
+    ALLOW_FIXED_OTP: bool = True
+    FIXED_OTP_CODE: str = "123456"
+
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8000",
