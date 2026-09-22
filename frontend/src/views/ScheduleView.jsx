@@ -51,6 +51,7 @@ export default function ScheduleView() {
   const [selectedDay, setSelectedDay] = useState(todayIso());
   const [showAdd, setShowAdd] = useState(false);
   const [showLmsModal, setShowLmsModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -60,6 +61,20 @@ export default function ScheduleView() {
     end: '15:30',
     type: 'deep_work',
   });
+  const openEdit = (ev) => {
+    setEditingId(ev.id);
+    setForm({
+      title: ev.title || '',
+      description: ev.description || '',
+      task_id: ev.task_id || '',
+      date: ev.event_date || todayIso(),
+      start: (ev.start_time || '14:00').slice(0, 5),
+      end: (ev.end_time || '15:30').slice(0, 5),
+      type: ev.event_type || 'deep_work',
+    });
+    setShowAdd(true);
+  };
+  const closeForm = () => { setShowAdd(false); setEditingId(null); };
 
   const cycleSleep = () => {
     const steps = [0, 15, 30, 45, 60];
@@ -105,25 +120,32 @@ export default function ScheduleView() {
     },
     onError: (err) => showToast(err.message || 'Lỗi.', 'error'),
   });
-  const createEvent = useMutation({
-    mutationFn: () => api.post('/schedule/events', {
-      title: form.title.trim(),
-      description: form.description?.trim() || null,
-      task_id: form.task_id || null,
-      event_date: form.date,
-      start_time: form.start,
-      end_time: form.end,
-      event_type: form.type,
-      is_circadian_optimized: true,
-    }),
+  const saveEvent = useMutation({
+    mutationFn: () => {
+      const payload = {
+        title: form.title.trim(),
+        description: form.description?.trim() || null,
+        task_id: form.task_id || null,
+        event_date: form.date,
+        start_time: form.start,
+        end_time: form.end,
+        event_type: form.type,
+        is_circadian_optimized: true,
+      };
+      // FIX: trước đây UI chỉ tạo mới — sai giờ phải xóa làm lại dù backend
+      // có sẵn PATCH /schedule/events/{id} để sửa
+      return editingId
+        ? api.patch(`/schedule/events/${editingId}`, payload)
+        : api.post('/schedule/events', payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
-      setShowAdd(false);
+      closeForm();
       setForm({ title: '', description: '', task_id: '', date: todayIso(), start: '14:00', end: '15:30', type: 'deep_work' });
-      showToast('Đã thêm phiên học!', 'success');
+      showToast(editingId ? 'Đã sửa sự kiện!' : 'Đã thêm phiên học!', 'success');
     },
-    onError: (err) => showToast(err.message || 'Không thêm được.', 'error'),
+    onError: (err) => showToast(err.message || 'Không lưu được.', 'error'),
   });
   const autoBalance = useMutation({
     mutationFn: () => api.post('/schedule/auto-balance', {}),
@@ -432,10 +454,13 @@ export default function ScheduleView() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAdd((v) => !v)}
+                  onClick={() => {
+                    if (showAdd) { closeForm(); setForm({ title: '', description: '', task_id: '', date: todayIso(), start: '14:00', end: '15:30', type: 'deep_work' }); }
+                    else { setEditingId(null); setShowAdd(true); }
+                  }}
                   className="px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold"
                 >
-                  + Thêm phiên học
+                  {showAdd && editingId ? 'Đang sửa sự kiện…' : '+ Thêm phiên học'}
                 </button>
               </div>
             </div>
@@ -446,13 +471,13 @@ export default function ScheduleView() {
                   e.preventDefault();
                   if (!form.title.trim()) { showToast('Nhập tên phiên học.', 'warning'); return; }
                   if (form.end <= form.start) { showToast('Giờ kết thúc phải sau giờ bắt đầu.', 'warning'); return; }
-                  createEvent.mutate();
+                  saveEvent.mutate();
                 }}
                 className="space-y-3 mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Thêm phiên học / Sự kiện mới</span>
-                  <button type="button" onClick={() => setShowAdd(false)} className="text-slate-400 hover:text-slate-600 text-xs">✕ Đóng</button>
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">{editingId ? 'Sửa sự kiện' : 'Thêm phiên học / Sự kiện mới'}</span>
+                  <button type="button" onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-xs">✕ Đóng</button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                   <input
@@ -517,9 +542,9 @@ export default function ScheduleView() {
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <button type="button" onClick={() => setShowAdd(false)} className="px-3.5 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">Hủy</button>
-                  <button type="submit" disabled={createEvent.isPending} className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-60">
-                    {createEvent.isPending ? 'Đang lưu...' : 'Lưu phiên học'}
+                  <button type="button" onClick={closeForm} className="px-3.5 py-2 rounded-xl bg-slate-200 text-slate-700 text-xs font-semibold">Hủy</button>
+                  <button type="submit" disabled={saveEvent.isPending} className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-60">
+                    {saveEvent.isPending ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Lưu phiên học'}
                   </button>
                 </div>
               </form>
@@ -582,6 +607,15 @@ export default function ScheduleView() {
                                         >
                                           <span className="truncate block">{ev.title.length > 20 ? `${ev.title.slice(0, 18)}…` : ev.title}</span>
                                           <span className="text-[9px] opacity-80 block">{ev.start_time} - {ev.end_time}</span>
+                                        </button>
+                                        <button
+                                          type="button"
+                                          title="Sửa sự kiện này"
+                                          aria-label="Sửa sự kiện"
+                                          onClick={(e) => { e.stopPropagation(); openEdit(ev); }}
+                                          className="absolute -top-1 -right-6 w-4 h-4 rounded-full bg-slate-900/80 hover:bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover/ev:opacity-100 transition shadow-sm cursor-pointer z-10"
+                                        >
+                                          ✎
                                         </button>
                                         <button
                                           type="button"
@@ -724,6 +758,14 @@ export default function ScheduleView() {
                       <p className={`text-xs font-bold text-slate-800 ${ev.is_completed ? 'line-through text-slate-400' : ''}`}>{ev.title}</p>
                       <p className="text-[11px] text-slate-500">{ev.start_time} - {ev.end_time}{ev.description ? ` • ${ev.description.slice(0, 60)}` : ''}</p>
                     </div>
+                    <button
+                      type="button"
+                      aria-label="Sửa sự kiện"
+                      onClick={() => openEdit(ev)}
+                      className="p-1.5 rounded-lg text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition"
+                    >
+                      ✎
+                    </button>
                     <button
                       type="button"
                       aria-label="Xóa sự kiện"

@@ -333,6 +333,11 @@ export default function DeepWorkView() {
     if (isFree && tm.elapsedUp >= 60) {
       if (window.confirm(`Kết thúc phiên tự do (${fmt(tm.elapsedUp)}) và ghi nhận?`)) { completeSession(); return; }
     }
+    // FIX: phiên CÓ task dừng giữa chừng >= 1 phút cũng phải ghi nhận — trước đây bấm reset
+    // là mất trắng toàn bộ thời gian đã học (thống kê focus/analytics không thấy gì)
+    if (!isFree && tm.focusElapsed >= 60) {
+      if (window.confirm(`Đã học ${fmt(tm.focusElapsed)} — ghi nhận vào thống kê trước khi dừng?`)) { completeSession(); return; }
+    }
     if (running && !window.confirm('Phiên đang chạy. Dừng và đặt lại từ đầu?')) return;
     pauseTimerSilent();
     try { localStorage.removeItem(PERSIST_KEY); } catch { /* bỏ qua */ }

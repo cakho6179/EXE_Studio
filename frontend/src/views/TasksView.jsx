@@ -85,6 +85,7 @@ export default function TasksView() {
 
   // Notes
   const [noteText, setNoteText] = useState('');
+  const [newSprintTitle, setNewSprintTitle] = useState({});
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteText, setEditingNoteText] = useState('');
   const [showLmsModal, setShowLmsModal] = useState(false);
@@ -170,6 +171,22 @@ export default function TasksView() {
       showToast('Đã xóa micro-sprint.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không xóa được.', 'error'),
+  });
+  // FIX: backend có sẵn POST /tasks/{id}/subtasks nhưng UI không gọi — không thể thêm
+  // sprint vào task có sẵn (phải xóa tạo lại task)
+  const addSubtask = useMutation({
+    mutationFn: ({ taskId, title }) => api.post(`/tasks/${taskId}/subtasks`, {
+      title: title.trim() || 'Micro-sprint tập trung 25p',
+      estimated_minutes: 25,
+      pomodoro_count: 1,
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      showToast('Đã thêm micro-sprint vào nhiệm vụ.', 'success');
+    },
+    onError: (err) => showToast(err.message || 'Không thêm được.', 'error'),
   });
   const deleteTask = useMutation({
     mutationFn: (id) => api.delete(`/tasks/${id}`),
@@ -1109,6 +1126,24 @@ export default function TasksView() {
                             </div>
                           </div>
                         ))}
+                        <form
+                          onSubmit={(e) => { e.preventDefault(); addSubtask.mutate({ taskId: t.id, title: newSprintTitle[t.id] || '' }); setNewSprintTitle((m) => ({ ...m, [t.id]: '' })); }}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            value={newSprintTitle[t.id] || ''}
+                            onChange={(e) => setNewSprintTitle((m) => ({ ...m, [t.id]: e.target.value }))}
+                            placeholder="Thêm bước nhỏ 25p..."
+                            className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-dashed border-slate-300 text-xs bg-white/60 focus:outline-none focus:border-blue-500"
+                          />
+                          <button
+                            type="submit"
+                            disabled={addSubtask.isPending || !(newSprintTitle[t.id] || '').trim()}
+                            className="px-3 py-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 text-xs font-semibold hover:bg-blue-100 disabled:opacity-50 shrink-0"
+                          >
+                            + Thêm
+                          </button>
+                        </form>
                       </div>
                     </div>
 
