@@ -18,6 +18,7 @@ const PlannerView = lazy(() => import('./views/PlannerView.jsx'));
 const DeepWorkView = lazy(() => import('./views/DeepWorkView.jsx'));
 const OnboardingView = lazy(() => import('./views/OnboardingView.jsx'));
 const ProfileView = lazy(() => import('./views/ProfileView.jsx'));
+const CheckoutView = lazy(() => import('./views/CheckoutView.jsx'));
 
 function Loading() {
   return (
@@ -62,6 +63,7 @@ export default function AppRouter() {
           <Route path="/advisor" element={<AdvisorView />} />
           <Route path="/sound" element={<SoundView />} />
           <Route path="/analytics" element={<AnalyticsView />} />
+          <Route path="/checkout" element={<CheckoutView />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -88,6 +88,11 @@ export default function LandingView() {
     navigate(isLoggedIn ? '/dashboard' : '/register');
   }
 
+  // Nút "Kích hoạt Pro": đã login -> sang checkout, chưa -> sang đăng ký trước
+  function goCheckout() {
+    navigate(isLoggedIn ? '/checkout' : '/register');
+  }
+
   async function goDeepWork() {
     if (!isLoggedIn) {
       try {
@@ -512,7 +517,7 @@ export default function LandingView() {
                 </div>
                 <button
                   type="button"
-                  onClick={goRegister}
+                  onClick={goCheckout}
                   id="dung-thu"
                   className="block text-center w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-md shadow-brand-500/25 transition-all text-xs"
                 >

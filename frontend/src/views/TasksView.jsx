@@ -344,6 +344,13 @@ export default function TasksView() {
   })();
 
   // ---- AI decompose box ----
+  const quotaQ = useQuery({
+    queryKey: ['billing-quota'],
+    queryFn: () => api.get('/billing/quota').catch(() => null),
+    staleTime: 30000,
+  });
+  const quota = quotaQ.data || {};
+  const quotaExhausted = quota.limit >= 0 && (quota.remaining ?? 1) <= 0 && quota.limit !== -1;
   const runAiDecompose = async () => {
     const title = aiText.trim();
     if (title.length < 5) {
@@ -354,8 +361,13 @@ export default function TasksView() {
     try {
       const res = await api.post('/tasks/ai-decompose', { title });
       setAiResult(res);
+      quotaQ.refetch();
     } catch (err) {
-      showToast(err.message || 'AI phân rã thất bại.', 'error');
+      if (String(err.message || '').includes('Nâng cấp Pro')) {
+        showToast('Hết lượt AI miễn phí tháng này! Nâng cấp Pro trong trang Hồ sơ để không giới hạn.', 'warning');
+      } else {
+        showToast(err.message || 'AI phân rã thất bại.', 'error');
+      }
     } finally {
       setAiLoading(false);
     }
@@ -1240,6 +1252,15 @@ export default function TasksView() {
               <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">AI Phân Rã Đồ Án Tức Thì</h3>
             </div>
             <p className="text-xs text-slate-500">Dán đề bài lớn hoặc tên đồ án cần làm, AI sẽ bẻ nhỏ thành từng sprint 25 phút vừa sức:</p>
+            <p className="text-[11px] text-slate-500">
+              {quota.limit === -1 ? (
+                <span className="font-semibold text-amber-700">🌟 Pro: AI không giới hạn</span>
+              ) : quotaExhausted ? (
+                <span className="font-semibold text-rose-600">Hết lượt AI miễn phí tháng này — <Link to="/checkout" className="underline">nâng cấp Pro</Link></span>
+              ) : (
+                <span>Còn <strong className="text-slate-800">{quota.remaining ?? '…'}/{quota.limit ?? '…'}</strong> lượt AI miễn phí tháng này</span>
+              )}
+            </p>
             <div className="space-y-2">
               <textarea
                 value={aiText}

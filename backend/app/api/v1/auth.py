@@ -50,8 +50,23 @@ def _token_pair(user: User) -> dict:
             "avatar_url": getattr(user, "avatar_url", None),
             "is_email_verified": getattr(user, "is_email_verified", False),
             "is_onboarded": getattr(user, "is_onboarded", False),
+            "role": getattr(user, "role", None) or "student",
         },
     }
+
+
+def require_role(*roles: str):
+    """Dependency phân quyền sau này: require_role("admin") / ("admin", "mentor")."""
+    async def checker(current_user: User = Depends(get_current_user)) -> User:
+        role = (getattr(current_user, "role", None) or "student").lower()
+        if role not in [r.lower() for r in roles]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tài khoản không có quyền thực hiện thao tác này.",
+            )
+        return current_user
+
+    return checker
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:

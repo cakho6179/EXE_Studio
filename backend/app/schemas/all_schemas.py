@@ -58,6 +58,7 @@ class UserOut(BaseModel):
     academic_year: int
     is_email_verified: bool
     is_onboarded: bool = False
+    role: str = "student"
     avatar_url: Optional[str] = None
     profile: Optional[UserProfileOut] = None
 

@@ -80,6 +80,10 @@ export default function DashboardView() {
     mutationFn: (id) => api.patch(`/schedule/events/${id}/toggle`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast('Đã cập nhật trạng thái sự kiện thời khóa biểu!', 'success');
     },
@@ -166,6 +170,8 @@ export default function DashboardView() {
         showToast(res.message || 'Đã áp dụng vào lịch!', 'success');
       }
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
     } catch (err) {
       showToast(err.message || 'Không thực hiện được.', 'error');

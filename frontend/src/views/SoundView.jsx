@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -51,6 +51,7 @@ const FREQS = [
 
 export default function SoundView() {
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { isPlaying, track, volume, setVolume, togglePlay, switchTrack, nextTrack, setSleepTimer, engine, ready } = useAudio();
   const pulseQ = usePulse();
@@ -104,6 +105,15 @@ export default function SoundView() {
     if (m > 0) showToast(`Nhạc sẽ tắt sau ${m} phút.`, 'info');
   }
 
+  const planQ = useQuery({
+    queryKey: ['billing-status'],
+    queryFn: () => api.get('/billing/status').catch(() => null),
+    staleTime: 60000,
+  });
+  const isPro = planQ.data?.plan === 'pro';
+  // Gói Miễn Phí: Sóng biển + Mưa nhẹ (+ Im lặng). Còn lại là Pro.
+  const isLocked = (t) => !isPro && !['ocean', 'rain'].includes(t.id) && t.engine !== 'silence';
+
   // Track đang phát HIỂN THỊ (id trong TRACKS) — engine chỉ có 3 kênh nên không dùng
   // engine id để highlight (6 track ocean sẽ sáng cùng lúc).
   const [activeId, setActiveId] = useState(track.id);
@@ -111,6 +121,11 @@ export default function SoundView() {
   function playTrack(t) {
     const eng = engine();
     if (!eng) { showToast('Engine âm thanh chưa sẵn sàng.', 'warning'); return; }
+    if (isLocked(t)) {
+      showToast(`"${t.title}" dành cho gói Pro — nâng cấp để mở full thư viện!`, 'warning');
+      navigate('/checkout');
+      return;
+    }
     if (t.engine === 'silence') {
       if (eng.isPlaying) togglePlay();
       setActiveId(t.id);
@@ -396,19 +411,22 @@ export default function SoundView() {
                 {list.map((t) => {
                   const active = activeId === t.id && (t.engine === 'silence' ? !isPlaying : isPlaying);
                   const fav = favs.includes(t.id);
+                  const locked = isLocked(t);
                   return (
                     <div key={t.id} className="p-4 rounded-2xl bg-white/90 border border-slate-200/80 shadow-xs flex items-center gap-4 hover:border-blue-400 transition">
-                      <button type="button" onClick={() => playTrack(t)} aria-label={`Phát: ${t.title}`} className="relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden border border-blue-200 hover:scale-105 transition">
-                        <span className="text-2xl">{t.icon}</span>
+                      <button type="button" onClick={() => playTrack(t)} aria-label={`${locked ? 'Mở khóa' : 'Phát'}: ${t.title}`} className="relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden border border-blue-200 hover:scale-105 transition">
+                        <span className="text-2xl">{locked ? '🔒' : t.icon}</span>
                         <div className="absolute inset-0 bg-blue-600/10 flex items-center justify-center">
-                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">{active ? '⏸' : '▶'}</span>
+                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">{locked ? '★' : active ? '⏸' : '▶'}</span>
                         </div>
                       </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="text-xs font-bold text-slate-900 truncate">{t.title}</h3>
                           <div className="flex items-center gap-1 shrink-0">
-                            {t.missing
+                            {locked
+                              ? <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">PRO</span>
+                              : t.missing
                               ? <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium" title={t.missing}>fallback</span>
                               : t.badge && <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">{t.badge}</span>}
                             <button type="button" aria-label="Yêu thích" onClick={() => toggleFav(t.id)} className={`text-base transition ${fav ? 'text-rose-500' : 'text-slate-300 hover:text-rose-400'}`}>{fav ? '♥' : '♡'}</button>
@@ -442,14 +460,15 @@ export default function SoundView() {
                   {TRACKS.filter((t) => t.category === 'music').map((t) => {
                     const fav = favs.includes(t.id);
                     const active = activeId === t.id && isPlaying;
+                    const locked = isLocked(t);
                     return (
                       <div key={t.id} className="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white border border-slate-200/70 transition">
                         <div className="flex items-center gap-3 min-w-0">
-                          <button type="button" onClick={() => playTrack(t)} aria-label={`Phát thử: ${t.title}`} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-600 hover:text-white transition shrink-0">
-                            {active ? '⏸' : '▶'}
+                          <button type="button" onClick={() => playTrack(t)} aria-label={`${locked ? 'Mở khóa' : 'Phát thử'}: ${t.title}`} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs hover:bg-blue-600 hover:text-white transition shrink-0">
+                            {locked ? '🔒' : active ? '⏸' : '▶'}
                           </button>
                           <div className="min-w-0">
-                            <h3 className="text-xs font-bold text-slate-800 truncate">{t.title}</h3>
+                            <h3 className="text-xs font-bold text-slate-800 truncate">{t.title} {locked && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold">PRO</span>}</h3>
                             <span className="text-[11px] text-slate-500 truncate block">{t.desc}</span>
                           </div>
                         </div>

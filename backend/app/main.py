@@ -12,7 +12,7 @@ from app.models.entities import (
     User, UserProfile, Task, MicroSubtask, ScheduleEvent,
     FocusSession, ChatSession, ChatMessage, MoodEntry, Note, StudyPlan,
 )
-from app.api.v1 import auth, circadian, tasks, focus, schedule, advisor, audio, analytics, notifications, moods, notes, study_plans, onboarding
+from app.api.v1 import auth, circadian, tasks, focus, schedule, advisor, audio, analytics, notifications, moods, notes, study_plans, onboarding, billing
 
 # Initialize DB Tables — không crash import khi DB xa (Supabase/Neon) unreachable:
 # app vẫn boot để phục vụ /docs + static + thông báo lỗi rõ ở từng API.
@@ -85,14 +85,17 @@ _migrate_document_columns() if DB_READY else None
 
 
 def _migrate_user_columns():
-    """Bổ sung cột is_onboarded cho bảng users nếu chưa có (check-first, êm log)."""
+    """Bổ sung cột is_onboarded + role cho bảng users nếu chưa có (check-first, êm log)."""
     from sqlalchemy import inspect, text
     try:
         cols = [c["name"] for c in inspect(engine).get_columns("users")]
-        if "is_onboarded" not in cols:
-            with engine.begin() as conn:
+        with engine.begin() as conn:
+            if "is_onboarded" not in cols:
                 conn.execute(text("ALTER TABLE users ADD COLUMN is_onboarded BOOLEAN DEFAULT 0"))
-            print("[Studio AI] Migrated users.is_onboarded")
+                print("[Studio AI] Migrated users.is_onboarded")
+            if "role" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'student'"))
+                print("[Studio AI] Migrated users.role")
     except Exception as e:
         print(f"[Studio AI] User migration skipped: {type(e).__name__}")
 
@@ -439,6 +442,7 @@ app.include_router(moods.router, prefix=f"{settings.API_V1_STR}/moods", tags=["M
 app.include_router(notes.router, prefix=f"{settings.API_V1_STR}/notes", tags=["Notes"])
 app.include_router(study_plans.router, prefix=f"{settings.API_V1_STR}/study-plans", tags=["StudyPlans"])
 app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding", tags=["Onboarding"])
+app.include_router(billing.router, prefix=f"{settings.API_V1_STR}/billing", tags=["Billing"])
 
 # Mount Frontend static files
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"

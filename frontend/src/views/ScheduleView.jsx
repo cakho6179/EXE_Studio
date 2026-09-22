@@ -107,6 +107,10 @@ export default function ScheduleView() {
     mutationFn: (id) => api.patch(`/schedule/events/${id}/toggle`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['focus-summary'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
     },
     onError: (err) => showToast(err.message || 'Không cập nhật được.', 'error'),
@@ -115,6 +119,8 @@ export default function ScheduleView() {
     mutationFn: (id) => api.delete(`/schedule/events/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       showToast('Đã xóa sự kiện thời khóa biểu.', 'success');
     },
@@ -140,6 +146,8 @@ export default function ScheduleView() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timeline'] });
+      qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       closeForm();
       setForm({ title: '', description: '', task_id: '', date: todayIso(), start: '14:00', end: '15:30', type: 'deep_work' });

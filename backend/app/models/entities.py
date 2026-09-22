@@ -20,6 +20,8 @@ class User(Base):
     academic_year = Column(Integer, default=3)
     is_email_verified = Column(Boolean, default=False)
     is_onboarded = Column(Boolean, default=False)
+    # Vai trò phân quyền sau này: student | mentor | admin (mặc định student)
+    role = Column(String(20), default="student")
     avatar_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -35,6 +37,7 @@ class User(Base):
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
     audio_presets = relationship("AudioPreset", back_populates="user", cascade="all, delete-orphan")
+    subscriptions = relationship("Subscription", back_populates="user", cascade="all, delete-orphan")
     # OtpCode join qua email (không phải FK) -> không khai relationship; bảng này
     # không có ràng buộc FK tới users nên không gây FK violation khi xóa user
 
@@ -249,3 +252,38 @@ class AudioPreset(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="audio_presets")
+
+
+class Subscription(Base):
+    """Gói Pro của sinh viên (demo checkout; cổng thanh toán thật nối sau).
+    status: active | cancelled | expired. Demo mode kích hoạt ngay khi checkout."""
+    __tablename__ = "subscriptions"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    plan = Column(String(20), default="pro")  # free | pro
+    cycle = Column(String(20), default="monthly")  # monthly | yearly
+    amount = Column(Integer, default=39000)  # VND
+    currency = Column(String(10), default="VND")
+    status = Column(String(20), default="active")
+    provider = Column(String(30), default="demo")  # demo | momo | card | bank
+    provider_ref = Column(String(255), nullable=True)
+    started_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)
+    cancelled_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="subscriptions")
+
+
+class AiUsage(Base):
+    """Đếm lượt dùng AI theo tháng để áp quota gói Free (tháng dạng YYYY-MM)."""
+    __tablename__ = "ai_usage"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    month = Column(String(7), nullable=False)  # YYYY-MM
+    decompose_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")

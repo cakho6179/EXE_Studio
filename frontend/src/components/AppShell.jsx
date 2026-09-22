@@ -51,6 +51,14 @@ export default function AppShell() {
     refetchInterval: 60 * 1000,
   });
 
+  const planQ = useQuery({
+    queryKey: ['billing-status'],
+    queryFn: () => api.get('/billing/status').catch(() => null),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isPro = planQ.data?.plan === 'pro';
+
   const notifications = useMemo(() => {
     return Array.isArray(notifQ.data?.notifications) ? notifQ.data.notifications : [];
   }, [notifQ.data]);
@@ -201,11 +209,24 @@ export default function AppShell() {
                       {initialsOf(user?.full_name)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-slate-900 truncate leading-tight">{user?.full_name || ''}</h4>
+                      <h4 className="text-xs font-bold text-slate-900 truncate leading-tight">
+                        {user?.full_name || ''}
+                        {isPro && <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold">PRO</span>}
+                      </h4>
                       <p className="text-[11px] text-slate-500 truncate">{user?.email || ''}</p>
                     </div>
                   </div>
                   <div className="space-y-1 py-1 text-xs">
+                    {!isPro && (
+                      <Link
+                        to="/checkout"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-amber-700 hover:bg-amber-50 transition font-bold"
+                      >
+                        <span>🌟</span>
+                        <span>Nâng cấp Pro — 39.000đ/tháng</span>
+                      </Link>
+                    )}
                     <Link
                       to="/profile"
                       onClick={() => setProfileOpen(false)}

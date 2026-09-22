@@ -293,7 +293,6 @@ export default function DeepWorkView() {
         ambient_sound_used: sound === 'silence' ? '' : (SOUND_LABEL[sound] || sound || ''),
         complete_next_subtask: completeNext,
       });
-      tasksQ.refetch();
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['timeline'] });
       qc.invalidateQueries({ queryKey: ['pulse'] });

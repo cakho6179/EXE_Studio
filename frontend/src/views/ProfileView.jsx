@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -137,6 +138,23 @@ export default function ProfileView() {
   const sessions = Array.isArray(sessionsQ.data) ? sessionsQ.data : [];
   const doneTasks = tasks.filter((t) => t.status === 'completed').length;
   const focusH = Math.round((sessions.reduce((a, s) => a + (s.actual_minutes || 0), 0) / 60) * 10) / 10;
+
+  const planQ = useQuery({
+    queryKey: ['billing-status'],
+    queryFn: () => api.get('/billing/status').catch(() => null),
+    staleTime: 60000,
+  });
+  const plan = planQ.data || {};
+  const isPro = plan.plan === 'pro';
+
+  const cancelPlan = useMutation({
+    mutationFn: () => api.post('/billing/cancel', {}),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['billing-status'] });
+      showToast(res.message || 'Đã hủy gói Pro.', 'success');
+    },
+    onError: (err) => showToast(err.message || 'Không hủy được.', 'error'),
+  });
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const inputCls = 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-normal bg-white';
@@ -302,6 +320,42 @@ export default function ProfileView() {
               </button>
             </div>
           </form>
+        )}
+      </section>
+
+      <section className="glass-card rounded-3xl p-6">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">Gói sử dụng {isPro && <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">PRO</span>}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {planQ.isLoading ? 'Đang tải gói…' : isPro
+                ? `Pro hiệu lực đến ${plan.expires_at ? new Date(plan.expires_at).toLocaleDateString('vi-VN') : 'không thời hạn'}.`
+                : 'Bạn đang dùng bản Miễn Phí — nâng cấp để mở full AI, âm thanh và LMS.'}
+            </p>
+          </div>
+          <span className="text-xl">🌟</span>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          {isPro ? (
+            <button
+              type="button"
+              onClick={() => { if (window.confirm('Hủy gói Pro? Quyền lợi giữ đến hết chu kỳ đã trả.')) cancelPlan.mutate(); }}
+              disabled={cancelPlan.isPending}
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-xs font-semibold transition"
+            >
+              {cancelPlan.isPending ? 'Đang hủy…' : 'Hủy gói Pro'}
+            </button>
+          ) : (
+            <Link
+              to="/checkout"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-brand-500/25 transition"
+            >
+              Nâng cấp Pro — 39.000đ/tháng
+            </Link>
+          )}
+        </div>
+        {user?.role && user.role !== 'student' && (
+          <p className="mt-3 text-[11px] text-slate-400">Vai trò hệ thống: <strong>{user.role}</strong></p>
         )}
       </section>
 

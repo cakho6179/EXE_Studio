@@ -234,11 +234,16 @@ def deduplicate_tasks(
 @router.post("/ai-decompose", response_model=AIDeconstructResponse)
 async def ai_decompose_task(
     payload: AIDeconstructRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
     AI Deconstructor v3.2: Analyzes an assignment and decomposes into micro-sprints.
+    Gói Free giới hạn 3 lượt/tháng (Pro không giới hạn).
     """
+    from app.api.v1.billing import consume_ai_quota
+
+    consume_ai_quota(db, current_user.id)
     result = await AIService.decompose_task(
         title=payload.title,
         description=payload.description,
