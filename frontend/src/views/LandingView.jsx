@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
+import PolicyModal from '../components/PolicyModal.jsx';
 
 const PILLARS = [
   {
@@ -43,6 +44,9 @@ export default function LandingView() {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [guestLoading, setGuestLoading] = useState(false);
+  const [policyTab, setPolicyTab] = useState(null);
+
+  const openPolicy = (tab) => setPolicyTab(tab);
 
   // HashRouter chiếm '#' cho route nên anchor href="#..." sẽ vỡ điều hướng.
   // Chặn click anchor nội trang và scroll tay thay thế.
@@ -590,26 +594,27 @@ export default function LandingView() {
             <div className="space-y-2.5">
               <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Chính sách &amp; Học thuật</h4>
               <ul className="space-y-2">
-                <li><a className="hover:text-brand-600 transition-colors" href="#tinh-nang">Bảo vệ dữ liệu học thuật</a></li>
-                <li><a className="hover:text-brand-600 transition-colors" href="#tinh-nang">Điều khoản dịch vụ</a></li>
-                <li><a className="hover:text-brand-600 transition-colors" href="#tinh-nang">Cam kết liêm chính học thuật</a></li>
-                <li><a className="hover:text-brand-600 transition-colors" href="#tinh-nang">Liên hệ hỗ trợ</a></li>
+                <li><button type="button" onClick={() => openPolicy('privacy')} className="hover:text-brand-600 transition-colors">Bảo vệ dữ liệu học thuật</button></li>
+                <li><button type="button" onClick={() => openPolicy('terms')} className="hover:text-brand-600 transition-colors">Điều khoản dịch vụ</button></li>
+                <li><button type="button" onClick={() => openPolicy('integrity')} className="hover:text-brand-600 transition-colors">Cam kết liêm chính học thuật</button></li>
+                <li><button type="button" onClick={() => openPolicy('contact')} className="hover:text-brand-600 transition-colors">Liên hệ hỗ trợ</button></li>
               </ul>
             </div>
           </div>
           <div className="pt-6 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between text-slate-400 gap-4 text-[11px]">
             <div>Thiết kế với cảm hứng hòa mình vào thiên nhiên và nhịp sống thanh bình ven biển.</div>
             <div className="flex space-x-4">
-              <a className="hover:underline" href="#tinh-nang">Bảo mật</a>
+              <button type="button" onClick={() => openPolicy('privacy')} className="hover:underline">Bảo mật</button>
               <span>•</span>
-              <a className="hover:underline" href="#tinh-nang">Quyền riêng tư</a>
+              <button type="button" onClick={() => openPolicy('privacy')} className="hover:underline">Quyền riêng tư</button>
               <span>•</span>
-              <a className="hover:underline" href="#tinh-nang">Cookies</a>
+              <button type="button" onClick={() => openPolicy('terms')} className="hover:underline">Cookies</button>
             </div>
           </div>
         </div>
       </footer>
       {/* END: MainFooter */}
+      <PolicyModal isOpen={!!policyTab} onClose={() => setPolicyTab(null)} initialTab={policyTab || 'privacy'} />
     </div>
   );
 }
