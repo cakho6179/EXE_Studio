@@ -35,18 +35,18 @@ class UserProfileOut(BaseModel):
         from_attributes = True
 
 class UserProfileUpdate(BaseModel):
-    full_name: Optional[str] = None
-    university: Optional[str] = None
-    major: Optional[str] = None
-    academic_year: Optional[int] = None
+    full_name: Optional[str] = Field(default=None, min_length=2, max_length=255)
+    university: Optional[str] = Field(default=None, max_length=255)
+    major: Optional[str] = Field(default=None, max_length=255)
+    academic_year: Optional[int] = Field(default=None, ge=1, le=7)
     chronotype: Optional[str] = None
     wake_up_time: Optional[str] = None
     bed_time: Optional[str] = None
     peak_start_time: Optional[str] = None
     peak_end_time: Optional[str] = None
-    target_daily_focus_hours: Optional[float] = None
-    target_gpa: Optional[float] = None
-    preferred_study_style: Optional[str] = None
+    target_daily_focus_hours: Optional[float] = Field(default=None, ge=0.5, le=16)
+    target_gpa: Optional[float] = Field(default=None, ge=0.0, le=4.0)
+    preferred_study_style: Optional[str] = Field(default=None, max_length=50)
 
 class UserOut(BaseModel):
     id: str

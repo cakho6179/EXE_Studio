@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
+import LogoutConfirmModal from '../components/auth/LogoutConfirmModal.jsx';
 import { api } from '../services/api.js';
 
 // FIX: thêm hummingbird (onboarding gửi giá trị này) + ánh xạ qua _ALIASES backend
@@ -17,6 +18,18 @@ export default function ProfileView() {
   const [form, setForm] = useState(null);
   const [pwdForm, setPwdForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
   const [changingPwd, setChangingPwd] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function confirmLogout() {
+    setLoggingOut(true);
+    try {
+      await logout();
+    } finally {
+      setLoggingOut(false);
+      setShowLogout(false);
+    }
+  }
 
   const profileQ = useQuery({
     queryKey: ['profile'],
@@ -47,18 +60,24 @@ export default function ProfileView() {
         const t = (v ?? '').toString().trim();
         return t ? t : undefined; // Rỗng -> không gửi (backend giữ giá trị cũ)
       };
+      const year = Number(form.academic_year);
+      const gpa = Number(form.target_gpa);
+      const hours = Number(form.target_daily_focus_hours);
+      if (form.academic_year !== '' && form.academic_year != null && !(year >= 1 && year <= 7)) throw new Error('Năm học phải từ 1 đến 7.');
+      if (form.target_gpa !== '' && form.target_gpa != null && !(gpa >= 0 && gpa <= 4)) throw new Error('GPA mục tiêu phải từ 0 đến 4.');
+      if (form.target_daily_focus_hours !== '' && form.target_daily_focus_hours != null && !(hours >= 0.5 && hours <= 16)) throw new Error('Giờ focus phải từ 0.5 đến 16.');
       return api.put('/auth/profile', {
         full_name: name,
         university: clean(form.university),
         major: clean(form.major),
-        academic_year: Number(form.academic_year) || null,
+        academic_year: Number.isFinite(year) && year ? Math.round(year) : null,
         chronotype: form.chronotype,
         wake_up_time: form.wake_up_time || null,
         bed_time: form.bed_time || null,
         peak_start_time: form.peak_start_time || null,
         peak_end_time: form.peak_end_time || null,
-        target_daily_focus_hours: Number(form.target_daily_focus_hours) || null,
-        target_gpa: Number(form.target_gpa) || null,
+        target_daily_focus_hours: Number.isFinite(hours) && hours ? hours : null,
+        target_gpa: Number.isFinite(gpa) && (gpa || gpa === 0) ? gpa : null,
         preferred_study_style: clean(form.preferred_study_style),
       });
     },
@@ -91,8 +110,8 @@ export default function ProfileView() {
       showToast('Vui lòng nhập mật khẩu hiện tại.', 'warning');
       return;
     }
-    if (!pwdForm.new_password || pwdForm.new_password.length < 6) {
-      showToast('Mật khẩu mới phải có ít nhất 6 ký tự.', 'warning');
+    if (!pwdForm.new_password || pwdForm.new_password.length < 8) {
+      showToast('Mật khẩu mới phải có ít nhất 8 ký tự.', 'warning');
       return;
     }
     if (pwdForm.new_password !== pwdForm.confirm_password) {
@@ -137,17 +156,17 @@ export default function ProfileView() {
             {CHRONO_LABEL[form?.chronotype] || form?.chronotype || 'Chưa xác định chronotype'}
           </p>
         </div>
-        <div className="flex gap-6 text-center">
+        <div className="flex gap-6 text-center" title={tasksQ.isError || sessionsQ.isError ? 'Không tải được thống kê — kiểm tra mạng' : undefined}>
           <div>
-            <p className="text-xl font-bold text-slate-900">{tasksQ.isLoading ? '…' : doneTasks}</p>
+            <p className="text-xl font-bold text-slate-900">{tasksQ.isLoading ? '…' : tasksQ.isError ? '—' : doneTasks}</p>
             <p className="text-[11px] text-slate-500">task xong</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : `${focusH}h`}</p>
+            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : sessionsQ.isError ? '—' : `${focusH}h`}</p>
             <p className="text-[11px] text-slate-500">focus 30 ngày</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : sessions.length}</p>
+            <p className="text-xl font-bold text-slate-900">{sessionsQ.isLoading ? '…' : sessionsQ.isError ? '—' : sessions.length}</p>
             <p className="text-[11px] text-slate-500">phiên sâu</p>
           </div>
         </div>
@@ -205,25 +224,26 @@ export default function ProfileView() {
               Chronotype
               <select value={form.chronotype || ''} onChange={(e) => set('chronotype', e.target.value)} className={inputCls}>
                 <option value="lark">🌅 Chim Sớm</option>
-                <option value="hummingbird">🐦 Chim Ruồi</option>
+                <option value="intermediate">⚖️ Cân bằng</option>
+                <option value="hummingbird">🐦 Chim Ruồi (linh hoạt)</option>
                 <option value="owl">🌙 Cú Đêm</option>
               </select>
             </label>
             <label>
               Giờ dậy
-              <input type="time" value={form.wake_up_time || ''} onChange={(e) => set('wake_up_time', e.target.value)} className={inputCls} />
+              <input type="time" value={(form.wake_up_time || '').slice(0, 5)} onChange={(e) => set('wake_up_time', e.target.value)} className={inputCls} />
             </label>
             <label>
               Giờ ngủ
-              <input type="time" value={form.bed_time || ''} onChange={(e) => set('bed_time', e.target.value)} className={inputCls} />
+              <input type="time" value={(form.bed_time || '').slice(0, 5)} onChange={(e) => set('bed_time', e.target.value)} className={inputCls} />
             </label>
             <label>
               Đỉnh năng lượng từ
-              <input type="time" value={form.peak_start_time || ''} onChange={(e) => set('peak_start_time', e.target.value)} className={inputCls} />
+              <input type="time" value={(form.peak_start_time || '').slice(0, 5)} onChange={(e) => set('peak_start_time', e.target.value)} className={inputCls} />
             </label>
             <label>
               Đỉnh năng lượng đến
-              <input type="time" value={form.peak_end_time || ''} onChange={(e) => set('peak_end_time', e.target.value)} className={inputCls} />
+              <input type="time" value={(form.peak_end_time || '').slice(0, 5)} onChange={(e) => set('peak_end_time', e.target.value)} className={inputCls} />
             </label>
             <label>
               Mục tiêu focus (giờ/ngày)
@@ -275,9 +295,7 @@ export default function ProfileView() {
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (window.confirm('Đăng xuất khỏi Stuđiô AI?')) logout();
-                }}
+                onClick={() => setShowLogout(true)}
                 className="ml-auto px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold border border-rose-100 transition"
               >
                 Đăng xuất
@@ -306,8 +324,8 @@ export default function ProfileView() {
               className={inputCls}
             />
           </label>
-          <label>
-            Mật khẩu mới (≥ 6 ký tự) <span className="text-rose-500">*</span>
+            <label>
+              Mật khẩu mới (≥ 8 ký tự) <span className="text-rose-500">*</span>
             <input
               type="password"
               value={pwdForm.new_password}
@@ -337,6 +355,14 @@ export default function ProfileView() {
           </div>
         </form>
       </section>
+
+      <LogoutConfirmModal
+        isOpen={showLogout}
+        onClose={() => { if (!loggingOut) setShowLogout(false); }}
+        onConfirm={confirmLogout}
+        loading={loggingOut}
+        userEmail={user?.email || form?.email || ''}
+      />
     </div>
   );
 }

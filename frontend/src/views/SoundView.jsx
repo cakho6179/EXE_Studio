@@ -5,6 +5,7 @@ import { api } from '../services/api.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { useAudio } from '../contexts/AudioContext.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { usePulse } from '../hooks/useApi.js';
 
 // 15 track pixel-faithful theo 18-sound-sanctuary.
 // Engine Web Audio chỉ synth được ocean/rain/binaural; các track còn lại
@@ -52,6 +53,8 @@ export default function SoundView() {
   const { showToast } = useToast();
   const { user } = useAuth();
   const { isPlaying, track, volume, setVolume, togglePlay, switchTrack, nextTrack, setSleepTimer, engine, ready } = useAudio();
+  const pulseQ = usePulse();
+  const pulse = pulseQ.data;
   const [cat, setCat] = useState('all');
   const [query, setQuery] = useState('');
   const [favs, setFavs] = useState(() => getFavs(user));
@@ -324,7 +327,12 @@ export default function SoundView() {
               {!ready && <p className="mt-2 text-[11px] text-amber-300">Trình duyệt chưa cho phép audio — bấm Phát một lần để kích hoạt.</p>}
               <div className="mt-4 p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-400/20 flex items-start gap-2 text-xs text-cyan-100">
                 <span className="text-base">🍅</span>
-                <div><span className="font-semibold text-white">Khung giờ vàng 14:30 - 16:30:</span> Sóng não Alpha đạt đỉnh 94%. Đang phát phối âm tối ưu cho giải quyết bài toán phức tạp và đồ án chuyên ngành.</div>
+                {/* FIX: câu claim cứng "Alpha đạt đỉnh 94%" + khung giờ cứng 14:30-16:30 thay bằng
+                    pulse thật theo tuýp sinh học của user (backend /circadian/pulse) */}
+                <div>
+                  <span className="font-semibold text-white">{pulse?.golden_hour_range || 'Khung giờ vàng'}:</span>{' '}
+                  {pulse?.recommendation || 'Đang phát phối âm tối ưu cho học tập sâu và đồ án chuyên ngành.'}
+                </div>
               </div>
             </div>
           </div>

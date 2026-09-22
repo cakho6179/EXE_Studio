@@ -75,7 +75,7 @@ export default function VerifyView() {
       const remaining = COOLDOWN - elapsed;
       setCooldown(remaining > 0 ? remaining : 0);
     } else {
-      setCooldown(COOLDOWN);
+      setCooldown(0);
     }
   }, [searchParams]);
 
@@ -99,15 +99,17 @@ export default function VerifyView() {
     if (cooldown > 0 || !email) return;
     setError('');
     try {
-      let isRecovery = false;
-      try {
-        isRecovery = !!localStorage.getItem('studi_recovery_email');
-      } catch {
-        /* bỏ qua */
+      // Ưu tiên ?mode=recovery từ Forgot (tránh cờ localStorage tồn đọng từ lần quên cũ)
+      let isRecovery = searchParams.get('mode') === 'recovery';
+      if (!searchParams.get('mode')) {
+        try {
+          isRecovery = !!localStorage.getItem('studi_recovery_email');
+        } catch {
+          /* bỏ qua */
+        }
       }
 
-      const endpoint = isRecovery ? '/auth/forgot' : '/auth/forgot';
-      const res = await api.post(endpoint, { email });
+      const res = await api.post('/auth/forgot', { email });
 
       try {
         localStorage.setItem('studi_otp_sent_at', String(Date.now()));
@@ -149,11 +151,13 @@ export default function VerifyView() {
     try {
       const res = await api.post('/auth/verify-otp', { email, code: verifyCode });
 
-      let isRecovery = false;
-      try {
-        isRecovery = !!localStorage.getItem('studi_recovery_email');
-      } catch {
-        /* bỏ qua */
+      let isRecovery = searchParams.get('mode') === 'recovery';
+      if (!searchParams.get('mode')) {
+        try {
+          isRecovery = !!localStorage.getItem('studi_recovery_email');
+        } catch {
+          /* bỏ qua */
+        }
       }
 
       if (isRecovery) {
@@ -289,12 +293,21 @@ export default function VerifyView() {
             )}
 
             {/* TODO(FIX-LATER): Banner mã demo — xóa khi nối SMTP thật, giữ ô nhập bên dưới */}
-            <div className="mt-4 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center gap-2 text-xs">
-              <span className="text-base">🔑</span>
-              <div>
-                <span className="text-amber-800 font-medium">Demo tạm thời (chưa nối email thật): nhập </span>
-                <span className="font-mono font-bold text-amber-900 tracking-wider text-sm">123456</span>
+            <div className="mt-4 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🔑</span>
+                <div>
+                  <span className="text-amber-800 font-medium">Demo tạm thời (chưa nối email thật): nhập </span>
+                  <span className="font-mono font-bold text-amber-900 tracking-wider text-sm">123456</span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => { setCode('123456'); setError(''); }}
+                className="shrink-0 px-2.5 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-200 text-amber-900 font-semibold text-[11px] transition-colors"
+              >
+                Điền mã
+              </button>
             </div>
 
             {/* OTP 6 Digits Segmented Input */}

@@ -42,7 +42,8 @@ export default function AnalyticsView() {
   });
   const sessions = Array.isArray(sessionsQ.data) ? sessionsQ.data : [];
 
-  // AI insights + correlations — backend chưa có 2 route này nên fallback phân tích local
+  // AI insights + correlations — backend CÓ 2 route /analytics/ai-insights + /analytics/correlations
+  // (trước đây comment ghi nhầm "chưa có route" khiến người đọc tưởng là dữ liệu fake)
   const insightsQ = useQuery({
     queryKey: ['analytics-insights', days],
     queryFn: () => api.get(`/analytics/ai-insights?days=${days}`),
@@ -63,6 +64,11 @@ export default function AnalyticsView() {
   const labels = Array.isArray(d.week_days) ? d.week_days : ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
   const totalHours = d.total_week_hours ?? Math.round((sessions.reduce((a, s) => a + (s.actual_minutes || 0), 0) / 60) * 10) / 10;
   const avgFocus = sessions.length ? Math.round(sessions.reduce((a, s) => a + (s.focus_score || 0), 0) / sessions.length) : null;
+  // FIX: thống kê thật thay số cứng "TB 48p/hiệp • 0 xao nhãng" trong card Deep Work
+  const avgSessionMin = sessions.length ? Math.round(sessions.reduce((a, s) => a + (s.actual_minutes || 0), 0) / sessions.length) : null;
+  const avgDistr = sessions.length ? Math.round((sessions.reduce((a, s) => a + (s.distractions_count || 0), 0) / sessions.length) * 10) / 10 : null;
+  // FIX: đỉnh cao sinh học theo tuýp CỦA user (owl ≠ lark) thay vì cứng 14:30 - 16:30
+  const firstGolden = String(pulse?.golden_hour_range || '').split(' & ')[0] || '';
 
   const peakIdx = useMemo(() => {
     if (!hours) return 2;
@@ -122,9 +128,10 @@ export default function AnalyticsView() {
   const serverInsights = Array.isArray(insightsQ.data?.insights) ? insightsQ.data.insights : (Array.isArray(insightsQ.data) ? insightsQ.data : []);
   const localInsights = useMemo(() => {
     const out = [];
-    if (totalHours >= 30) out.push(`Duy trì xuất sắc: ${totalHours}h Deep Work trong ${RANGE_LABEL[range].toLowerCase()} — vượt 75% sinh viên cùng nhịp sinh học.`);
+    // FIX: bỏ claim bịa "vượt 75% sinh viên" — không có dữ liệu so sánh nào
+    if (totalHours >= 30) out.push(`Duy trì xuất sắc: ${totalHours}h Deep Work trong ${RANGE_LABEL[range].toLowerCase()}.`);
     else if (totalHours > 0) out.push(`Bạn đã tích lũy ${totalHours}h Deep Work. Tăng thêm 20% nữa để chạm ngưỡng Deep Flow bền vững.`);
-    if ((d.current_streak_days || 0) >= 7) out.push(`Chuỗi streak ${d.current_streak_days} ngày cho thấy kỷ luật circadian rất ổn định — hãy bảo vệ khung giờ vàng 14:30 - 16:30.`);
+    if ((d.current_streak_days || 0) >= 7) out.push(`Chuỗi streak ${d.current_streak_days} ngày cho thấy kỷ luật circadian rất ổn định — hãy bảo vệ khung giờ vàng của bạn.`);
     if ((d.circadian_alignment_score || 0) < 60 && (d.total_sessions || 0) > 0) out.push('Điểm đồng bộ sinh học còn thấp: thử dời 1 phiên/ngày vào khung 8:00 - 11:00 hoặc 14:00 - 16:00.');
     if ((d.burnout_risk || '').includes('Trung bình')) out.push('Dấu hiệu tải nhận thức tăng: xen kẽ nghỉ 10 phút sau mỗi 50 phút + bài thở 4-7-8 ở Sound Sanctuary.');
     return out.slice(0, 4);
@@ -366,7 +373,7 @@ export default function AnalyticsView() {
                   <span>Hoàn thành task: <strong>{completionRate}%</strong></span>
                 </div>
                 <div className="flex justify-between items-center text-slate-500 text-[11px]">
-                  <span className="text-cyan-800 font-medium">TB 48p/hiệp • 0 xao nhãng</span>
+                  <span className="text-cyan-800 font-medium">{avgSessionMin != null ? `TB ${avgSessionMin}p/hiệp • ${avgDistr} xao nhãng` : 'Chưa có phiên nào'}</span>
                   <span className="font-semibold text-brand-700">{d.zen_efficiency_index != null ? `Zen ${d.zen_efficiency_index}` : 'Kỷ lục mới'}</span>
                 </div>
               </div>
@@ -388,7 +395,7 @@ export default function AnalyticsView() {
                   <div className="bg-cyan-700 h-full rounded-full transition-all duration-700" style={{ width: `${d.circadian_alignment_score || 0}%` }} />
                 </div>
                 <div className="flex justify-between items-center text-slate-500 text-[11px]">
-                  <span>Đỉnh cao: <strong>14:30 - 16:30</strong></span>
+                  <span>Đỉnh cao: <strong>{firstGolden || '—'}</strong></span>
                   <span className="text-slate-500">Burnout: {d.burnout_risk || '—'}</span>
                 </div>
               </div>
@@ -514,7 +521,13 @@ export default function AnalyticsView() {
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
                 <p className="text-sm text-slate-900">
-                  <strong>Phát hiện từ Stuđiô AI:</strong> Khả năng duy trì Deep Flow liên tục của bạn <strong>tăng 34%</strong> khi kết hợp nghe tần số 432Hz vào đầu giờ chiều (14:00 - 16:00).
+                  {/* FIX: banner dùng số cứng "tăng 34%" không có trong bất kỳ dữ liệu nào.
+                      Giờ lấy insight thật: ưu tiên tương quan đầu tiên từ /analytics/correlations,
+                      fallback insight AI đầu tiên (từ dữ liệu phiên/task/mood thật). */}
+                  <strong>Phát hiện từ Stuđiô AI:</strong>{' '}
+                  {corrQ.data?.correlations?.[0]
+                    ? <>{corrQ.data.correlations[0].factor} — <strong>{corrQ.data.correlations[0].impact}</strong>. {corrQ.data.correlations[0].description}</>
+                    : (insights[0] || 'Hoàn thành thêm phiên Deep Work để AI tìm ra quy luật riêng của bạn.')}
                 </p>
                 <button type="button" onClick={autoSchedule} className="shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white text-brand-700 hover:bg-brand-100 transition-colors text-[11px] shadow-sm">
                   <span>Lên lịch tự động</span><span className="material-symbols-outlined text-xs">arrow_forward</span>
@@ -554,9 +567,21 @@ export default function AnalyticsView() {
                 {corrQ.data && (
                   <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-800">📊 Tương quan Thời gian &amp; Phân bổ ({days} ngày)</span>
+                      <span className="font-bold text-slate-800">🔗 Tương quan thật từ dữ liệu của bạn ({days} ngày)</span>
                       <span className="text-[10px] text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-semibold border border-brand-200/60">Tự động đối soát</span>
                     </div>
+                    {corrQ.data?.correlations?.map((c, i) => (
+                      <div key={i} className="p-2.5 rounded-lg bg-white border border-indigo-100/80">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-slate-800">{c.factor}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
+                            c.confidence === 'high' ? 'bg-emerald-100 text-emerald-700' : c.confidence === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+                          }`}>{c.confidence === 'high' ? 'Độ tin cậy cao' : c.confidence === 'medium' ? 'Tin cậy vừa' : 'Cần thêm dữ liệu'}</span>
+                        </div>
+                        <p className="text-slate-700 mt-1"><strong>{c.impact}</strong></p>
+                        <p className="text-slate-500 mt-0.5">{c.description}</p>
+                      </div>
+                    ))}
                     {corrQ.data.hour_distribution && Object.keys(corrQ.data.hour_distribution).length > 0 && (
                       <div>
                         <p className="text-[11px] text-slate-500 mb-1 font-medium">Khung giờ tập trung cao điểm nhất:</p>

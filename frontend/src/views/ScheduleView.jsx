@@ -338,7 +338,7 @@ export default function ScheduleView() {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-cyan-700 font-medium">
             <span>📈</span>
-            <span>{pulse ? `Năng lượng hiện tại ${pulse.pulse_percent}%` : '+38% khả năng tiếp thu logic'}</span>
+            <span>{pulse ? `Năng lượng hiện tại ${pulse.pulse_percent}%` : 'Đang tải nhịp sinh học…'}</span>
           </div>
         </div>
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden hover:shadow-md transition flex flex-col justify-between gap-3">

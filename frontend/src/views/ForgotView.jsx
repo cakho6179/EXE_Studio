@@ -42,7 +42,7 @@ export default function ForgotView() {
         showToast(`Mã OTP demo của bạn: ${res.dev_code}`, 'info', 8000);
       }
 
-      navigate(`/verify?email=${encodeURIComponent(trimmedEmail)}`);
+      navigate(`/verify?email=${encodeURIComponent(trimmedEmail)}&mode=recovery`);
     } catch (err) {
       const msg = err?.message || 'Không gửi được mã xác nhận. Vui lòng kiểm tra lại email.';
       setError(msg);

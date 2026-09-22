@@ -805,7 +805,9 @@ ${docs.length > 0 ? docs.map((d) => `- [[${d.filename}]] (${d.size_kb} KB)`).joi
             <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">⏳</div>
             <div>
               <span className="text-slate-500">Phiên học tiếp theo:</span>
-              <span className="font-bold text-slate-800 ml-1">{topTask ? topTask.title : 'Báo cáo đồ án AI (Viết nhận xét Confusion Matrix)'}</span>
+              {/* FIX: fallback title bịa cứng "Báo cáo đồ án AI (Confusion Matrix)" thay bằng
+                  trạng thái trung thực khi user chưa có nhiệm vụ mở */}
+              <span className="font-bold text-slate-800 ml-1">{topTask ? topTask.title : 'Chưa có nhiệm vụ ưu tiên — tạo task trong mục Nhiệm vụ'}</span>
               <span className="ml-1.5 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded">25 phút</span>
             </div>
           </div>

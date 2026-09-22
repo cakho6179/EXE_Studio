@@ -363,9 +363,12 @@ export default function DeepWorkView() {
       // Ngày + giờ LOCAL hiện tại (làm tròn 5 phút) — không hardcode 14:00 quá khứ
       const now = new Date();
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      const startMin = Math.ceil((now.getHours() * 60 + now.getMinutes()) / 5) * 5;
       const dur = isFree ? Math.max(25, actualMinGuess()) : (duration || 50);
-      // Kẹp trong cùng ngày (backend từ chối end <= start)
+      // FIX: bấm "Gán lịch" lúc 23:56+ -> làm tròn 5p ra start=1440 ("24:00") trong khi end
+      // bị kẹp 23:55 -> tạo sự kiện 00:00-23:55 dài gần 24 tiếng. Kẹp start để cả start+dur
+      // luôn nằm trong cùng ngày (backend từ chối end <= start và giờ vắt qua nửa đêm).
+      const maxStartMin = Math.max(0, 24 * 60 - 5 - dur);
+      const startMin = Math.min(Math.ceil((now.getHours() * 60 + now.getMinutes()) / 5) * 5, maxStartMin);
       const endTotalMin = Math.min(startMin + dur, 24 * 60 - 5);
       const startTimeStr = `${String(Math.floor(startMin / 60) % 24).padStart(2, '0')}:${String(startMin % 60).padStart(2, '0')}`;
       const endTimeStr = `${String(Math.floor(endTotalMin / 60) % 24).padStart(2, '0')}:${String(endTotalMin % 60).padStart(2, '0')}`;

@@ -1,6 +1,24 @@
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
+
+
+def _sqlite_pragmas(dbapi_conn, _record):
+    """PRAGMA cho mọi kết nối SQLite (dùng trực tiếp hoặc fallback):
+    - foreign_keys=ON: SQLite mặc định TẮT ràng buộc FK -> cascade/FK trong entities
+      không có hiệu lực lớp DB (khác hoàn toàn Postgres mà code viết cho nó).
+    - journal_mode=WAL + synchronous=NORMAL: ghi không chặn đọc, tránh
+      "database is locked" khi nhiều request ghi đồng thời.
+    - busy_timeout=30000: chờ tới 30s thay vì báo lỗi locked ngay.
+    """
+    cur = dbapi_conn.cursor()
+    try:
+        cur.execute("PRAGMA foreign_keys=ON")
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA synchronous=NORMAL")
+        cur.execute("PRAGMA busy_timeout=30000")
+    finally:
+        cur.close()
 
 # Engine setup
 def _resolve_db_url(raw: str) -> str:
@@ -60,10 +78,11 @@ def _sqlite_fallback_engine():
     )
     engine = create_engine(
         "sqlite:///./studi_ai.db",
-        connect_args={"check_same_thread": False},
+        connect_args={"check_same_thread": False, "timeout": 30},
         pool_pre_ping=False,
         echo=False,
     )
+    event.listen(engine, "connect", _sqlite_pragmas)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return engine
 
@@ -82,13 +101,14 @@ try:
     if _is_sqlite:
         engine = create_engine(
             _db_url,
-            connect_args={"check_same_thread": False},
+            connect_args={"check_same_thread": False, "timeout": 30},
             pool_size=1,
             max_overflow=0,
             pool_pre_ping=False,
             pool_recycle=240,
             echo=False,
         )
+        event.listen(engine, "connect", _sqlite_pragmas)
     else:
         # Kiểm tra TCP trước khi dựng engine: Supabase pause/bị chặn -> fallback
         # thay vì để create_all crash khi import app (server không thể khởi động).

@@ -11,7 +11,8 @@ def test_full_wizard_answers(client, auth_headers):
     assert r.status_code == 200, r.text
     assert r.json()["chronotype"] == "owl"
     p = client.get("/api/v1/auth/profile", headers=auth_headers).json()
-    assert p["target_daily_focus_hours"] == 4.5
+    # Slider tay (target_hours) thang focus_hours mac dinh theo goal
+    assert p["target_daily_focus_hours"] == 5.0
     assert p["preferred_study_style"] == "deep_work"
     assert p["peak_start_time"] == "20:00" and p["peak_end_time"] == "22:30"
 

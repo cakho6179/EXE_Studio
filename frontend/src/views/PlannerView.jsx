@@ -311,7 +311,7 @@ export default function PlannerView() {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-cyan-700 font-medium">
             <span>📈</span>
-            <span>{pulse ? `Năng lượng hiện tại ${pulse.pulse_percent}%${pulse.is_golden_hour ? ' • Đang giờ vàng' : ''}` : '+35% hiệu suất tư duy logic'}</span>
+            <span>{pulse ? `Năng lượng hiện tại ${pulse.pulse_percent}%${pulse.is_golden_hour ? ' • Đang giờ vàng' : ''}` : 'Đang tải nhịp sinh học…'}</span>
           </div>
         </div>
         <div className="glass-card rounded-2xl p-5 relative overflow-hidden hover:shadow-md transition flex flex-col justify-between gap-3">

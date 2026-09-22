@@ -101,8 +101,8 @@ def complete_onboarding(
         profile.target_daily_focus_hours = FOCUS_HOURS_MAP[focus_raw]
         profile.preferred_study_style = STYLE_MAP[focus_raw]
     else:
-        # Wizard React gửi số giờ trực tiếp (focus_hours/target_hours/daily_goal "4.5h")
-        hours = _pick_num(answers, "focus_hours", "target_hours", "daily_goal", "target_daily_focus_hours")
+        # Ưu tiên target_hours (slider người dùng kéo tay) trước focus_hours (mặc định theo goal)
+        hours = _pick_num(answers, "target_hours", "focus_hours", "daily_goal", "target_daily_focus_hours")
         if hours:
             profile.target_daily_focus_hours = min(16.0, max(0.5, hours))
 
