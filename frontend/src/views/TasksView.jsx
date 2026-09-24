@@ -52,8 +52,60 @@ function getMinDateTimeLocal() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-function getRecommendedSlot() {
+function getRecommendedSlot(pulse) {
   const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (pulse?.golden_hour_range) {
+    const rawRanges = pulse.golden_hour_range.split(' & ').map((r) => r.trim()).filter(Boolean);
+    const parsedRanges = rawRanges.map((r) => {
+      const [start, end] = r.split(' - ').map((s) => s.trim());
+      const [sh, sm] = (start || '09:00').split(':').map(Number);
+      const [eh, em] = (end || '11:00').split(':').map(Number);
+      return {
+        start: start || '09:00',
+        end: end || '11:00',
+        startMin: (sh || 0) * 60 + (sm || 0),
+        endMin: (eh || 0) * 60 + (em || 0),
+      };
+    });
+
+    // 1. Tìm khung giờ vàng hôm nay còn kịp (kết thúc sau hiện tại ít nhất 15p)
+    for (const range of parsedRanges) {
+      if (range.endMin > nowMin + 15) {
+        const isCurrent = nowMin >= range.startMin && nowMin < range.endMin;
+        const targetTime = isCurrent
+          ? `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+          : range.start;
+        const sh = Number(targetTime.split(':')[0]);
+        const sessionLabel = isCurrent
+          ? 'ngay lúc này'
+          : sh < 12
+          ? 'sáng nay'
+          : sh < 18
+          ? 'chiều nay'
+          : 'tối nay';
+        return {
+          label: `${sessionLabel} (${targetTime})`,
+          time: targetTime,
+          dayOffset: 0,
+        };
+      }
+    }
+
+    // 2. Nếu tất cả khung giờ vàng hôm nay đã qua -> đề xuất khung đầu tiên ngày mai
+    if (parsedRanges.length > 0) {
+      const first = parsedRanges[0];
+      const sh = Number(first.start.split(':')[0]);
+      const sessionLabel = sh < 12 ? 'sáng mai' : sh < 18 ? 'chiều mai' : 'tối mai';
+      return {
+        label: `${sessionLabel} (${first.start})`,
+        time: first.start,
+        dayOffset: 1,
+      };
+    }
+  }
+
   const h = now.getHours();
   if (h < 11) {
     return { label: 'sáng nay (09:00)', time: '09:00', dayOffset: 0 };
@@ -109,8 +161,7 @@ export default function TasksView() {
   const [mPriority, setMPriority] = useState('high');
   const [mComplexity, setMComplexity] = useState('simple');
   const [mAiOn, setMAiOn] = useState(false);
-  const [mAutoScheduleStep1, setMAutoScheduleStep1] = useState(false);
-  const [mSyncCalendar, setMSyncCalendar] = useState(true);
+  const [mAutoScheduleStep1, setMAutoScheduleStep1] = useState(true);
   const [mSaving, setMSaving] = useState(false);
   const [mErr, setMErr] = useState('');
   const [mAiPreview, setMAiPreview] = useState(null);
@@ -412,31 +463,32 @@ export default function TasksView() {
         })),
       });
 
-      // Tự động phân bổ micro-sprints vào 4 ngày tới trong lịch (F27)
-      // FIX: đặt vào khung giờ vàng ĐẦU TIÊN theo tuýp sinh học của user (backend trả
-      // golden_hour_range dạng "08:30 - 11:30 & ...") — trước đây gán cứng 14:30 cho mọi người,
-      // user cú đêm bị sắp học 14:30 ngoài khung 20:30-23:30 của họ
+      // Tự động phân bổ micro-sprints vào khung giờ vàng thật theo tuýp sinh học của user (F27)
       if (created?.id && Array.isArray(aiResult.subtasks) && aiResult.subtasks.length > 0) {
-        const firstRange = String(pulse?.golden_hour_range || '').split(' & ')[0] || '';
-        const [gs, ge] = firstRange.split(' - ');
-        const startT = /^\d{2}:\d{2}$/.test(gs || '') ? gs : '14:00';
-        const endT = /^\d{2}:\d{2}$/.test(ge || '') ? ge : '15:30';
+        const slot = getRecommendedSlot(pulse);
         for (let i = 0; i < Math.min(aiResult.subtasks.length, 4); i++) {
           const d = new Date();
-          d.setDate(d.getDate() + i);
+          d.setDate(d.getDate() + slot.dayOffset + i);
           const dateStr = d.toLocaleDateString('en-CA');
+          const dur = aiResult.subtasks[i].estimated_minutes || 25;
+          const [sh, sm] = slot.time.split(':').map(Number);
+          const endMinTotal = sh * 60 + sm + dur;
+          const eh = Math.floor(endMinTotal / 60) % 24;
+          const em = endMinTotal % 60;
+          const endStr = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
           await api.post('/schedule/events', {
             task_id: created.id,
             title: `Bước ${i + 1}: ${aiResult.subtasks[i].title}`,
             description: `Micro-sprint ${i + 1} của ${aiResult.task_title || aiText.trim()}`,
             event_date: dateStr,
-            start_time: startT,
-            end_time: endT,
+            start_time: slot.time,
+            end_time: endStr,
             event_type: 'deep_work',
             is_circadian_optimized: true,
           }).catch(() => null);
         }
         qc.invalidateQueries({ queryKey: ['timeline'] });
+        qc.invalidateQueries({ queryKey: ['notifications'] });
       }
 
       showToast(`Đã lưu nhiệm vụ với ${(aiResult.subtasks || []).length} micro-sprints và gán lịch trình!`, 'success');
@@ -546,8 +598,7 @@ export default function TasksView() {
     setMPriority('high');
     setMComplexity('simple');
     setMAiOn(false);
-    setMAutoScheduleStep1(false);
-    setMSyncCalendar(true);
+    setMAutoScheduleStep1(true);
     setMAiPreview(null);
     setMFiles([]);
     setMErr('');
@@ -723,24 +774,45 @@ export default function TasksView() {
           subtasks,
         });
 
-        // Tự động phân bổ micro-sprints vào khung giờ vàng thật
-        if (createdTask?.id && subtasks.length > 0 && mAutoScheduleStep1) {
-          const slot = getRecommendedSlot();
-          const stepsToSchedule = (mComplexity === 'complex' || mComplexity === 'medium') ? Math.min(subtasks.length, 3) : 1;
-          for (let i = 0; i < stepsToSchedule; i++) {
+        // Tự động phân bổ micro-sprints hoặc buổi học sâu vào khung giờ vàng sinh học thật (F27)
+        if (createdTask?.id && mAutoScheduleStep1) {
+          const slot = getRecommendedSlot(pulse);
+          if (subtasks.length > 0) {
+            const stepsToSchedule = Math.min(subtasks.length, 4);
+            for (let i = 0; i < stepsToSchedule; i++) {
+              const d = new Date();
+              d.setDate(d.getDate() + slot.dayOffset + i);
+              const dateStr = d.toLocaleDateString('en-CA');
+              const dur = subtasks[i].estimated_minutes || 25;
+              const [sh, sm] = slot.time.split(':').map(Number);
+              const endMinTotal = sh * 60 + sm + dur;
+              const eh = Math.floor(endMinTotal / 60) % 24;
+              const em = endMinTotal % 60;
+              const endStr = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+              await api.post('/schedule/events', {
+                task_id: createdTask.id,
+                title: `Bước ${i + 1}: ${subtasks[i].title}`,
+                description: `Micro-sprint ${i + 1} của đồ án ${title}`,
+                event_date: dateStr,
+                start_time: slot.time,
+                end_time: endStr,
+                event_type: 'deep_work',
+                is_circadian_optimized: true,
+              }).catch(() => null);
+            }
+          } else {
             const d = new Date();
-            d.setDate(d.getDate() + slot.dayOffset + i);
+            d.setDate(d.getDate() + slot.dayOffset);
             const dateStr = d.toLocaleDateString('en-CA');
-            const dur = subtasks[i].estimated_minutes || 25;
             const [sh, sm] = slot.time.split(':').map(Number);
-            const endMinTotal = sh * 60 + sm + dur;
+            const endMinTotal = sh * 60 + sm + 60;
             const eh = Math.floor(endMinTotal / 60) % 24;
             const em = endMinTotal % 60;
             const endStr = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
             await api.post('/schedule/events', {
               task_id: createdTask.id,
-              title: `Bước ${i + 1}: ${subtasks[i].title}`,
-              description: `Micro-sprint ${i + 1} của đồ án ${title}`,
+              title: title,
+              description: `Khung học sâu cho nhiệm vụ ${title}`,
               event_date: dateStr,
               start_time: slot.time,
               end_time: endStr,
@@ -750,10 +822,6 @@ export default function TasksView() {
           }
           qc.invalidateQueries({ queryKey: ['timeline'] });
           qc.invalidateQueries({ queryKey: ['notifications'] });
-        }
-
-        if (mSyncCalendar) {
-          api.post('/schedule/lms-sync', { provider: 'canvas' }).catch(() => null);
         }
 
         showToast(
@@ -1705,7 +1773,15 @@ export default function TasksView() {
                       </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer" title="Bật AI phân rã, tắt để tạo nhiệm vụ đơn">
-                      <input type="checkbox" checked={mAiOn} onChange={(e) => setMAiOn(e.target.checked)} className="sr-only peer" />
+                      <input
+                        type="checkbox"
+                        checked={mAiOn}
+                        onChange={(e) => {
+                          setMAiOn(e.target.checked);
+                          if (e.target.checked) setMAutoScheduleStep1(true);
+                        }}
+                        className="sr-only peer"
+                      />
                       <div className="w-11 h-6 bg-slate-200 rounded-full peer-checked:bg-blue-600 relative transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
                     </label>
                   </div>
@@ -1785,8 +1861,8 @@ export default function TasksView() {
                       )}
                     </div>
                   )}
-                  {/* Smart Automation Checkboxes (F07) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-3 border-t border-blue-100">
+                  {/* Smart Automation (F07) */}
+                  <div className="mt-4 pt-3 border-t border-blue-100">
                     <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
                       <input
                         type="checkbox"
@@ -1794,16 +1870,7 @@ export default function TasksView() {
                         onChange={(e) => setMAutoScheduleStep1(e.target.checked)}
                         className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
                       />
-                      <span>Tự động xếp <strong>Bước 1</strong> vào <strong>Khung giờ vàng {getRecommendedSlot().label}</strong></span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={mSyncCalendar}
-                        onChange={(e) => setMSyncCalendar(e.target.checked)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
-                      />
-                      <span>Đồng bộ ngay sang <strong>Canvas LMS &amp; Lịch Google</strong></span>
+                      <span>✨ AI tự động phân bổ lịch vào <strong>Khung giờ vàng ({getRecommendedSlot(pulse).label})</strong></span>
                     </label>
                   </div>
                 </div>
