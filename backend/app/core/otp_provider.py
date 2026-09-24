@@ -62,7 +62,7 @@ OTP_HTML_TEMPLATE = """
     <!-- Footer -->
     <div style="background-color: #f8fafc; padding: 16px 24px; text-align: center; border-top: 1px solid #f1f5f9;">
       <p style="margin: 0; font-size: 11px; color: #64748b;">
-        © 2026 Stuđiô AI • Dự án Khởi nghiệp EXE201 • ĐHQG TP.HCM
+        © 2026 Stuđiô AI • Dự án Khởi nghiệp EXE201 • ĐH FPT Hà Nội
       </p>
     </div>
   </div>
@@ -110,7 +110,7 @@ class ResendOtpProvider(BaseOtpProvider):
             "to": [to_email],
             "subject": f"[{code}] Mã xác minh tài khoản Stuđiô AI",
             "html": OTP_HTML_TEMPLATE.format(code=code),
-            "text": f"Mã xác minh Stuđiô AI của bạn là: {code}. Mã có hiệu lực trong 10 phút.",
+            "text": f"Mã xác minh Stuđiô AI của bạn là: {code}. Mã có hiệu lực trong 10 phút. © 2026 Stuđiô AI • Dự án Khởi nghiệp EXE201 • ĐH FPT Hà Nội",
         }
 
         try:
@@ -151,7 +151,7 @@ class SmtpOtpProvider(BaseOtpProvider):
             msg["Subject"] = f"[{code}] Mã xác minh tài khoản Stuđiô AI"
             msg["From"] = self.from_email
             msg["To"] = to_email
-            msg.attach(MIMEText(f"Mã xác minh của bạn là: {code}. Hiệu lực 10 phút.", "plain", "utf-8"))
+            msg.attach(MIMEText(f"Mã xác minh của bạn là: {code}. Hiệu lực 10 phút. © 2026 Stuđiô AI • Dự án Khởi nghiệp EXE201 • ĐH FPT Hà Nội", "plain", "utf-8"))
             msg.attach(MIMEText(OTP_HTML_TEMPLATE.format(code=code), "html", "utf-8"))
 
             context = ssl.create_default_context()

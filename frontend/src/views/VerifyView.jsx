@@ -295,23 +295,7 @@ export default function VerifyView() {
               </div>
             )}
 
-            {/* TODO(FIX-LATER): Banner mã demo — xóa khi nối SMTP thật, giữ ô nhập bên dưới */}
-            <div className="mt-4 p-3 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🔑</span>
-                <div>
-                  <span className="text-amber-800 font-medium">Demo tạm thời (chưa nối email thật): nhập </span>
-                  <span className="font-mono font-bold text-amber-900 tracking-wider text-sm">123456</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setCode('123456'); setError(''); }}
-                className="shrink-0 px-2.5 py-1 rounded-lg bg-amber-200/70 hover:bg-amber-200 text-amber-900 font-semibold text-[11px] transition-colors"
-              >
-                Điền mã
-              </button>
-            </div>
+
 
             {/* OTP 6 Digits Segmented Input */}
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">
