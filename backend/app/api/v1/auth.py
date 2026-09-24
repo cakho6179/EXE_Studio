@@ -17,6 +17,7 @@ from app.core.ratelimit import (
     otp_send_limiter, OTP_SEND_LIMIT, OTP_SEND_WINDOW,
 )
 from app.core.emailer import send_otp_email
+from app.core.otp_provider import get_otp_provider, send_otp
 from app.models.entities import User, UserProfile, OtpCode
 from app.schemas.all_schemas import UserRegister, UserLogin, TokenResponse, UserOut, UserProfileUpdate
 from pydantic import BaseModel, EmailStr, Field
@@ -333,14 +334,47 @@ class ForgotRequest(BaseModel):
     email: str
 
 
+class SendOtpRequest(BaseModel):
+    email: str
+
+
 class VerifyOtpRequest(BaseModel):
     email: str
     code: str
 
 
+@router.post("/send-otp")
+@router.post("/resend-otp")
+def send_or_resend_otp(payload: SendOtpRequest, db: Session = Depends(get_db)):
+    """Tạo hoặc gửi lại mã xác minh 6 số (hỗ trợ Resend API, SMTP TLS, hoặc Console fallback)."""
+    email = _normalize_email(payload.email)
+    if not EMAIL_RE.match(email):
+        raise HTTPException(status_code=400, detail="Email chưa đúng định dạng.")
+    if not otp_send_limiter.allow(f"otp-send:{email}", OTP_SEND_LIMIT, OTP_SEND_WINDOW):
+        raise HTTPException(status_code=429, detail="Bạn đã yêu cầu mã quá nhiều lần. Vui lòng thử lại sau 10 phút.")
+
+    # Vô hiệu mã cũ chưa dùng
+    db.query(OtpCode).filter(OtpCode.email == email, OtpCode.is_used == False).update({"is_used": True})
+    code = f"{secrets.randbelow(900000) + 100000}"
+    db.add(OtpCode(email=email, code=code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
+    db.commit()
+
+    provider = get_otp_provider()
+    provider.send_otp(email, code)
+
+    response = {
+        "status": "success",
+        "provider": provider.provider_name,
+        "message": f"Đã gửi mã xác minh 6 số đến {email} (qua {provider.provider_name}).",
+    }
+    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+        response["dev_code"] = code
+    return response
+
+
 @router.post("/forgot")
 def forgot_password(payload: ForgotRequest, db: Session = Depends(get_db)):
-    """Tạo mã OTP 6 số hiệu lực 10 phút, gửi qua SMTP (demo: trả dev_code + log console)."""
+    """Tạo mã OTP 6 số hiệu lực 10 phút phục vụ khôi phục mật khẩu."""
     email = _normalize_email(payload.email)
     if not EMAIL_RE.match(email):
         raise HTTPException(status_code=400, detail="Email chưa đúng định dạng.")
@@ -351,18 +385,22 @@ def forgot_password(payload: ForgotRequest, db: Session = Depends(get_db)):
     if not user:
         # Không lộ email tồn tại hay không, nhưng vẫn 200
         return {"status": "success", "message": "Nếu email tồn tại, mã xác minh đã được gửi."}
+
     # Vô hiệu mã cũ chưa dùng
     db.query(OtpCode).filter(OtpCode.email == email, OtpCode.is_used == False).update({"is_used": True})
     code = f"{secrets.randbelow(900000) + 100000}"
     db.add(OtpCode(email=email, code=code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
     db.commit()
-    send_otp_email(email, code)
+
+    provider = get_otp_provider()
+    provider.send_otp(email, code)
 
     response = {
         "status": "success",
+        "provider": provider.provider_name,
         "message": f"Đã gửi mã xác minh 6 số đến {email} (hiệu lực 10 phút).",
     }
-    if settings.OTP_RETURN_DEV_CODE:
+    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
         response["dev_code"] = code  # Chỉ bật ở chế độ demo học thuật
     return response
 

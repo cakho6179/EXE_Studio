@@ -122,7 +122,10 @@ export default function VerifyView() {
       }
 
       setCooldown(COOLDOWN);
-      showToast('Đã gửi lại mã xác minh 6 số.', 'info');
+      const providerLabel = res?.provider === 'resend_api'
+        ? 'Resend Cloud Email'
+        : (res?.provider === 'smtp_tls' ? 'Gmail SMTP' : 'Email');
+      showToast(`Đã gửi lại mã xác minh 6 số qua ${providerLabel}. Vui lòng kiểm tra hộp thư!`, 'info');
       if (res?.dev_code) {
         showToast(`Mã OTP demo của bạn: ${res.dev_code}`, 'info', 8000);
       }

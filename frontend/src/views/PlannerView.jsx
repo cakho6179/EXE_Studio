@@ -43,6 +43,8 @@ export default function PlannerView() {
   const [planTab, setPlanTab] = useState('plans');
   const [form, setForm] = useState({ title: '', subject: '', examDate: '', hoursPerDay: 3 });
   const [genForm, setGenForm] = useState({ subject: '', examDate: '', hoursPerDay: 3, level: 'medium' });
+  // Inline progress editing: maps plan.id -> draft percentage string
+  const [progressEditing, setProgressEditing] = useState({});
 
   const cycleSleep = () => {
     const steps = [0, 15, 30, 45, 60];
@@ -465,25 +467,45 @@ export default function PlannerView() {
                             Áp dụng vào lịch
                           </button>
                         )}
-                        {/* FIX: backend đã có PATCH /study-plans/{id} (progress 0-100) từ trước
-                            nhưng UI không có nút nào gọi — sinh viên tick buổi học xong không thể cập nhật tiến độ */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const input = window.prompt('Tiến độ kế hoạch này (%):', String(Math.round(p.progress || 0)));
-                            if (input === null) return;
-                            const val = Number(input);
-                            if (!Number.isFinite(val) || val < 0 || val > 100) {
-                              showToast('Tiến độ phải là số từ 0 đến 100.', 'warning');
-                              return;
-                            }
-                            updatePlanProgress.mutate({ id: p.id, progress: val });
-                          }}
-                          disabled={updatePlanProgress.isPending}
-                          className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-[11px] font-semibold transition"
-                        >
-                          Cập nhật tiến độ
-                        </button>
+                        {/* Cập nhật tiến độ — inline (không dùng window.prompt) */}
+                        {progressEditing[p.id] !== undefined ? (
+                          <form
+                            className="flex items-center gap-1"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              const val = Number(progressEditing[p.id]);
+                              if (!Number.isFinite(val) || val < 0 || val > 100) {
+                                showToast('Tiến độ phải là số từ 0 đến 100.', 'warning');
+                                return;
+                              }
+                              updatePlanProgress.mutate({ id: p.id, progress: val });
+                              setProgressEditing((prev) => { const n = { ...prev }; delete n[p.id]; return n; });
+                            }}
+                          >
+                            <input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={progressEditing[p.id]}
+                              onChange={(e) => setProgressEditing((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                              onKeyDown={(e) => { if (e.key === 'Escape') setProgressEditing((prev) => { const n = { ...prev }; delete n[p.id]; return n; }); }}
+                              autoFocus
+                              className="w-16 px-2 py-1 rounded-lg border border-blue-300 text-xs text-center"
+                            />
+                            <span className="text-xs text-slate-400">%</span>
+                            <button type="submit" disabled={updatePlanProgress.isPending} className="px-2 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-semibold">✓</button>
+                            <button type="button" onClick={() => setProgressEditing((prev) => { const n = { ...prev }; delete n[p.id]; return n; })} className="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px]">✕</button>
+                          </form>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setProgressEditing((prev) => ({ ...prev, [p.id]: String(Math.round(p.progress || 0)) }))}
+                            disabled={updatePlanProgress.isPending}
+                            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-[11px] font-semibold transition"
+                          >
+                            Cập nhật tiến độ
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

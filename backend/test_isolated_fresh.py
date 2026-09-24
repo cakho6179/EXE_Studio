@@ -323,6 +323,18 @@ def main():
           and 0 <= dash_data.get("zen_efficiency_index", -1) <= 100,
           f"rename_short={r_rename_short.status_code}, score={dash_data.get('circadian_alignment_score')}")
 
+    # 7w. Tích hợp 3rd-Party OTP Provider & Gửi lại mã (POST /auth/resend-otp)
+    r_otp_bad_mail = client.post("/api/v1/auth/resend-otp", json={"email": "invalid-email"})
+    r_otp_resend = client.post("/api/v1/auth/resend-otp", json={"email": email})
+    otp_data = r_otp_resend.json() if r_otp_resend.status_code == 200 else {}
+    dev_otp = otp_data.get("dev_code")
+    r_otp_verify = client.post("/api/v1/auth/verify-otp", json={"email": email, "code": dev_otp}) if dev_otp else None
+    check("7w. Tích hợp 3rd-Party OTP Provider & Gửi lại mã (POST /auth/resend-otp)",
+          r_otp_bad_mail.status_code == 400 and r_otp_resend.status_code == 200
+          and otp_data.get("status") == "success" and "provider" in otp_data
+          and (r_otp_verify is not None and r_otp_verify.status_code == 200),
+          f"bad={r_otp_bad_mail.status_code}, resend={r_otp_resend.status_code}, prov={otp_data.get('provider')}")
+
     client.delete(f"/api/v1/tasks/{tid}", headers=uh)
     client.delete(f"/api/v1/schedule/events/{evid}", headers=uh)
     client.delete(f"/api/v1/notes/{nid}", headers=uh)

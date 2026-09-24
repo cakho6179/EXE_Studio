@@ -69,6 +69,7 @@ export default function SoundView() {
   const [breathScale, setBreathScale] = useState(1);
   const [breathDuration, setBreathDuration] = useState('4s');
   const mixerRef = useRef(null);
+  const [presetNameInput, setPresetNameInput] = useState(''); // inline name input (replaces window.prompt)
 
   const engTrackId = engine()?.currentTrackId || track.id;
 
@@ -186,8 +187,11 @@ export default function SoundView() {
   async function savePreset() {
     const eng = engine();
     if (!eng) return;
-    const name = (window.prompt('Đặt tên cho preset phối âm hiện tại:') || '').trim();
-    if (!name) return;
+    const name = presetNameInput.trim();
+    if (!name) {
+      showToast('Vui lòng nhập tên cho preset trước khi lưu.', 'warning');
+      return;
+    }
     const allowedTracks = ['ocean', 'rain', 'binaural'];
     const cleanLevels = {};
     if (eng.trackLevels) {
@@ -203,6 +207,7 @@ export default function SoundView() {
         try {
           await api.post('/audio/presets', { name, track: trackToSave, volume: eng.volume, levels: cleanLevels, spatial_on: eng.spatial !== false });
           presetsQ.refetch();
+          setPresetNameInput('');
           showToast(`Đã lưu preset "${name}" lên hệ thống Stuđiô!`, 'success');
           return;
         } catch {
@@ -213,6 +218,7 @@ export default function SoundView() {
       list.push({ id: `local_${Date.now()}`, name, track: trackToSave, volume: eng.volume, levels: cleanLevels, spatial_on: eng.spatial !== false });
       localStorage.setItem('studi_local_presets', JSON.stringify(list));
       setMixTick((x) => x + 1);
+      setPresetNameInput('');
       showToast(`Đã lưu preset "${name}" trong bộ nhớ thiết bị!`, 'success');
     } catch (err) { showToast(err.message || 'Không lưu được preset.', 'error'); }
   }
@@ -286,7 +292,17 @@ export default function SoundView() {
           <button type="button" onClick={() => { try { engine()?.setSpatial(!(engine()?.spatial !== false)); setMixTick((x) => x + 1); showToast(engine()?.spatial !== false ? 'Đã bật vòm 3D.' : 'Đã thu hẹp vòm âm.', 'info'); } catch {} }} className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-full font-medium transition shadow-xs">
             🎛️ Đồng bộ Tai nghe Không gian 3D
           </button>
-          <button type="button" onClick={savePreset} className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-xs">＋ Lưu Phối Âm Yêu Thích</button>
+          <span className="flex items-center gap-1">
+            <input
+              type="text"
+              value={presetNameInput}
+              onChange={(e) => setPresetNameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') savePreset(); }}
+              placeholder="Tên preset..."
+              className="px-2 py-1 text-xs rounded-full border border-blue-300 text-slate-700 bg-white w-28 outline-none focus:ring-1 focus:ring-blue-400"
+            />
+            <button type="button" onClick={savePreset} className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition shadow-xs">＋ Lưu Phối Âm</button>
+          </span>
         </div>
       </section>
 
@@ -529,7 +545,17 @@ export default function SoundView() {
                 </div>
                 {sleepLeft > 0 && <p className="mt-2 text-[11px] text-indigo-600">Còn {sleepLeft} phút nữa sẽ tắt.</p>}
               </div>
-              <button type="button" onClick={savePreset} className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition">Lưu Thành Preset Riêng Của Bạn</button>
+              <div className="flex items-center gap-1 mt-1">
+                <input
+                  type="text"
+                  value={presetNameInput}
+                  onChange={(e) => setPresetNameInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') savePreset(); }}
+                  placeholder="Tên preset..."
+                  className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs outline-none focus:ring-1 focus:ring-blue-400"
+                />
+                <button type="button" onClick={savePreset} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition whitespace-nowrap">Lưu Preset</button>
+              </div>
             </div>
 
             <div className="bg-white/85 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-sm">

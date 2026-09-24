@@ -184,6 +184,7 @@ export default function TasksView() {
       qc.invalidateQueries({ queryKey: ['tasks'] });
       qc.invalidateQueries({ queryKey: ['notifications'] });
       qc.invalidateQueries({ queryKey: ['analytics-dashboard'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
       showToast('Đã thêm micro-sprint vào nhiệm vụ.', 'success');
     },
     onError: (err) => showToast(err.message || 'Không thêm được.', 'error'),

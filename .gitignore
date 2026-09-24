@@ -33,7 +33,6 @@ lerna-debug.log*
 
 # --- Tạm & docs nháp ---
 temp/
-docs/
 
 # --- Editor / OS ---
 .vscode/*

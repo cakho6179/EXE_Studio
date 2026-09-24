@@ -20,7 +20,12 @@ class Settings(BaseSettings):
     # Google OAuth: đặt GOOGLE_CLIENT_ID trong .env để bật kiểm tra aud cho id_token thật
     GOOGLE_CLIENT_ID: str = ""
 
-    # SMTP gửi email OTP (bỏ trống = chỉ log OTP ra console - chế độ demo)
+    # Cấu hình dịch vụ gửi OTP bên thứ 3 (3rd-Party Provider: 'auto', 'resend', 'smtp', 'console')
+    OTP_PROVIDER: str = "auto"
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "Stuđiô AI <onboarding@resend.dev>"
+
+    # SMTP gửi email OTP qua TLS
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""

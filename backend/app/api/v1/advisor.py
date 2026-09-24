@@ -296,7 +296,7 @@ async def upload_document(
 
 
 @router.get("/documents")
-def    list_documents(
+def list_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
