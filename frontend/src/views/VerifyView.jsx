@@ -136,9 +136,6 @@ export default function VerifyView() {
       } else {
         showToast(`Đã gửi lại mã xác minh 6 số qua ${providerLabel}. Vui lòng kiểm tra hộp thư!`, 'info');
       }
-      if (res?.dev_code) {
-        showToast(`Mã OTP demo của bạn: ${res.dev_code}`, 'info', 8000);
-      }
     } catch (err) {
       setError(err?.message || 'Không gửi lại được mã. Vui lòng thử lại sau.');
     }
@@ -304,35 +301,6 @@ export default function VerifyView() {
                 </button>
               </div>
             )}
-
-            {/* Demo / Test Quick-fill Banner */}
-            <div className="mt-4 p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between gap-3 text-xs text-amber-900 shadow-sm animate-fadeIn">
-              <div className="flex items-center gap-2">
-                <span className="text-base">⚡</span>
-                <div className="text-left">
-                  <p className="font-bold text-[11px] text-amber-950 uppercase tracking-wider">Mã thử nghiệm nhanh (Demo / Hội đồng)</p>
-                  <p className="text-[11px] text-amber-700">
-                    {demoCode ? (
-                      <>Mã sinh ra: <span className="font-mono font-bold text-amber-900">{demoCode}</span> (hoặc <span className="font-mono font-bold">123456</span>)</>
-                    ) : (
-                      <>Mã dự phòng: <span className="font-mono font-bold text-amber-900">123456</span></>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const targetCode = demoCode || '123456';
-                  setCode(targetCode);
-                  setError('');
-                  showToast(`Đã tự động điền mã xác nhận: ${targetCode}`, 'info');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold text-[11px] transition-all shadow-sm cursor-pointer whitespace-nowrap"
-              >
-                {demoCode ? `Điền mã ${demoCode}` : 'Điền 123456'}
-              </button>
-            </div>
 
             {/* OTP 6 Digits Segmented Input */}
             <form onSubmit={handleVerifyOtp} className="mt-6 space-y-5">

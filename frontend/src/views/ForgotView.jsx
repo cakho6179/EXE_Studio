@@ -38,9 +38,6 @@ export default function ForgotView() {
       }
 
       showToast(res?.message || 'Đã gửi mã xác nhận 6 số đến email của bạn.', 'success');
-      if (res?.dev_code) {
-        showToast(`Mã OTP demo của bạn: ${res.dev_code}`, 'info', 8000);
-      }
 
       navigate(`/verify?email=${encodeURIComponent(trimmedEmail)}&mode=recovery`);
     } catch (err) {

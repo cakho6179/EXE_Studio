@@ -92,11 +92,7 @@ export default function RegisterView() {
         /* bỏ qua */
       }
 
-      if (regResult.dev_code) {
-        showToast(`Đăng ký thành công! Mã OTP xác minh demo: ${regResult.dev_code}`, 'info', 8000);
-      } else {
-        showToast('Đăng ký thành công! Mã xác minh 6 số đã được gửi đến email của bạn.', 'success');
-      }
+      showToast('Đăng ký thành công! Mã xác minh 6 số đã được gửi đến email của bạn.', 'success');
 
       navigate(`/verify?email=${encodeURIComponent(trimmedEmail)}`);
     } catch (err) {
