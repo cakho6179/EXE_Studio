@@ -6,6 +6,7 @@ Hỗ trợ Kiến trúc Adapter:
 3. Dev Console Provider (Fallback tự động khi chạy local hoặc test offline).
 """
 
+import os
 from abc import ABC, abstractmethod
 import smtplib
 import ssl
