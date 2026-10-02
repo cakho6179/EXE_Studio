@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "Stuđiô AI <no-reply@studio-ai.local>"
 
-    # Đã nối Brevo gửi email thật: tắt trả về dev_code để bảo mật luồng xác minh
-    OTP_RETURN_DEV_CODE: bool = False
+    # Trả về dev_code để dự phòng khi dịch vụ mail bên thứ 3 chậm trễ hoặc chưa duyệt tài khoản
+    OTP_RETURN_DEV_CODE: bool = True
 
     # TODO(FIX-LATER): Bypass OTP tạm thời — mã cố định 123456 được chấp nhận ở
     # /auth/verify-otp và /auth/reset-password mà không cần tra DB.

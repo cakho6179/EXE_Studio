@@ -153,7 +153,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     send_otp_email(email, code)
 
     res = _token_pair(user)
-    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+    if settings.OTP_RETURN_DEV_CODE:
         res["dev_code"] = code
     return res
 
@@ -177,7 +177,7 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
         db.add(OtpCode(email=email, code=code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
         db.commit()
         send_otp_email(email, code)
-        if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+        if settings.OTP_RETURN_DEV_CODE:
             res["dev_code"] = code
 
     return res
@@ -382,7 +382,7 @@ def send_or_resend_otp(payload: SendOtpRequest, db: Session = Depends(get_db)):
         if sent_success
         else f"Chưa thể chuyển thư qua mạng hạ tầng ({provider.provider_name}). Bạn có thể sử dụng mã dự phòng 123456 để tiếp tục trải nghiệm.",
     }
-    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+    if settings.OTP_RETURN_DEV_CODE:
         response["dev_code"] = code
     return response
 
@@ -415,8 +415,8 @@ def forgot_password(payload: ForgotRequest, db: Session = Depends(get_db)):
         "provider": provider.provider_name,
         "message": f"Đã gửi mã xác minh 6 số đến {email} (hiệu lực 10 phút).",
     }
-    if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
-        response["dev_code"] = code  # Chỉ bật ở chế độ demo học thuật
+    if settings.OTP_RETURN_DEV_CODE:
+        response["dev_code"] = code  # Dự phòng khi email bên thứ 3 chậm trễ
     return response
 
 

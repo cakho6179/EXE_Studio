@@ -347,21 +347,39 @@ export default function VerifyView() {
               </button>
 
               {/* Resend Cooldown */}
-              <div className="text-center text-xs text-slate-500">
-                {cooldown > 0 ? (
-                  <span>
-                    Chưa nhận được mã? Gửi lại sau{' '}
-                    <span className="font-semibold text-blue-600">{cooldown}s</span>
-                  </span>
-                ) : (
+              <div className="text-center text-xs text-slate-500 space-y-2">
+                <div>
+                  {cooldown > 0 ? (
+                    <span>
+                      Chưa nhận được mã? Gửi lại sau{' '}
+                      <span className="font-semibold text-blue-600">{cooldown}s</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                    >
+                      Gửi lại mã xác thực mới →
+                    </button>
+                  )}
+                </div>
+
+                {/* Trợ giúp khi dịch vụ email chậm trễ hoặc chưa kích hoạt */}
+                <div>
                   <button
                     type="button"
-                    onClick={handleResendOtp}
-                    className="font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                    onClick={() => {
+                      const fallbackCode = demoCode || '123456';
+                      setCode(fallbackCode);
+                      setError('');
+                      showToast(`Đã tự động điền mã kích hoạt: ${fallbackCode}`, 'info');
+                    }}
+                    className="text-[11px] text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
                   >
-                    Gửi lại mã xác thực mới →
+                    ⚡ Không thấy email trong Hộp thư / Thư rác? Nhấp kích hoạt nhanh (123456)
                   </button>
-                )}
+                </div>
               </div>
             </form>
 

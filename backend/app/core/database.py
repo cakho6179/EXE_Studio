@@ -98,6 +98,9 @@ try:
         "keepalives_interval": 10,
         "keepalives_count": 3,
     }
+    if "postgresql+psycopg://" in _db_url:
+        # Bắt buộc cho PgBouncer Transaction Pooler (port 6543) của Supabase để tránh lỗi DuplicatePreparedStatement
+        _pg_args["prepare_threshold"] = None
     if _is_sqlite:
         engine = create_engine(
             _db_url,
