@@ -120,14 +120,14 @@ class ResendOtpProvider(BaseOtpProvider):
                 if resp.status_code in (200, 201):
                     data = resp.json()
                     email_id = data.get("id", "ok")
-                    print(f"[Stuđiô AI][Resend] Đã gửi OTP thành công tới {to_email} (ID: {email_id})")
+                    print(f"[Studio AI][Resend] Đã gửi OTP thành công tới {to_email} (ID: {email_id})")
                     return True
                 else:
                     err_text = resp.text
-                    print(f"[Stuđiô AI][Resend] Lỗi {resp.status_code}: {err_text}")
+                    print(f"[Studio AI][Resend] Lỗi {resp.status_code}: {err_text}")
                     if resp.status_code == 403 and "only send testing emails to your own email address" in err_text:
                         print(
-                            f"\n[Stuđiô AI][Resend] ⚠️ LƯU Ý RESEND SANDBOX:\n"
+                            f"\n[Studio AI][Resend] ⚠️ LƯU Ý RESEND SANDBOX:\n"
                             f"  Resend đang ở chế độ unverified domain ('{self.from_email}') nên CHỈ gửi được tới email đăng ký tài khoản Resend (tothieuta@gmail.com).\n"
                             f"  Không thể gửi tới '{to_email}' cho tới khi bạn verify domain tại https://resend.com/domains.\n"
                             f"  💡 MẸO: Cấu hình SMTP Gmail trong backend/.env để gửi tới MỌI email sinh viên không cần domain riêng.\n"
@@ -136,7 +136,7 @@ class ResendOtpProvider(BaseOtpProvider):
                     DevConsoleOtpProvider().send_otp(to_email, code)
                     return False
         except Exception as e:
-            print(f"[Stuđiô AI][Resend] Ngoại lệ khi gọi Resend API: {e}")
+            print(f"[Studio AI][Resend] Ngoại lệ khi gọi Resend API: {e}")
             DevConsoleOtpProvider().send_otp(to_email, code)
             return False
 
@@ -158,6 +158,10 @@ class BrevoOtpProvider(BaseOtpProvider):
         return "brevo_api"
 
     def send_otp(self, to_email: str, code: str) -> bool:
+        import json
+        import urllib.request
+        import urllib.error
+
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
             "api-key": self.api_key,
@@ -173,17 +177,23 @@ class BrevoOtpProvider(BaseOtpProvider):
         }
 
         try:
-            with httpx.Client(timeout=10.0) as client:
-                resp = client.post(url, headers=headers, json=payload)
-                if resp.status_code in (200, 201):
-                    print(f"[Stuđiô AI][Brevo] Đã gửi OTP thành công tới {to_email}")
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers,
+            )
+            with urllib.request.urlopen(req, timeout=10.0) as resp:
+                if resp.status in (200, 201):
+                    print(f"[Studio AI][Brevo] Da gui OTP thanh cong toi {to_email}")
                     return True
-                else:
-                    print(f"[Stuđiô AI][Brevo] Lỗi {resp.status_code}: {resp.text}")
-                    DevConsoleOtpProvider().send_otp(to_email, code)
-                    return False
+            return False
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="ignore")
+            print(f"[Studio AI][Brevo] Loi HTTP {e.code}: {err_body}")
+            DevConsoleOtpProvider().send_otp(to_email, code)
+            return False
         except Exception as e:
-            print(f"[Stuđiô AI][Brevo] Ngoại lệ khi gọi Brevo API: {e}")
+            print(f"[Studio AI][Brevo] Ngoai le: {e}")
             DevConsoleOtpProvider().send_otp(to_email, code)
             return False
 
@@ -209,7 +219,7 @@ class SmtpOtpProvider(BaseOtpProvider):
         # Nếu đang chạy trên Render và dùng SMTP, log cảnh báo rõ ràng
         if os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"):
             print(
-                "\n[Stuđiô AI][Render Notice] ⚠️ Render Free Tier chặn cổng gửi mail SMTP (587, 465, 25).\n"
+                "\n[Studio AI][Render Notice] ⚠️ Render Free Tier chặn cổng gửi mail SMTP (587, 465, 25).\n"
                 "  Kết nối smtp.gmail.com có thể bị timeout. Để gửi email thật trên Render, hãy dùng Brevo/Resend API qua HTTPS port 443.\n"
                 "  (Mã 123456 luôn hoạt động cho mục đích nghiệm thu đồ án).\n"
             )
@@ -229,10 +239,10 @@ class SmtpOtpProvider(BaseOtpProvider):
                 server.starttls(context=context)
                 server.login(self.user, self.password)
                 server.sendmail(self.from_email, [to_email], msg.as_string())
-            print(f"[Stuđiô AI][SMTP] Đã gửi OTP thành công qua SMTP tới {to_email}")
+            print(f"[Studio AI][SMTP] Đã gửi OTP thành công qua SMTP tới {to_email}")
             return True
         except Exception as e:
-            print(f"[Stuđiô AI][SMTP] Gửi email thất bại: {e}")
+            print(f"[Studio AI][SMTP] Gửi email thất bại: {e}")
             DevConsoleOtpProvider().send_otp(to_email, code)
             return False
 
@@ -249,7 +259,7 @@ class DevConsoleOtpProvider(BaseOtpProvider):
 
     def send_otp(self, to_email: str, code: str) -> bool:
         print("\n" + "=" * 60)
-        print(f"🌊 [Stuđiô AI][DEV CONSOLE OTP]")
+        print(f"🌊 [Studio AI][DEV CONSOLE OTP]")
         print(f"👉 Người nhận: {to_email}")
         print(f"🔑 MÃ XÁC MINH OTP: >>> {code} <<<")
         print(f"⏱️  Hiệu lực: 10 phút")
