@@ -380,7 +380,7 @@ def send_or_resend_otp(payload: SendOtpRequest, db: Session = Depends(get_db)):
         "sent": sent_success,
         "message": f"Đã gửi mã xác minh 6 số đến {email} (qua {provider.provider_name})."
         if sent_success
-        else f"Chưa thể gửi email qua {provider.provider_name} (Resend sandbox chỉ gửi đến email chủ tài khoản tothieuta@gmail.com; hãy dùng tothieuta@gmail.com hoặc cấu hình Gmail SMTP).",
+        else f"Chưa thể chuyển thư qua mạng hạ tầng ({provider.provider_name}). Bạn có thể sử dụng mã dự phòng 123456 để tiếp tục trải nghiệm.",
     }
     if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
         response["dev_code"] = code

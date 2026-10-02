@@ -123,9 +123,9 @@ export default function VerifyView() {
       }
 
       setCooldown(COOLDOWN);
-      const providerLabel = res?.provider === 'resend_api'
-        ? 'Resend Cloud Email'
-        : (res?.provider === 'smtp_tls' ? 'Gmail SMTP' : 'Email');
+      const providerLabel = res?.provider === 'brevo_api'
+        ? 'Brevo Cloud Email'
+        : (res?.provider === 'smtp_tls' ? 'Gmail SMTP' : 'Email Hệ thống');
 
       if (res?.sent === false) {
         showToast(
