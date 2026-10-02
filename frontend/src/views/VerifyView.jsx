@@ -109,7 +109,8 @@ export default function VerifyView() {
         }
       }
 
-      const res = await api.post('/auth/forgot', { email });
+      const endpoint = isRecovery ? '/auth/forgot' : '/auth/resend-otp';
+      const res = await api.post(endpoint, { email });
 
       try {
         localStorage.setItem('studi_otp_sent_at', String(Date.now()));
@@ -125,7 +126,16 @@ export default function VerifyView() {
       const providerLabel = res?.provider === 'resend_api'
         ? 'Resend Cloud Email'
         : (res?.provider === 'smtp_tls' ? 'Gmail SMTP' : 'Email');
-      showToast(`Đã gửi lại mã xác minh 6 số qua ${providerLabel}. Vui lòng kiểm tra hộp thư!`, 'info');
+
+      if (res?.sent === false) {
+        showToast(
+          res?.message || `Chưa thể gửi email qua ${providerLabel}. Vui lòng kiểm tra console hoặc cấu hình SMTP.`,
+          'warning',
+          7000
+        );
+      } else {
+        showToast(`Đã gửi lại mã xác minh 6 số qua ${providerLabel}. Vui lòng kiểm tra hộp thư!`, 'info');
+      }
       if (res?.dev_code) {
         showToast(`Mã OTP demo của bạn: ${res.dev_code}`, 'info', 8000);
       }

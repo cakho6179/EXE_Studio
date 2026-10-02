@@ -122,10 +122,21 @@ class ResendOtpProvider(BaseOtpProvider):
                     print(f"[Stuđiô AI][Resend] Đã gửi OTP thành công tới {to_email} (ID: {email_id})")
                     return True
                 else:
-                    print(f"[Stuđiô AI][Resend] Lỗi {resp.status_code}: {resp.text}")
+                    err_text = resp.text
+                    print(f"[Stuđiô AI][Resend] Lỗi {resp.status_code}: {err_text}")
+                    if resp.status_code == 403 and "only send testing emails to your own email address" in err_text:
+                        print(
+                            f"\n[Stuđiô AI][Resend] ⚠️ LƯU Ý RESEND SANDBOX:\n"
+                            f"  Resend đang ở chế độ unverified domain ('{self.from_email}') nên CHỈ gửi được tới email đăng ký tài khoản Resend (tothieuta@gmail.com).\n"
+                            f"  Không thể gửi tới '{to_email}' cho tới khi bạn verify domain tại https://resend.com/domains.\n"
+                            f"  💡 MẸO: Cấu hình SMTP Gmail trong backend/.env để gửi tới MỌI email sinh viên không cần domain riêng.\n"
+                        )
+                    # Fallback in mã ra console để dev/test không bị tắc nghẽn
+                    DevConsoleOtpProvider().send_otp(to_email, code)
                     return False
         except Exception as e:
             print(f"[Stuđiô AI][Resend] Ngoại lệ khi gọi Resend API: {e}")
+            DevConsoleOtpProvider().send_otp(to_email, code)
             return False
 
 

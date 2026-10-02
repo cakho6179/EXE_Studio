@@ -55,7 +55,15 @@ export default function LoginView() {
 
       const isVerified = res?.user?.is_email_verified;
       if (isVerified === false) {
-        showToast('Tài khoản chưa xác minh email. Vui lòng nhập mã OTP để tiếp tục.', 'warning');
+        try {
+          if (res?.dev_code) {
+            sessionStorage.setItem('studi_demo_otp', res.dev_code);
+          }
+          sessionStorage.setItem('studi_verify_email', identity);
+        } catch {
+          /* bỏ qua */
+        }
+        showToast('Tài khoản chưa xác minh email. Hệ thống đã gửi mã OTP mới tới email của bạn.', 'warning');
         navigate(`/verify?email=${encodeURIComponent(identity)}`, { replace: true });
         return;
       }

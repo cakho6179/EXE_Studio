@@ -168,7 +168,19 @@ def login(login_in: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email hoặc mật khẩu không chính xác.")
 
     login_limiter.reset(f"login:{email}")
-    return _token_pair(user)
+    res = _token_pair(user)
+
+    # Nếu tài khoản chưa xác thực email, tự động phát sinh OTP mới và gửi ngay
+    if not getattr(user, "is_email_verified", False):
+        db.query(OtpCode).filter(OtpCode.email == email, OtpCode.is_used == False).update({"is_used": True})
+        code = f"{secrets.randbelow(900000) + 100000}"
+        db.add(OtpCode(email=email, code=code, expires_at=datetime.utcnow() + timedelta(minutes=10)))
+        db.commit()
+        send_otp_email(email, code)
+        if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
+            res["dev_code"] = code
+
+    return res
 
 
 class RefreshRequest(BaseModel):
@@ -360,12 +372,15 @@ def send_or_resend_otp(payload: SendOtpRequest, db: Session = Depends(get_db)):
     db.commit()
 
     provider = get_otp_provider()
-    provider.send_otp(email, code)
+    sent_success = provider.send_otp(email, code)
 
     response = {
         "status": "success",
         "provider": provider.provider_name,
-        "message": f"Đã gửi mã xác minh 6 số đến {email} (qua {provider.provider_name}).",
+        "sent": sent_success,
+        "message": f"Đã gửi mã xác minh 6 số đến {email} (qua {provider.provider_name})."
+        if sent_success
+        else f"Chưa thể gửi email qua {provider.provider_name} (Resend sandbox chỉ gửi đến email chủ tài khoản tothieuta@gmail.com; hãy dùng tothieuta@gmail.com hoặc cấu hình Gmail SMTP).",
     }
     if settings.OTP_RETURN_DEV_CODE and settings.ENV != "production":
         response["dev_code"] = code
