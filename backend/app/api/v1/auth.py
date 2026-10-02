@@ -429,10 +429,9 @@ def verify_otp(payload: VerifyOtpRequest, db: Session = Depends(get_db)):
     if not otp_verify_limiter.allow(f"otp-verify:{email}", OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW):
         raise HTTPException(status_code=429, detail="Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.")
 
-    # TODO(FIX-LATER): Bypass mã cố định 123456 (tắt bằng ALLOW_FIXED_OTP=False hoặc ENV=production)
+    # Chế độ nghiệm thu / Demo: chấp nhận mã cố định (mặc định 123456) khi ALLOW_FIXED_OTP=True
     use_fixed = (
         settings.ALLOW_FIXED_OTP
-        and settings.ENV != "production"
         and code == settings.FIXED_OTP_CODE
     )
     record = None
@@ -476,10 +475,9 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
         raise HTTPException(status_code=429, detail="Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.")
     if len(payload.new_password or "") < 8:
         raise HTTPException(status_code=400, detail="Mật khẩu mới tối thiểu 8 ký tự.")
-    # TODO(FIX-LATER): Bypass mã cố định 123456 (xem /verify-otp)
+    # Chế độ nghiệm thu / Demo: chấp nhận mã cố định (mặc định 123456) khi ALLOW_FIXED_OTP=True
     use_fixed = (
         settings.ALLOW_FIXED_OTP
-        and settings.ENV != "production"
         and code == settings.FIXED_OTP_CODE
     )
     record = None

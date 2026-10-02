@@ -140,9 +140,57 @@ class ResendOtpProvider(BaseOtpProvider):
             return False
 
 
+class BrevoOtpProvider(BaseOtpProvider):
+    """
+    Tích hợp Brevo (Sendinblue) REST API qua HTTPS port 443 (Render không chặn).
+    Endpoint: https://api.brevo.com/v3/smtp/email
+    Cho phép gửi tới MỌI email sinh viên / cá nhân (300 email/ngày miễn phí).
+    """
+
+    def __init__(self, api_key: str, from_email: str, from_name: str = "Stuđiô AI"):
+        self.api_key = api_key
+        self.from_email = from_email
+        self.from_name = from_name
+
+    @property
+    def provider_name(self) -> str:
+        return "brevo_api"
+
+    def send_otp(self, to_email: str, code: str) -> bool:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "api-key": self.api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        payload = {
+            "sender": {"name": self.from_name, "email": self.from_email},
+            "to": [{"email": to_email}],
+            "subject": f"[{code}] Mã xác minh tài khoản Stuđiô AI",
+            "htmlContent": OTP_HTML_TEMPLATE.format(code=code),
+            "textContent": f"Mã xác minh Stuđiô AI của bạn là: {code}. Mã có hiệu lực trong 10 phút. © 2026 Stuđiô AI • Dự án Khởi nghiệp EXE201 • ĐH FPT Hà Nội",
+        }
+
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                resp = client.post(url, headers=headers, json=payload)
+                if resp.status_code in (200, 201):
+                    print(f"[Stuđiô AI][Brevo] Đã gửi OTP thành công tới {to_email}")
+                    return True
+                else:
+                    print(f"[Stuđiô AI][Brevo] Lỗi {resp.status_code}: {resp.text}")
+                    DevConsoleOtpProvider().send_otp(to_email, code)
+                    return False
+        except Exception as e:
+            print(f"[Stuđiô AI][Brevo] Ngoại lệ khi gọi Brevo API: {e}")
+            DevConsoleOtpProvider().send_otp(to_email, code)
+            return False
+
+
 class SmtpOtpProvider(BaseOtpProvider):
     """
     Tích hợp SMTP (TLS port 587) - Hỗ trợ Gmail App Password hoặc máy chủ SMTP chuẩn.
+    Lưu ý: Render Free Tier chặn outbound port 25, 465, 587; nên trên Render ưu tiên Resend/Brevo (HTTPS port 443).
     """
 
     def __init__(self, host: str, port: int, user: str, password: str, from_email: str):
@@ -157,6 +205,14 @@ class SmtpOtpProvider(BaseOtpProvider):
         return "smtp_tls"
 
     def send_otp(self, to_email: str, code: str) -> bool:
+        # Nếu đang chạy trên Render và dùng SMTP, log cảnh báo rõ ràng
+        if os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID"):
+            print(
+                "\n[Stuđiô AI][Render Notice] ⚠️ Render Free Tier chặn cổng gửi mail SMTP (587, 465, 25).\n"
+                "  Kết nối smtp.gmail.com có thể bị timeout. Để gửi email thật trên Render, hãy dùng Brevo/Resend API qua HTTPS port 443.\n"
+                "  (Mã 123456 luôn hoạt động cho mục đích nghiệm thu đồ án).\n"
+            )
+
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = f"[{code}] Mã xác minh tài khoản Stuđiô AI"
@@ -166,7 +222,9 @@ class SmtpOtpProvider(BaseOtpProvider):
             msg.attach(MIMEText(OTP_HTML_TEMPLATE.format(code=code), "html", "utf-8"))
 
             context = ssl.create_default_context()
-            with smtplib.SMTP(self.host, self.port, timeout=10) as server:
+            # Giảm timeout từ 10s xuống 5s để tránh treo lâu trên môi trường bị chặn port
+            timeout_sec = 5.0 if (os.getenv("RENDER") or os.getenv("RENDER_SERVICE_ID")) else 10.0
+            with smtplib.SMTP(self.host, self.port, timeout=timeout_sec) as server:
                 server.starttls(context=context)
                 server.login(self.user, self.password)
                 server.sendmail(self.from_email, [to_email], msg.as_string())
@@ -174,6 +232,7 @@ class SmtpOtpProvider(BaseOtpProvider):
             return True
         except Exception as e:
             print(f"[Stuđiô AI][SMTP] Gửi email thất bại: {e}")
+            DevConsoleOtpProvider().send_otp(to_email, code)
             return False
 
 
@@ -200,13 +259,19 @@ class DevConsoleOtpProvider(BaseOtpProvider):
 def get_otp_provider() -> BaseOtpProvider:
     """
     Factory function tự động nhận diện và khởi tạo Provider phù hợp:
-    1. Nếu cấu hình OTP_PROVIDER == 'resend' hoặc có RESEND_API_KEY -> Dùng Resend REST API.
-    2. Nếu cấu hình OTP_PROVIDER == 'smtp' hoặc có SMTP_HOST -> Dùng SMTP TLS.
-    3. Mặc định fallback về DevConsoleOtpProvider.
+    1. Nếu cấu hình OTP_PROVIDER == 'brevo' hoặc có BREVO_API_KEY -> Dùng Brevo REST API (HTTPS port 443).
+    2. Nếu cấu hình OTP_PROVIDER == 'resend' hoặc có RESEND_API_KEY -> Dùng Resend REST API (HTTPS port 443).
+    3. Nếu cấu hình OTP_PROVIDER == 'smtp' hoặc có SMTP_HOST -> Dùng SMTP TLS.
+    4. Mặc định fallback về DevConsoleOtpProvider.
     """
     pref = (getattr(settings, "OTP_PROVIDER", "auto") or "auto").lower()
+    brevo_key = getattr(settings, "BREVO_API_KEY", "") or ""
     resend_key = getattr(settings, "RESEND_API_KEY", "") or ""
     smtp_host = getattr(settings, "SMTP_HOST", "") or ""
+
+    if (pref == "brevo" or pref == "auto") and brevo_key:
+        sender_email = getattr(settings, "BREVO_SENDER_EMAIL", getattr(settings, "SMTP_USER", "tothieuta@gmail.com"))
+        return BrevoOtpProvider(api_key=brevo_key, from_email=sender_email)
 
     if (pref == "resend" or pref == "auto") and resend_key:
         from_email = getattr(settings, "RESEND_FROM_EMAIL", "Stuđiô AI <onboarding@resend.dev>")
